@@ -4,12 +4,21 @@ using PiecewiseOrthogonalPolynomials
 #import ArrayLayouts: MemoryLayout, sublayout, sub_materialize, symmetriclayout, transposelayout, SymmetricLayout, HermitianLayout, TriangularLayout, layout_getindex, materialize!, MatLdivVec, AbstractStridedLayout, triangulardata, MatMulMatAdd, MatMulVecAdd, _fill_lmul!, layout_replace_in_print_matrix
 import BandedMatrices: isbanded, bandwidths
 import BlockArrays: BlockSlice, block, blockindex, blockvec
-import BlockBandedMatrices: subblockbandwidths, blockbandwidths, AbstractBandedBlockBandedLayout, AbstractBandedBlockBandedMatrix
+import BlockBandedMatrices: blockbandwidths, AbstractBlockBandedLayout, AbstractBlockBandedMatrix
 import Base: size, axes, getindex, +, -, *, /, ==, \, OneTo, oneto, replace_in_print_matrix, copy, diff, getproperty, adjoint, transpose, tail, _sum, inv, show, summary
+using SemiseparableMatrices: LowRankMatrix, LayoutMatrix
 
 export SemiseparableBBBArrowheadMatrix, copyBBBArrowheadMatrices, fast_ql
 
-struct SemiseparableBBBArrowheadMatrix{T} <: AbstractBandedBlockBandedMatrix{T}
+
+struct BandedPlusSemiseparableMatrix{T,D,A,B,R} <: LayoutMatrix{T}
+    bands::BandedMatrix{T,D,R}
+    upperfill::LowRankMatrix{T,A,B}
+    lowerfill::LowRankMatrix{T,A,B}
+    BandedPlusSemiseparableMatrix{T,D,A,B,R}(bands, upperfill, lowerfill) where {T,D,A,B,R} = new{T,D,A,B,R}(bands, upperfill, lowerfill)
+end
+
+struct SemiseparableBBBArrowheadMatrix{T} <: AbstractBlockBandedMatrix{T}
     # banded parts
     A::BandedMatrix{T}
     B::NTuple{2,BandedMatrix{T}} # first row blocks
@@ -41,6 +50,8 @@ function axes(L::SemiseparableBBBArrowheadMatrix)
     μ,ν = size(L.D[1])
     blockedrange(Vcat(ξ, Fill(m,μ))), blockedrange(Vcat(n, Fill(m,ν)))
 end
+
+blockbandwidths(L::SemiseparableBBBArrowheadMatrix) = (4,2)
 
 function getindex(L::SemiseparableBBBArrowheadMatrix{T}, Kk::BlockIndex{1}, Jj::BlockIndex{1})::T where T
     K,k = block(Kk),blockindex(Kk)
