@@ -1,9 +1,10 @@
-include("../src/SemiseparableBBBArrowheadMatrices.jl")
 using BandedMatrices
 using BlockArrays: Block, BlockedArray
 using Test
 using PiecewiseOrthogonalPolynomials, MatrixFactorizations
-using .SemiseparableBBBArrowheadMatrices: SemiseparableBBBArrowheadMatrix, copyBBBArrowheadMatrices, fast_ql
+using SemiseparableBBBArrowheadMatrices: SemiseparableBBBArrowheadMatrix, copyBBBArrowheadMatrices, fast_ql
+
+
 l = 10 # number of grid points
 𝐗 = range(-1,1; length = l)
 C = ContinuousPolynomial{1}(𝐗)
