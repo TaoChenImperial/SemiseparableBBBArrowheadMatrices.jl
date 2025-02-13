@@ -222,6 +222,13 @@ function HT_column_block_3(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}) wh
     # m2, n2 = size(L.D[1])
     x_len = 0
     L.Bsub[2][2][l - 1] = 1.0 # it can be choosen arbitrarily.
+
+    L.Bsub[1][1][m - 2] = 1.0 # it can be choosen arbitrarily.
+    L.Bsup[2][l - 1] = 1.0 # it can be choosen arbitrarily.
+    L.A32sup[2][l - 1] = 1.0 # it can be chose arbotrarily.
+    L.Asup[2][n - 2, 1] = 1.0 # it can be choosen arbitrarily.
+    L.Asub[1][m - 2] = 1.0 # it can be choosen arbitrarily.
+    L.Csup[2][2][n - 2] = 1.0 # it can be choosen arbitrarily.
     for i in l:-1:1
         a = L[Block(1)[i],Block(3)[i]] 
         b = L[Block(1)[i + 1],Block(3)[i]] 
@@ -248,6 +255,143 @@ function HT_column_block_3(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}) wh
         if i > 1
             x_len = sqrt(x_len^2 + L.Bsub[2][1][i - 1]^2) 
         end
+        HT_3to2(L, τ, i)
+        HT_3to1(L, τ, i)
+    end
+end
+
+function HT_3to2(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, i) where T
+    v = L[Block(1,3)][:, i]
+    m,n = size(L.A)
+    l = length(L.D)
+    coef = τ[m + l + i]
+
+    # compute v'A[Block(1,2)]
+    vTA_sub = zeros(l)
+    vTA_dia = zeros(l)
+    vTA_sup = zeros(l)
+    sub_dotv = 0.0 # to compute sum(L.Bsub[1][1] .* v) iteratively
+    sup_dotv = 0.0 # to compute sum(L.Bsup[1] .* v) iteratively 
+    for k in 1 : l
+        vTA_dia[k] = v[k] * L[Block(1,2)][k, k] + v[k + 1] * L[Block(1,2)][k + 1, k]
+    end
+    for k in 2 : l
+        sup_dotv = sup_dotv + L.Bsup[1][k - 1] * v[k - 1]
+        vTA_sup[k] = L.Bsup[2][k-1] * sup_dotv
+    end
+    for k in l-1 : -1 : 1
+        sub_dotv = sub_dotv + L.Bsub[1][1][k] * v[k + 2]
+        vTA_sub[k] = L.Bsub[1][2][k] * sub_dotv
+    end
+    vTA = vTA_sub + vTA_dia + vTA_sup
+
+    #update the banded part in L[Block(1,2)]
+    for k in 1 : l
+        L.B[1][k, k] = L.B[1][k, k] - coef * v[k] * vTA[k]
+        L.B[1][k + 1, k] = L.B[1][k + 1, k] - coef * v[k + 1] * vTA[k]
+    end
+
+    #update the sub part in L[Block(1,2)]
+    for k in 1 : l-1
+        L.Bsub[1][2][k] = L.Bsub[1][2][k] - coef * v[m] * vTA[k] / L.Bsub[1][1][m-2]
+    end
+    if 1 < i < l
+        L.Bsub[1][1][i - 1] = - coef * v[i + 1] * vTA[i - 1] / L.Bsub[1][2][i - 1]
+    end
+
+    #update the sup part in L[Block(1,2)]
+    for k in 1 : m-2
+        L.Bsup[1][k] = L.Bsup[1][k] - coef * v[k] * vTA[l] / L.Bsup[2][l-1]
+    end
+    if i < l - 1
+        L.Bsup[2][i] = - coef * v[i] * vTA[i + 1] / L.Bsup[1][i]
+    end
+
+    #update L[Block(3,2)]
+    L.D[i][2,1] = - coef * vTA[i]
+    if i > 1
+        L.A32extra[i - 1] = - coef * vTA[i - 1]
+    end
+    if i < l
+        L.A32sup[1][i] = - coef * vTA[l] / L.A32sup[2][l-1]
+    end
+    if i < l - 1
+        L.A32sup[2][i] = - coef * vTA[i + 1] / L.A32sup[1][i]
+    end
+end
+
+function HT_3to1(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, i) where T
+    v = L[Block(1,3)][:, i]
+    m,n = size(L.A)
+    l = length(L.D)
+    coef = τ[m + l + i]
+
+    # compute v'A[Block(1,2)]
+    vTA_sub = zeros(n)
+    vTA_dia = zeros(n)
+    vTA_sup = zeros(n)
+    sub_dotv = 0.0 # to compute sum(L.Bsub[1][1] .* v) iteratively
+    sup_dotv = 0.0 # to compute sum(L.Bsup[1] .* v) iteratively 
+    for k in 1 : n
+        vTA_dia[k] = v[k] * L[Block(1,1)][k, k]
+        if k > 1
+            vTA_dia[k] = vTA_dia[k] + v[k - 1] * L[Block(1,1)][k - 1, k]
+        end
+        if k < n
+            vTA_dia[k] = vTA_dia[k] + v[k + 1] * L[Block(1,1)][k + 1, k]
+        end
+    end
+    for k in 3 : n
+        sup_dotv = sup_dotv + L.Asup[1][k - 2, 1] * v[k - 2]
+        vTA_sup[k] = L.Asup[2][k-2, 1] * sup_dotv
+    end
+    for k in n - 2 : -1 : 1
+        sub_dotv = sub_dotv + L.Asub[1][k] * v[k + 2]
+        vTA_sub[k] = L.Asub[2][k] * sub_dotv
+    end
+    vTA = vTA_sub + vTA_dia + vTA_sup
+    # There are also some nonzero entries in A31
+    vTA[i] = vTA[i] + L.C[2][i, i]
+    vTA[i + 1] = vTA[i + 1] + L.C[2][i, i + 1]
+
+    #update the banded part in L[Block(1,1)]
+    for k in 1 : n
+        L.A[k, k] = L.A[k, k] - coef * v[k] * vTA[k]
+        if k > 1
+            L.A[k - 1, k] = L.A[k - 1, k] - coef * v[k - 1] * vTA[k]
+        end
+        if k < n
+            L.A[k + 1, k] = L.A[k + 1, k] - coef * v[k + 1] * vTA[k]
+        end
+    end
+
+    #update the sub part in L[Block(1,1)]
+    for k in 1 : n - 2
+        L.Asub[2][k] = L.Asub[2][k] - coef * v[m] * vTA[k] / L.Asub[1][m-2, 1]
+    end
+    if 1 < i < l
+        L.Asub[1][i - 1] = - coef * v[i + 1] * vTA[i - 1] / L.Asub[2][i - 1]
+    end
+
+    #update the sup part in L[Block(1,1)]
+    for k in 1 : m - 2
+        L.Asup[1][k, 1] = L.Asup[1][k, 1] - coef * v[k] * vTA[n] / L.Asup[2][n-2, 1]
+    end
+    if i < l - 1
+        L.Asup[2][i] = - coef * v[i] * vTA[i + 2] / L.Asup[1][i]
+    end
+
+    #update L[Block(3,1)]
+    L.C[2][i, i] = L.C[2][i, i] - coef * vTA[i]
+    L.C[2][i, i + 1] = L.C[2][i, i + 1] - coef * vTA[i + 1]
+    if i > 1
+        L.A31extra[i - 1] = - coef * vTA[i - 1]
+    end
+    if i < l
+        L.Csup[2][1][i] = - coef * vTA[n] / L.Csup[2][2][n-2]
+    end
+    if i < l - 1
+        L.Csup[2][2][i] = - coef * vTA[i + 2] / L.Csup[2][1][i]
     end
 end
 
