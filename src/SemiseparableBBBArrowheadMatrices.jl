@@ -3,7 +3,7 @@ using LinearAlgebra, BlockArrays, BlockBandedMatrices, BandedMatrices, MatrixFac
 using PiecewiseOrthogonalPolynomials
 #import ArrayLayouts: MemoryLayout, sublayout, sub_materialize, symmetriclayout, transposelayout, SymmetricLayout, HermitianLayout, TriangularLayout, layout_getindex, materialize!, MatLdivVec, AbstractStridedLayout, triangulardata, MatMulMatAdd, MatMulVecAdd, _fill_lmul!, layout_replace_in_print_matrix
 import BandedMatrices: isbanded, bandwidths
-import BlockArrays: BlockSlice, block, blockindex, blockvec
+import BlockArrays: BlockSlice, block, blockindex, blockvec, viewblock
 import BlockBandedMatrices: blockbandwidths, AbstractBlockBandedLayout, AbstractBlockBandedMatrix
 import Base: size, axes, getindex, +, -, *, /, ==, \, OneTo, oneto, replace_in_print_matrix, copy, diff, getproperty, adjoint, transpose, tail, _sum, inv, show, summary
 using SemiseparableMatrices: LowRankMatrix, LayoutMatrix
@@ -149,6 +149,11 @@ end
 function getindex(L::SemiseparableBBBArrowheadMatrix, k::Int, j::Int)
     ax,bx = axes(L)
     L[findblockindex(ax, k), findblockindex(bx, j)]
+end
+
+function viewblock(L::SemiseparableBBBArrowheadMatrix, KJ::Block{2})
+    K,J = KJ.n
+    error("TODO: make a BandedPlusSemiseparableMatrix for this block")
 end
 
 ###
