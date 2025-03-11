@@ -28,9 +28,11 @@ struct SemiseparableBBBArrowheadMatrix{T} <: AbstractBlockBandedMatrix{T}
     # fill parts
     Asub::NTuple{2,Vector{T}}
     Asup::NTuple{2,Matrix{T}} # matrices are m × 2
+    Asub_extra::NTuple{2,Vector{T}} #It turned out that the sub part of Block(1,1) has rank 2 at some stage
 
     Bsup::NTuple{2,Vector{T}}
     Bsub::NTuple{2,NTuple{2,Vector{T}}}
+    Bsub_extra::NTuple{2,Vector{T}} #It turned out that the sub part of Block(1,2) has rank 2
 
     Csup::NTuple{2,NTuple{2,Vector{T}}}
     Csub::NTuple{2,Vector{T}}
@@ -61,9 +63,9 @@ function getindex(L::SemiseparableBBBArrowheadMatrix{T}, Kk::BlockIndex{1}, Jj::
         if k == j || k == j + 1 || k == j - 1
             return L.A[k, j]
         elseif k > j
-            return L.Asub[1][k - 2] * L.Asub[2][j]
+            return L.Asub[1][k - 2] * L.Asub[2][j] + L.Asub_extra[1][k - 2] * L.Asub_extra[2][j]
         else
-            return L.Asup[1][k, 1] * L.Asup[2][j - 2, 1]+L.Asup[1][k, 2] * L.Asup[2][j - 2, 2]
+            return L.Asup[1][k, 1] * L.Asup[2][j - 2, 1] + L.Asup[1][k, 2] * L.Asup[2][j - 2, 2]
         end
     end
 
@@ -72,7 +74,7 @@ function getindex(L::SemiseparableBBBArrowheadMatrix{T}, Kk::BlockIndex{1}, Jj::
             if k == j || k == j + 1
                 return L.B[1][k, j]
             elseif k > j
-                return L.Bsub[1][1][k-2] * L.Bsub[1][2][j]
+                return L.Bsub[1][1][k-2] * L.Bsub[1][2][j] + L.Bsub_extra[1][k-2] * L.Bsub_extra[2][j]
             else
                 return L.Bsup[1][k] * L.Bsup[2][j - 1]
             end
@@ -165,8 +167,8 @@ function fast_ql(M::BBBArrowheadMatrix{T}) where T
     τ = zeros(m + l * m2)
     HT_column_block_above3(L, τ)
     HT_column_block_3(L, τ)
-    #HT_column_block_2(L, τ)
-    #HT_column_block_1(L, τ)
+    HT_column_block_2(L, τ)
+    HT_column_block_1(L, τ)
     L, τ
 end
 
@@ -396,9 +398,452 @@ function HT_3to1(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, i) where T
 end
 
 function HT_column_block_2(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}) where T
+    m,n = size(L.A)
+    l = length(L.D)
+    m2, n2 = size(L.D[1])
+
+    # record the factors in sub Block(1,2) temporarily which is rank 2
+    Bsub_factor = (zeros(m - 2), zeros(l - 1))
+    Bsub_factor_extra = (zeros(m - 2), zeros(l - 1))
+
+    # record additional Block(1,1) info when doing HT_2to1
+    Asub_factor = (zeros(m - 2), zeros(l - 1))
+    Asub_factor_extra = (zeros(m - 2), zeros(l - 1))
+
+    Asup_factor = (zeros(m - 2), zeros(l - 1))
+    Asup_factor_extra = (zeros(m - 2), zeros(l - 1))
+
+
+    u1_square = 0 #suppose the sup part of Block(1,2) is u1*u2'
+    for x in L.Bsup[1]
+        u1_square = u1_square + x^2
+    end
+
+    for i in l:-1:1
+        if i < l
+            u1_square = u1_square - L.Bsup[1][i]^2
+        end
+        v_square = L.B[1][i,i]^2 + L.B[1][i+1, i]^2 + L.D[i][1,1]^2
+        if i > 1
+            v_square = v_square + L.Bsup[2][i-1]^2 * u1_square
+        end
+        if i < l
+            for k in i:l-1
+                v_square = v_square + (Bsub_factor[1][k] * Bsub_factor[2][i] + Bsub_factor_extra[1][k] * Bsub_factor_extra[2][i])^2 #L[Block(1,2)][k+2,i]^2 
+            end
+        end
+        v_last = L.D[i][1,1] + sign(L.D[i][1,1]) * sqrt(v_square)
+        L.D[i][1,1] = -sign(L.D[i][1,1]) * sqrt(v_square)
+        #record the info of v
+        if i > 1
+            L.Bsup[2][i-1] = L.Bsup[2][i-1] / v_last
+        end
+        L.B[1][i,i] = L.B[1][i,i] / v_last
+        L.B[1][i+1, i] = L.B[1][i+1, i] / v_last
+        if i < l
+            Bsub_factor[2][i] = Bsub_factor[2][i] / v_last
+            Bsub_factor_extra[2][i] = Bsub_factor_extra[2][i] / v_last
+        end
+
+        v_new_square = 0
+        if i > 1
+            v_new_square = v_new_square + L.Bsup[2][i-1]^2 * u1_square
+        end
+        v_new_square = v_new_square + L.B[1][i,i]^2 + L.B[1][i+1, i]^2 + 1^2
+        if i < l
+            for k in i:l-1
+                v_new_square = v_new_square + (Bsub_factor[1][k] * Bsub_factor[2][i] + Bsub_factor_extra[1][k] * Bsub_factor_extra[2][i])^2
+            end
+        end
+        τ[n+i] = 2 / v_new_square
+        
+        #act HT on other columns in column block(2)
+        if i > 1
+            HT_2to2(L, τ, i, Bsub_factor, Bsub_factor_extra)
+        end
+
+        HT_2to1(L, τ, i, Asub_factor, Asub_factor_extra, Asup_factor, Asup_factor_extra, Bsub_factor, Bsub_factor_extra)
+    end
+
+    #copy v's in sub Block(1,2)
+    L.Bsub[1][1][1:end] = Bsub_factor[1][1:end]
+    L.Bsub[1][2][1:end] = Bsub_factor[2][1:end]
+    L.Bsub_extra[1][1:end] = Bsub_factor_extra[1][1:end]
+    L.Bsub_extra[2][1:end] = Bsub_factor_extra[2][1:end]
+
+    #copy additional data into sub Block(1,1)
+    L.Asub[1][1:end] = Asub_factor[1][1:end]
+    L.Asub[2][1:end] = Asub_factor[2][1:end]
+    L.Asub_extra[1][1:end] = Asub_factor_extra[1][1:end]
+    L.Asub_extra[2][1:end] = Asub_factor_extra[2][1:end]
+
+    #copy additional data into sup Block(1,1)
+    L.Asup[1][1:end, 1] = Asup_factor[1][1:end]
+    L.Asup[2][1:end, 1] = Asup_factor[2][1:end]
+    L.Asup[1][1:end, 2] = Asup_factor_extra[1][1:end]
+    L.Asup[2][1:end, 2] = Asup_factor_extra[2][1:end]
+end
+
+function HT_2to2(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, i, Bsub_factor, Bsub_factor_extra) where T
+    m,n = size(L.A)
+    l = length(L.D)
+    v = zeros(m)
+    v[1:i+1] = L[Block(1,2)][1:i+1, i]
+    if i < l
+        v[i+2:end] = Bsub_factor[1][i:end] * Bsub_factor[2][i] + Bsub_factor_extra[1][i:end] * Bsub_factor_extra[2][i]
+    end
+    coef = τ[m + i]
+
+    # compute v'A[Block(1,2)]
+    vTA_sub = zeros(i-1)
+    vTA_dia = zeros(i-1)
+    vTA_sup = zeros(i-1)
+    sup_dotv= 0.0 # to compute sum(L.Bsup[1] .* v) iteratively 
+    sub_dotv_1 = 0.0 # to compute sum(L.Bsub[1][1] .* v) iteratively
+    sub_dotv_2 = 0.0 # to compute sum(L.Bsub_extra[1] .* v) iteratively
+    for k in 1 : i-1
+        vTA_dia[k] = v[k] * L[Block(1,2)][k, k] + v[k + 1] * L[Block(1,2)][k + 1, k]
+    end
+    for k in 2 : i-1
+        sup_dotv = sup_dotv + L.Bsup[1][k - 1] * v[k - 1]
+        vTA_sup[k] = L.Bsup[2][k-1] * sup_dotv
+    end
+    for k in l-1 : -1 : 1
+        sub_dotv_1 = sub_dotv_1 + L.Bsub[1][1][k] * v[k + 2]
+        sub_dotv_2 = sub_dotv_2 + L.Bsub_extra[1][k] * v[k + 2]
+        if k < i
+            vTA_sub[k] = L.Bsub[1][2][k] * sub_dotv_1 + L.Bsub_extra[2][k] * sub_dotv_2
+        end
+    end
+    vTA = vTA_sub + vTA_dia + vTA_sup
+
+    #update the banded part in L[Block(1,2)]
+    for k in 1 : i-1
+        L.B[1][k, k] = L.B[1][k, k] - coef * v[k] * vTA[k]
+        L.B[1][k + 1, k] = L.B[1][k + 1, k] - coef * v[k + 1] * vTA[k]
+    end
+
+    #update the sup part in L[Block(1,2)]
+    for k in 2 : i-1
+        L.Bsup[2][k-1] = L.Bsup[2][k-1] - coef * L.Bsup[2][i-1] * vTA[k]
+    end
+
+    #update L[Block(2,2)]
+    if i == l
+        L.A22sub[2][1:l-1] = vTA[1:l-1]
+        L.A22sub[1][l-1] = -coef #That is a degree of freedom
+    else
+        L.A22sub[1][i-1] = -coef * vTA[1] / L.A22sub[2][1]
+    end
+
+    #update the sub part in L[Block(1,2)]
+    if i == l
+        L.Bsub_extra[2][1:l-1] = vTA[1:l-1]
+        L.Bsub_extra[1][1:l-1] = -coef * v[3:end]
+        Bsub_factor[1][1:end] = L.Bsub[1][1][1:end]
+        Bsub_factor[2][1:end] = L.Bsub[1][2][1:end]
+        Bsub_factor_extra[1][end] = L.Bsub_extra[1][end]
+        Bsub_factor_extra[2][1:end] = L.Bsub_extra[2][1:end]
+    else
+        for j in 1:l-1
+            L.Bsub_extra[1][j] = L.Bsub_extra[1][j] - coef * v[j+2] * vTA[1] / L.Bsub_extra[2][1]
+        end
+        L.Bsub_extra[2][i:end] .= 0
+        # update Bsub_factor and Bsub_factor_extra
+        for j in 1:i-1
+            Bsub_factor[2][j] = Bsub_factor[2][j] - coef * Bsub_factor[2][i] * vTA[j]
+            Bsub_factor_extra[2][j] = Bsub_factor_extra[2][j] - coef * Bsub_factor_extra[2][i] * vTA[j]
+        end
+        Bsub_factor_extra[1][i-1] = (L.Bsub[1][1][i-1] * L.Bsub[1][2][i-1] + L.Bsub_extra[1][i-1] * L.Bsub_extra[2][i-1] - Bsub_factor[1][i-1] * Bsub_factor[2][i-1]) / Bsub_factor_extra[2][i-1]
+    end
+end
+
+function HT_2to1(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, i, Asub_factor, Asub_factor_extra, Asup_factor, Asup_factor_extra, Bsub_factor, Bsub_factor_extra) where T
+    m,n = size(L.A)
+    l = length(L.D)
+    v = zeros(m)
+    v[1:i+1] = L[Block(1,2)][1:i+1, i]
+    if i < l
+        v[i+2:end] = Bsub_factor[1][i:end] * Bsub_factor[2][i] + Bsub_factor_extra[1][i:end] * Bsub_factor_extra[2][i]
+    end
+    coef = τ[m + i]
+
+    # compute v'A[Block(1,1)]
+    vTA_sub = zeros(n)
+    vTA_dia = zeros(n)
+    vTA_sup = zeros(n)
+    sup_dotv_1= 0.0 # to compute sum(L.Asup[1][1] .* v) iteratively 
+    sup_dotv_2= 0.0 # to compute sum(L.Asup[2][1] .* v) iteratively 
+    sup_dotv_3 = 0.0 # to compute sum(Asup_factor[1] .* v) iteratively
+    sup_dotv_4 = 0.0  # to compute sum(Asup_factor_extra[1] .* v) iteratively
+    sub_dotv_1 = 0.0 # to compute sum(L.Asub[1] .* v) iteratively
+    sub_dotv_2 = 0.0 # to compute sum(L.Asub_extra[1] .* v) iteratively
+    sub_dotv_3 = 0.0 # to compute sum(Asub_factor[1] .* v) iteratively
+    sub_dotv_4 = 0.0 # to compute sum(Asub_factor_extra[1] .* v) iteratively
+
+    for k in 1 : n
+        vTA_dia[k] = v[k] * L.A[k, k]
+        if k > 1
+            vTA_dia[k] = vTA_dia[k] + v[k - 1] * L.A[k - 1, k]
+        end
+        if k < n
+            vTA_dia[k] = vTA_dia[k] + v[k + 1] * L.A[k + 1, k]
+        end
+    end
+    # compute vTA_sup
+    for k in 3 : n
+        if k <= i + 2
+            sup_dotv_1 = sup_dotv_1 + L.Asup[1][k - 2, 1] * v[k - 2]
+            sup_dotv_2 = sup_dotv_2 + L.Asup[1][k - 2, 2] * v[k - 2]
+        end
+        vTA_sup[k] = L.Asup[2][k-2, 1] * sup_dotv_1 + L.Asup[2][k-2, 2] * sup_dotv_2
+    end
+
+    for k in i + 3 : n
+        sup_dotv_3 = sup_dotv_3 + Asup_factor[1][k - 2] * v[k - 2]
+        sup_dotv_4 = sup_dotv_4 + Asup_factor_extra[1][k - 2] * v[k - 2]
+        vTA_sup[k] = vTA_sup[k] + Asup_factor[2][k-2] * sup_dotv_3 + Asup_factor_extra[2][k-2] * sup_dotv_4
+    end
+    #compute vTA_sub
+    for k in l-1 : -1 : 1
+        sub_dotv_1 = sub_dotv_1 + L.Asub[1][k] * v[k + 2]
+        sub_dotv_2 = sub_dotv_2 + L.Asub_extra[1][k] * v[k + 2]
+        if k <= i
+            vTA_sub[k] = L.Asub[2][k] * sub_dotv_1 + L.Asub_extra[2][k] * sub_dotv_2
+        end
+    end
+
+    for k in l-1 : -1 : 1
+        sub_dotv_3 = sub_dotv_3 + Asub_factor[1][k] * v[k + 2]
+        sub_dotv_4 = sub_dotv_4 + Asub_factor_extra[1][k] * v[k + 2]
+        if k > i
+            vTA_sub[k] = Asub_factor[2][k] * sub_dotv_3 + Asub_factor_extra[2][k] * sub_dotv_4
+        end
+    end
+
+    vTA = vTA_sub + vTA_dia + vTA_sup
+    # There are elements in Block(2,1) that needs to be included in vTA:
+    vTA[i] = vTA[i] + L.C[1][i, i]
+    vTA[i + 1] = vTA[i + 1] + L.C[1][i, i + 1]
+
+
+    #update the banded part in L[Block(1,2)]
+    for k in 1 : n
+        if k > 1
+            L.A[k - 1, k] = L.A[k - 1, k] - coef * v[k - 1] * vTA[k]
+        end
+        L.A[k, k] = L.A[k, k] - coef * v[k] * vTA[k]
+        if k < n
+            L.A[k + 1, k] = L.A[k + 1, k] - coef * v[k + 1] * vTA[k]
+        end
+    end
+
+    #update the banded part of L[Block(2,1)]
+    L.C[1][i, i] = L.C[1][i, i] - coef * vTA[i]
+    L.C[1][i, i + 1] = L.C[1][i, i + 1] - coef * vTA[i + 1]
+
+    #update the sub part of L[Block(2,1)]
+    if i == l
+        L.Csub[2][1:l-1] = vTA[1:l-1]
+        L.Csub[1][l-1] = -coef #That is a degree of freedom
+    elseif i > 1
+        L.Csub[1][i-1] = -coef * vTA[1] / L.Csub[2][1]
+    end
+
+    #update the sup part of L[Block(2,1)]
+    if i == l - 1
+        L.Csup[1][2][n-2] = -coef * vTA[n]
+        L.Csup[1][1][l-1] = 1.0 #That is a degree of freedom
+    elseif i < l
+        L.Csup[1][1][i] = - coef * vTA[n] / L.Csup[1][2][n-2]
+        L.Csup[1][2][i] = - coef * vTA[i + 2] / L.Csup[1][1][i]
+    end
+
+    #update the sub part of L[Block(1,1)]
+    if i == l
+        L.Asub_extra[2][1:l-1] = vTA[1:l-1]
+        L.Asub_extra[1][1:l-1] = -coef * v[3:end]
+        Asub_factor[1][end] = L.Bsub[1][1][end]
+        Asub_factor[2][1:end] = L.Asub[2][1:end] * L.Asub[1][end] / Asub_factor[1][end]
+        Asub_factor_extra[1][end] = Bsub_factor_extra[1][end]
+        Asub_factor_extra[2][1:end] = L.Asub_extra[2][1:end] * L.Asub_extra[1][end] / Asub_factor_extra[1][end]
+    else
+        for j in 1:l-1
+            L.Asub_extra[1][j] = L.Asub_extra[1][j] - coef * v[j+2] * vTA[1] / L.Asub_extra[2][1]
+        end
+        L.Asub_extra[2][i:end] .= 0
+        L.Asub[2][i:end] .= 0
+        Asub_factor[1][i] = Bsub_factor[1][i]
+        Asub_factor_extra[1][i] = Bsub_factor_extra[1][i]
+        # update Asub_factor and Asub_factor_extra
+        for j in 1:l-1
+            Asub_factor[2][j] = Asub_factor[2][j] - coef * Bsub_factor[2][i] * vTA[j]
+            Asub_factor_extra[2][j] = Asub_factor_extra[2][j] - coef * Bsub_factor_extra[2][i] * vTA[j]
+        end
+        # display(Asub_factor[1] * Asub_factor[2]' + Asub_factor_extra[1] * Asub_factor_extra[2]')
+    end
+    
+    #update the sup part of L[Block(1,1)]
+    if i == l
+        L.Asup[1][1:l-1, 2] = L.Bsup[1][1:l-1]
+        L.Asup[2][1:l-1, 2] = -coef * L.Bsup[2][l-1] * vTA[3:end]
+        Asup_factor[1][1:l-1] = L.Asup[1][1:l-1, 1] * L.Asup[2][l-1, 1] + L.Asup[1][1:l-1, 2] * L.Asup[2][l-1, 2]
+        Asup_factor[2][l-1] = 1.0 # this is a degree of freedom
+    else
+        A_i_ip2 = L.Asup[1][i, 1] * L.Asup[2][i, 1] + L.Asup[1][i, 2] * L.Asup[2][i, 2] - coef * v[i] * vTA[i+2] #used to update Asup_factor[2]
+        for j in 1 : l-1
+            L.Asup[2][j, 2] = L.Asup[2][j, 2] - coef * v[1] * vTA[j+2] / L.Asup[1][1, 2]
+        end
+        L.Asup[1][i:end, 2] .= 0 
+        L.Asup[1][i:end, 1] .= 0 
+
+        if i == l-1
+            Asup_factor_extra[2][l-1] = -coef * vTA[n]
+            Asup_factor_extra[1][1:l-1] = v[1:l-1] # this is a degree of freedom
+        else
+            for j in 1 : l-1
+                Asup_factor_extra[1][j] = Asup_factor_extra[1][j] - coef * v[j] * vTA[end] / Asup_factor_extra[2][end]
+            end
+            Asup_factor_extra[2][i] = Asup_factor_extra[2][l-1] * vTA[i+2] / vTA[l+1]
+            Asup_factor[2][i] = (A_i_ip2 - Asup_factor_extra[2][i] * Asup_factor_extra[1][i]) / Asup_factor[1][i]
+        end
+
+        #display(Asup_factor[1] * Asup_factor[2]' + Asup_factor_extra[1] * Asup_factor_extra[2]')
+    end
 end
 
 function HT_column_block_1(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}) where T
+    m,n = size(L.A)
+    l = length(L.D)
+    m2, n2 = size(L.D[1])
+
+    # record the final result of sub Block(1,1) which is rank 1
+    Asub_final = (zeros(m - 2), zeros(l - 1))
+
+    # record additional sub Block(1,1) info during the HT process
+    Asub_extra2 = (zeros(m - 2), zeros(l - 1))
+
+
+    for i in n:-1:2
+        v_square = 0
+        if i > 2
+            for j in 1:i-2
+                v_square = v_square + (L.Asup[1][j,1] * L.Asup[2][i-2, 1] + L.Asup[1][j,2] * L.Asup[2][i-2, 2])^2
+            end
+        end
+        v_square = v_square + L.A[i, i]^2 + L.A[i-1, i]^2
+        v_last = L.A[i,i] + sign(L.A[i,i]) * sqrt(v_square)
+        L.A[i,i] = -sign(L.A[i,i]) * sqrt(v_square)
+
+        #record the info of v
+        if i > 2
+            L.Asup[2][i-2, 1] = L.Asup[2][i-2, 1] / v_last
+            L.Asup[2][i-2, 2] = L.Asup[2][i-2, 2] / v_last
+        end
+        L.A[i-1,i] = L.A[i-1,i] / v_last
+
+        v_new_square = L.A[i-1, i]^2 + 1^2
+        if i > 2
+            for j in 1:i-2
+                v_new_square = v_new_square + (L.Asup[1][j,1] * L.Asup[2][i-2, 1] + L.Asup[1][j,2] * L.Asup[2][i-2, 2])^2
+            end
+        end
+        τ[i] = 2 / v_new_square
+
+        HT_1to1(L, τ, i, Asub_final, Asub_extra2)
+    end
+
+    L.Asub[1][1:end] = Asub_final[1][1:end]
+    L.Asub[2][1:end] = Asub_final[2][1:end]
+    L.Asub_extra[1][1:end] .= 0
+    L.Asub_extra[2][1:end] .= 0
+
+end
+
+function HT_1to1(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, i, Asub_final, Asub_extra2) where T
+    m,n = size(L.A)
+    l = length(L.D)
+    v = zeros(i)
+    v[1:i-1] = L[Block(1,1)][1:i-1, i]
+    v[end] = 1
+    coef = τ[i]
+
+    # compute v'A[Block(1,1)]
+    vTA_sub = zeros(i-1)
+    vTA_dia = zeros(i-1)
+    vTA_sup = zeros(i-1)
+    sup_dotv_1 = 0.0 # to compute sum(L.Asup[1][:,1] .* v) iteratively
+    sup_dotv_2 = 0.0 # to compute sum(L.Asup[1][:,2] .* v) iteratively  
+    sub_dotv_1 = 0.0 # to compute sum(L.Asub[1] .* v) iteratively
+    sub_dotv_2 = 0.0 # to compute sum(L.Asub_extra[1] .* v) iteratively
+    sub_dotv_3 = 0.0 # to compute sum(Asub_extra2[1] .* v) iteratively
+    for k in 1 : i-1
+        vTA_dia[k] = v[k] * L.A[k, k]
+        if k > 1
+            vTA_dia[k] = vTA_dia[k] + v[k - 1] * L.A[k - 1, k]
+        end
+        vTA_dia[k] = vTA_dia[k] + v[k + 1] * L.A[k + 1, k]
+    end
+    for k in 3 : i-1
+        sup_dotv_1 = sup_dotv_1 + L.Asup[1][k - 2, 1] * v[k - 2]
+        sup_dotv_2 = sup_dotv_2 + L.Asup[1][k - 2, 2] * v[k - 2]
+        vTA_sup[k] = L.Asup[2][k-2, 1] * sup_dotv_1 + L.Asup[2][k-2, 2] * sup_dotv_2
+    end
+    for k in i-2 : -1 : 1
+        sub_dotv_1 = sub_dotv_1 + L.Asub[1][k] * v[k + 2]
+        sub_dotv_2 = sub_dotv_2 + L.Asub_extra[1][k] * v[k + 2]
+        sub_dotv_3 = sub_dotv_3 + Asub_extra2[1][k] * v[k + 2]
+        if k < i
+            vTA_sub[k] = L.Asub[2][k] * sub_dotv_1 + L.Asub_extra[2][k] * sub_dotv_2 + Asub_extra2[2][k] * sub_dotv_3
+        end
+    end
+    vTA = vTA_sub + vTA_dia + vTA_sup
+
+    #update the banded part in L[Block(1,1)]
+    for k in 1 : i-1
+        if k > 1
+            L.A[k - 1, k] = L.A[k - 1, k] - coef * v[k - 1] * vTA[k]
+        end
+        L.A[k, k] = L.A[k, k] - coef * v[k] * vTA[k]
+        L.A[k + 1, k] = L.A[k + 1, k] - coef * v[k + 1] * vTA[k]
+    end
+
+    #update the sup part in L[Block(1,1)]
+    for k in 3 : i-1
+        L.Asup[2][k-2, 1] = L.Asup[2][k-2, 1] - coef * L.Asup[2][i-2, 1] * vTA[k]
+        L.Asup[2][k-2, 2] = L.Asup[2][k-2, 2] - coef * L.Asup[2][i-2, 2] * vTA[k]
+    end
+
+    #update the sub part in L[Block(1,1)]
+    if i == n
+        for j in 1 : n-2
+            Asub_final[2][j] = L.Asub[1][end] * L.Asub[2][j] + L.Asub_extra[1][end] * L.Asub_extra[2][j] - coef * v[end] * vTA[j]
+        end
+        Asub_final[1][end] = 1.0
+        
+        Asub_extra2[2][1:end] = Asub_final[2][1:end]
+        L.Asub[1][1:end-1] = L.Asub[1][1:end-1] - L.Asub[1][end]*v[3:end-1]
+        L.Asub_extra[1][1:end-1] = L.Asub_extra[1][1:end-1] - L.Asub_extra[1][end]*v[3:end-1]
+        Asub_extra2[1][1:end-1] = v[3:end-1]
+
+        L.Asub[1][end] = 0
+        L.Asub_extra[1][end] = 0
+        Asub_extra2[1][end] = 0
+    elseif i > 2
+        Asub_final[1][i-2] = (L.Asub[1][i-2] * L.Asub[2][1] + L.Asub_extra[1][i-2] * L.Asub_extra[2][1] + Asub_extra2[1][i-2] * Asub_extra2[2][1] - coef * vTA[1]) / Asub_final[2][1]
+        #display(Asub_final[1] * Asub_final[2]')
+        if i > 3
+            L.Asub[1][1:i-3] = L.Asub[1][1:i-3] - L.Asub[1][i-2] * v[3:i-1]
+            L.Asub_extra[1][1:i-3] = L.Asub_extra[1][1:i-3] - L.Asub_extra[1][i-2] * v[3:i-1]
+            Asub_extra2[1][1:i-3] = Asub_extra2[1][1:i-3] - (Asub_extra2[1][i-2] - Asub_final[1][i-2]) * v[3:i-1]
+
+            L.Asub[1][i-2:end] .= 0
+            L.Asub_extra[1][i-2:end] .= 0
+            Asub_extra2[1][i-2:end] .= 0
+        end
+        #display(L.Asub[1] * L.Asub[2]' + L.Asub_extra[1] * L.Asub_extra[2]' + Asub_extra2[1] * Asub_extra2[2]')
+    end
+
 end
 
 function copyBBBArrowheadMatrices(M::BBBArrowheadMatrix{T}) where T
@@ -444,8 +889,10 @@ function copyBBBArrowheadMatrices(M::BBBArrowheadMatrix{T}) where T
 
     Asub = (zeros(m - 2), zeros(n - 2))
     Asup = (zeros(m - 2, 2), zeros(n - 2, 2))
+    Asub_extra = (zeros(m - 2), zeros(n - 2))
     Bsup = (zeros(m - 2), zeros(l - 1))
     Bsub = ((zeros(m - 2), zeros(l - 1)), (zeros(m - 2), zeros(l - 1)))
+    Bsub_extra = (zeros(m - 2), zeros(l - 1))
 
     Csup = ((zeros(l - 1), zeros(n - 2)), (zeros(l - 1), zeros(n - 2)))
     Csub = (zeros(l - 1), zeros(n - 2))
@@ -457,9 +904,7 @@ function copyBBBArrowheadMatrices(M::BBBArrowheadMatrix{T}) where T
     A32extra = zeros(l - 1)
     A33extra = zeros(l - 1)
 
-    SemiseparableBBBArrowheadMatrix(A, B, C, Array{BandedMatrix{Float64}, 1}(D), Asub, Asup, Bsup, Bsub, Csup, Csub, A22sub, A32sup, A31extra, A32extra, A33extra)
-
+    SemiseparableBBBArrowheadMatrix(A, B, C, Array{BandedMatrix{Float64}, 1}(D), Asub, Asup, Asub_extra, Bsup, Bsub, Bsub_extra, Csup, Csub, A22sub, A32sup, A31extra, A32extra, A33extra)
 end
 
 end
-

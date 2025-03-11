@@ -18,35 +18,48 @@ A = Δₙ + 100^2 * Mₙ
 F = ql(A).factors
 F = BlockedArray(F, axes(A))
 τ_true = ql(A).τ
-L, τ = fast_ql(A) # orthogonalise columns Block.(3:N)
+L, τ = fast_ql(A)
 
-Q̃ = BlockedArray(ql(Matrix(A[:,27:end])).Q * I, axes(A)) # Householder applied to columns Block(3:N)
-@test Q̃'Q̃ ≈ I
-LL = Q̃'A
-
-#@test (Q̃'A)[:,Block.(1:2)] ≈ L[:,Block.(1:2)]
-
+#Q̃ = BlockedArray(ql(Matrix(A[:,Block.(3:N)])).Q * I, axes(A)) # Householder applied to columns Block(3:N)
+#Q̃ = BlockedArray(ql(Matrix(A[:,l :end])).Q * I, axes(A)) 
+#@test Q̃'Q̃ ≈ I
+#LL = Q̃'A
 
 
+# test if τ equals τ_true on the 4th to Nth blocks
+@test τ[l + l-1 + l-1 + 1 : end] ≈ τ_true[l + l-1 + l-1 + 1 : end]
 
-#Q̃ = BlockedArray(ql(Matrix(A[:,Block.(4:N)])).Q * I, axes(A)) # Householder applied to columns Block(4:N)
-
-#Q̄ = BlockedArray(ql(Matrix(A[:,axes(A,2)[Block(3)[l-2]]:size(A,2)])).Q * I, axes(A)) # Householder applied to columns Block(3)[end]:end
-
-#(Q̃'A)[:,Block.(1:4)]
-#(Q̄'A)[:,Block.(1:4)]
-
-
-#Q = BlockedArray(Matrix(ql(A).Q), axes(A))
-
-
-# test if τ equals τ_true except for the first 2 blocks
-@test τ[l+l:end] ≈ τ_true[l+l:end]
-
-# test if L equals F except for the upper left 3 × 2 blocks
+# test if L equals F after HT on column blocks whose index are greater than 3
 @test L[Block.(4:N), :] ≈ F[Block.(4:N), :]
-@test L[Block.(1:3), Block.(3:N)] ≈ F[Block.(1:3), Block.(3:N)]
+@test L[Block.(1:3), Block.(4:N)] ≈ F[Block.(1:3), Block.(4:N)]
 
-@test L[Block(1,1)] ≈ LL[Block(1,1)]
-@test L[Block(3,1)] ≈ LL[Block(3,1)]
+println("Householder transformations for column blocks whose index are greater than 3 are successful")
 
+# test if τ equals τ_true on the 3rd block
+@test τ[l + l-1 + 1 : l + l-1 + l-1] ≈ τ_true[l + l-1 + 1 : l + l-1 + l-1]
+
+# test if L equals F after HT on the 3rd column block
+@test L[Block(1, 3)] ≈ F[Block(1, 3)]
+@test L[Block(3, 3)] ≈ F[Block(3, 3)]
+@test L[Block(3, 2)] ≈ F[Block(3, 2)]
+@test L[Block(3, 1)] ≈ F[Block(3, 1)]
+
+println("Householder transformations for the 3rd column block are successful")
+
+# test if τ equals τ_true on the 2nd block
+@test τ[l + 1 : l + l-1] ≈ τ_true[l + 1 : l + l-1]
+
+# test if L equals F after HT on the 2nd column block
+@test L[Block(1, 2)] ≈ F[Block(1, 2)]
+@test L[Block(2, 2)] ≈ F[Block(2, 2)]
+@test L[Block(2, 1)] ≈ F[Block(2, 1)]
+
+println("Householder transformations for the 2nd column block are successful")
+
+# test if τ equals τ_true on the 1st block
+@test τ[1 : l] ≈ τ_true[1 : l]
+
+# test if L equals F after HT on the 1st column block
+@test L[Block(1, 1)] ≈ F[Block(1, 1)]
+
+println("Householder transformations for the 1st column block are successful")
