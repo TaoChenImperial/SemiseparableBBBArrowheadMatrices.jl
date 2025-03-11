@@ -153,10 +153,10 @@ function getindex(L::SemiseparableBBBArrowheadMatrix, k::Int, j::Int)
     L[findblockindex(ax, k), findblockindex(bx, j)]
 end
 
-function viewblock(L::SemiseparableBBBArrowheadMatrix, KJ::Block{2})
-    K,J = KJ.n
-    error("TODO: make a BandedPlusSemiseparableMatrix for this block")
-end
+#function viewblock(L::SemiseparableBBBArrowheadMatrix, KJ::Block{2})
+#    K,J = KJ.n
+#    error("TODO: make a BandedPlusSemiseparableMatrix for this block")
+#end
 
 ###
 # QL
