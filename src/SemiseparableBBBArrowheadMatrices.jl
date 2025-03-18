@@ -15,7 +15,22 @@ struct BandedPlusSemiseparableMatrix{T,D,A,B,R} <: LayoutMatrix{T}
     bands::BandedMatrix{T,D,R}
     upperfill::LowRankMatrix{T,A,B}
     lowerfill::LowRankMatrix{T,A,B}
-    BandedPlusSemiseparableMatrix{T,D,A,B,R}(bands, upperfill, lowerfill) where {T,D,A,B,R} = new{T,D,A,B,R}(bands, upperfill, lowerfill)
+    #BandedPlusSemiseparableMatrix{T,D,A,B,R}(bands, upperfill, lowerfill) where {T,D,A,B,R} = new{T,D,A,B,R}(bands, upperfill, lowerfill)
+end
+
+
+size(A::BandedPlusSemiseparableMatrix) = size(A.bands)
+
+function getindex(A::BandedPlusSemiseparableMatrix, k::Integer, j::Integer)
+    b1 = bandwidth(A.bands,1)
+    b2 = bandwidth(A.bands,2)
+    if j > k + b2
+        A.upperfill[k,j-b2-1]
+    elseif k > j + b1
+        A.lowerfill[k-b1-1,j]
+    else
+        A.bands[k,j]
+    end
 end
 
 struct SemiseparableBBBArrowheadMatrix{T} <: AbstractBlockBandedMatrix{T}
@@ -153,10 +168,93 @@ function getindex(L::SemiseparableBBBArrowheadMatrix, k::Int, j::Int)
     L[findblockindex(ax, k), findblockindex(bx, j)]
 end
 
-#function viewblock(L::SemiseparableBBBArrowheadMatrix, KJ::Block{2})
-#    K,J = KJ.n
-#    error("TODO: make a BandedPlusSemiseparableMatrix for this block")
-#end
+function viewblock(L::SemiseparableBBBArrowheadMatrix, KJ::Block{2})
+    K,J = KJ.n
+    ξ,n = size(L.A)
+    m = length(L.D)
+    μ,ν = size(L.D[1])
+    if K == 1 && J == 1
+        upperfill = LowRankMatrix(Matrix(L.Asup[1]), Matrix(L.Asup[2]'))
+        lowerfill = LowRankMatrix(reshape(L.Asub[1],:,1), Matrix(L.Asub[2]'))
+        return BandedPlusSemiseparableMatrix(L.A, upperfill, lowerfill)
+    elseif K == 1 && J == 2
+        upperfill = LowRankMatrix(reshape(L.Bsup[1],:,1), Matrix(L.Bsup[2]'))
+        lowerfill = LowRankMatrix([L.Bsub[1][1] L.Bsub_extra[1]], Matrix([L.Bsub[1][2] L.Bsub_extra[2]]') )
+        return BandedPlusSemiseparableMatrix(L.B[1], upperfill, lowerfill)
+    elseif K == 1 && J == 3
+        upperfill = LowRankMatrix(reshape(zeros(m-1),:,1), Matrix(zeros(ξ-2)'))
+        lowerfill = LowRankMatrix(reshape(L.Bsub[2][1],:,1), Matrix(L.Bsub[2][2]'))
+        return BandedPlusSemiseparableMatrix(L.B[2], upperfill, lowerfill)
+    elseif K == 2 && J == 1
+        upperfill = LowRankMatrix(reshape(L.Csup[1][1],:,1), Matrix(L.Csup[1][2]'))
+        lowerfill = LowRankMatrix(reshape(L.Csub[1],:,1), Matrix(L.Csub[2]'))
+        return BandedPlusSemiseparableMatrix(L.C[1], upperfill, lowerfill)
+    elseif K == 2 && J == 2
+        upperfill = LowRankMatrix(reshape(zeros(m-1),:,1), Matrix(zeros(m-1)'))
+        lowerfill = LowRankMatrix(reshape(L.A22sub[1],:,1), Matrix(L.A22sub[2]'))
+        return BandedPlusSemiseparableMatrix(BandedMatrix(Diagonal([L.D[x][1,1] for x in 1:m ])), upperfill, lowerfill)
+    elseif K == 2 && J == 3
+        upperfill = LowRankMatrix(reshape(zeros(m-1),:,1), Matrix(zeros(m-1)'))
+        lowerfill = LowRankMatrix(reshape(zeros(m-1),:,1), Matrix(zeros(m-1)'))
+        return BandedPlusSemiseparableMatrix(BandedMatrix(zeros(m,m), (0,0)), upperfill, lowerfill)
+    elseif K == 3 && J == 1
+        bands = BandedMatrix(zeros(m,n),(1,1))
+        for i in 1:m
+            bands[i, i] = L.C[2][i, i]
+            bands[i, i+1] = L.C[2][i, i+1]
+            if i > 1
+                bands[i, i-1] = L.A31extra[i-1]
+            end
+        end
+        upperfill = LowRankMatrix(reshape(L.Csup[2][1],:,1), Matrix(L.Csup[2][2]'))
+        lowerfill = LowRankMatrix(reshape(zeros(m-2),:,1), Matrix(zeros(n-2)'))
+        return BandedPlusSemiseparableMatrix(bands, upperfill, lowerfill)
+    elseif K == 3 && J == 2
+        bands = BandedMatrix(zeros(m,m),(1,0))
+        for i in 1:m
+            bands[i, i] = L.D[i][2, 1]
+            if i > 1
+                bands[i, i-1] = L.A32extra[i-1]
+            end
+        end
+        upperfill = LowRankMatrix(reshape(L.A32sup[1],:,1), Matrix(L.A32sup[2]'))
+        lowerfill = LowRankMatrix(reshape(zeros(m-2),:,1), Matrix(zeros(m-2)'))
+        return BandedPlusSemiseparableMatrix(bands, upperfill, lowerfill)
+    elseif K == 3 && J == 3
+        bands = BandedMatrix(zeros(m,m),(1,0))
+        for i in 1:m
+            bands[i, i] = L.D[i][2, 2]
+            if i > 1
+                bands[i, i-1] = L.A33extra[i-1]
+            end
+        end
+        upperfill = LowRankMatrix(reshape(zeros(m-1),:,1), Matrix(zeros(m-1)'))
+        lowerfill = LowRankMatrix(reshape(zeros(m-2),:,1), Matrix(zeros(m-2)'))
+        return BandedPlusSemiseparableMatrix(bands, upperfill, lowerfill)
+    elseif 4 <= K <= 5 && J == 1
+        upperfill = LowRankMatrix(reshape(zeros(n-2),:,1), Matrix(zeros(n-2)'))
+        lowerfill = LowRankMatrix(reshape(zeros(m-1),:,1), Matrix(zeros(m-1)'))
+        return BandedPlusSemiseparableMatrix(L.C[K-1], upperfill, lowerfill)
+    elseif K == J || K == J-2 || K == J+2 || K == J+4
+        upperfill = LowRankMatrix(reshape(zeros(m-1),:,1), Matrix(zeros(m-1)'))
+        lowerfill = LowRankMatrix(reshape(zeros(m-1),:,1), Matrix(zeros(m-1)'))
+        return BandedPlusSemiseparableMatrix(BandedMatrix(Diagonal([L.D[x][K-1,J-1] for x in 1:m ])), upperfill, lowerfill)
+    elseif K <= μ + 1 && J == 1
+        upperfill = LowRankMatrix(reshape(zeros(m-1),:,1), Matrix(zeros(n-2)'))
+        lowerfill = LowRankMatrix(reshape(zeros(m-1),:,1), Matrix(zeros(n-2)'))
+        return BandedPlusSemiseparableMatrix(BandedMatrix(zeros(m,n), (0,1)), upperfill, lowerfill)
+    elseif K == 1 && J <= ν + 1
+        upperfill = LowRankMatrix(reshape(zeros(ξ-2),:,1), Matrix(zeros(m-1)'))
+        lowerfill = LowRankMatrix(reshape(zeros(ξ-2),:,1), Matrix(zeros(m-1)'))
+        return BandedPlusSemiseparableMatrix(BandedMatrix(zeros(ξ,m), (1,0)), upperfill, lowerfill)
+    elseif K <= μ + 1 && J <= ν + 1
+        upperfill = LowRankMatrix(reshape(zeros(m-1),:,1), Matrix(zeros(m-1)'))
+        lowerfill = LowRankMatrix(reshape(zeros(m-1),:,1), Matrix(zeros(m-1)'))
+        return BandedPlusSemiseparableMatrix(BandedMatrix(zeros(m,m), (0,0)), upperfill, lowerfill)
+    else
+        error("Index not valid")
+    end
+end
 
 ###
 # QL
@@ -184,8 +282,8 @@ function HT_column_block_above3(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T
     m2, n2 = size(L.D[1])
     for j in m2 : -1 : 3
         for i in l : -1 : 1
-            upper_entry = L[Block(j - 1)[i],Block(j + 1)[i]] #L.D[i][j-2,j]
-            dia_entry = L[Block(j + 1)[i],Block(j + 1)[i]] #L.D[i][j,j]
+            upper_entry = L.D[i][j-2,j] #L[Block(j - 1)[i],Block(j + 1)[i]]
+            dia_entry = L.D[i][j,j] #L[Block(j + 1)[i],Block(j + 1)[i]]
             #perform Householder transformation
             dia_entry_new = -sign(dia_entry) * sqrt(dia_entry^2 + upper_entry^2)
             v = [upper_entry, dia_entry-dia_entry_new]
@@ -199,22 +297,22 @@ function HT_column_block_above3(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T
             L.D[i][j-2,j] = v[1]/v[2] #update L[Block(j - 1)[i],Block(j + 1)[i]]
             τ[m + (j - 1) * l + i] = coef * v[2]^2
             #row recombination(householder transformation) for other columns
-            current_upper_entry = L[Block(j - 1)[i],Block(j - 1)[i]] #L.D[i][j-2,j-2]
-            current_lower_entry = L[Block(j + 1)[i],Block(j - 1)[i]] #L.D[i][j,j-2]
+            current_upper_entry = L.D[i][j-2,j-2] #L[Block(j - 1)[i],Block(j - 1)[i]] 
+            current_lower_entry = L.D[i][j,j-2] #L[Block(j + 1)[i],Block(j - 1)[i]]
             L.D[i][j-2,j-2] = c1 * current_upper_entry + s1 * current_lower_entry #update L[Block(j - 1)[i],Block(j - 1)[i]]
             L.D[i][j,j-2] = c2 * current_upper_entry + s2 * current_lower_entry #update L[Block(j + 1)[i],Block(j - 1)[i]]
             if j >= 5
                 #Deal with L.D blocks which do not share common rows with A.C
-                current_entry = L[Block(j - 1)[i],Block(j - 3)[i]] #L.D[i][j-2,j-4]
+                current_entry = L.D[i][j-2,j-4] #L[Block(j - 1)[i],Block(j - 3)[i]]
                 L.D[i][j-2,j-4] = c1 * current_entry #update L[Block(j - 1)[i],Block(j - 3)[i]] 
                 L.D[i][j,j-4] = c2 * current_entry #update L[Block(j + 1)[i],Block(j - 3)[i]]
             else
                 #Deal with L.D blocks which share common rows with L.C
-                current_entry = L[Block(j - 1)[i],Block(1)[i]] #L.C[j-2][i,i]
+                current_entry = L.C[j-2][i,i] #L[Block(j - 1)[i],Block(1)[i]]
                 L.C[j-2][i,i] = c1 * current_entry #update L[Block(j - 1)[i],Block(1)[i]] 
                 L.C[j][i,i] = c2 * current_entry #update L[Block(j + 1)[i],Block(1)[i]]
 
-                current_entry = L[Block(j - 1)[i],Block(1)[i + 1]] #L.C[j-2][i,i+1]
+                current_entry = L.C[j-2][i,i+1] #L[Block(j - 1)[i],Block(1)[i + 1]]
                 L.C[j-2][i,i + 1] = c1 * current_entry #update L[Block(j - 1)[i],Block(1)[i + 1]]
                 L.C[j][i,i + 1] = c2 * current_entry #update L[Block(j + 1)[i],Block(1)[i + 1]]
             end
@@ -237,19 +335,21 @@ function HT_column_block_3(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}) wh
     L.Asub[1][m - 2] = 1.0 # it can be choosen arbitrarily.
     L.Csup[2][2][n - 2] = 1.0 # it can be choosen arbitrarily.
     for i in l:-1:1
-        a = L[Block(1)[i],Block(3)[i]] 
-        b = L[Block(1)[i + 1],Block(3)[i]] 
-        c = L[Block(3)[i],Block(3)[i]]
+        a = L.B[2][i, i] #L[Block(1)[i],Block(3)[i]] 
+        b = L.B[2][i+1, i] #L[Block(1)[i + 1],Block(3)[i]] 
+        c = L.D[i][2, 2] #L[Block(3)[i],Block(3)[i]]
         λ = i < l ? L.Bsub[2][2][i] : 0
         v_last = c + sign(c) * sqrt(a^2 + b^2 + λ^2 * x_len^2 + c^2)
         v_len = sqrt(a^2 + b^2 + λ^2 * x_len^2 + v_last^2)
         L.D[i][2, 2] = -sign(c) * sqrt(a^2 + b^2 + λ^2 * x_len^2 + c^2)
         if 1 < i < l
-            L.Bsub[2][2][i - 1] = -2 / v_len^2 * a * L[Block(1)[i],Block(3)[i - 1]] * L.Bsub[2][2][i]
+            temp = L.B[2][i, i-1] # L[Block(1)[i],Block(3)[i - 1]]
+            L.Bsub[2][2][i - 1] = -2 / v_len^2 * a * temp * L.Bsub[2][2][i]
         end
         if i > 1
-            L.Bsub[2][1][i - 1] = -2 / v_len^2 * b * a * L[Block(1)[i],Block(3)[i - 1]] / L.Bsub[2][2][i - 1]
-            L.A33extra[i - 1] = -2 / v_len^2 * v_last * a * L[Block(1)[i],Block(3)[i - 1]] 
+            temp = L.B[2][i, i-1] #L[Block(1)[i],Block(3)[i - 1]] 
+            L.Bsub[2][1][i - 1] = -2 / v_len^2 * b * a * temp / L.Bsub[2][2][i - 1]
+            L.A33extra[i - 1] = -2 / v_len^2 * v_last * a * temp
             L.B[2][i, i - 1] = L.B[2][i, i - 1] - 2 / v_len^2 * L.B[2][i, i - 1] * a * a
         end
         #record information of v
@@ -268,10 +368,10 @@ function HT_column_block_3(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}) wh
 end
 
 function HT_3to2(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, i) where T
-    v = L[Block(1,3)][:, i]
     m,n = size(L.A)
     l = length(L.D)
     coef = τ[m + l + i]
+    v = L[1:m, n + l + i]#L[Block(1,3)][:, i]
 
     # compute v'A[Block(1,2)]
     vTA_sub = zeros(l)
@@ -280,7 +380,9 @@ function HT_3to2(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, i) where T
     sub_dotv = 0.0 # to compute sum(L.Bsub[1][1] .* v) iteratively
     sup_dotv = 0.0 # to compute sum(L.Bsup[1] .* v) iteratively 
     for k in 1 : l
-        vTA_dia[k] = v[k] * L[Block(1,2)][k, k] + v[k + 1] * L[Block(1,2)][k + 1, k]
+        tempvar = L.B[1][k, k] #L[Block(1,2)][k, k]
+        tempvar2 = L.B[1][k+1, k] #L[Block(1,2)][k + 1, k]
+        vTA_dia[k] = v[k] * tempvar + v[k + 1] * tempvar2
     end
     for k in 2 : l
         sup_dotv = sup_dotv + L.Bsup[1][k - 1] * v[k - 1]
@@ -328,10 +430,10 @@ function HT_3to2(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, i) where T
 end
 
 function HT_3to1(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, i) where T
-    v = L[Block(1,3)][:, i]
     m,n = size(L.A)
     l = length(L.D)
     coef = τ[m + l + i]
+    v = L[1:m, n + l + i]#L[Block(1,3)][:, i]
 
     # compute v'A[Block(1,2)]
     vTA_sub = zeros(n)
@@ -340,12 +442,15 @@ function HT_3to1(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, i) where T
     sub_dotv = 0.0 # to compute sum(L.Bsub[1][1] .* v) iteratively
     sup_dotv = 0.0 # to compute sum(L.Bsup[1] .* v) iteratively 
     for k in 1 : n
-        vTA_dia[k] = v[k] * L[Block(1,1)][k, k]
+        tempvar = L.A[k, k] #L[Block(1,1)][k, k]
+        vTA_dia[k] = v[k] * tempvar
         if k > 1
-            vTA_dia[k] = vTA_dia[k] + v[k - 1] * L[Block(1,1)][k - 1, k]
+            tempvar1 = L.A[k-1, k] #L[Block(1,1)][k - 1, k]
+            vTA_dia[k] = vTA_dia[k] + v[k - 1] * tempvar1
         end
         if k < n
-            vTA_dia[k] = vTA_dia[k] + v[k + 1] * L[Block(1,1)][k + 1, k]
+            tempvar2 = L.A[k+1, k] #L[Block(1,1)][k + 1, k]
+            vTA_dia[k] = vTA_dia[k] + v[k + 1] * tempvar2
         end
     end
     for k in 3 : n
@@ -493,7 +598,7 @@ function HT_2to2(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, i, Bsub_fact
     m,n = size(L.A)
     l = length(L.D)
     v = zeros(m)
-    v[1:i+1] = L[Block(1,2)][1:i+1, i]
+    v[1:i+1] = L[1:i+1, n+i]#L[Block(1,2)][1:i+1, i]
     if i < l
         v[i+2:end] = Bsub_factor[1][i:end] * Bsub_factor[2][i] + Bsub_factor_extra[1][i:end] * Bsub_factor_extra[2][i]
     end
@@ -507,7 +612,9 @@ function HT_2to2(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, i, Bsub_fact
     sub_dotv_1 = 0.0 # to compute sum(L.Bsub[1][1] .* v) iteratively
     sub_dotv_2 = 0.0 # to compute sum(L.Bsub_extra[1] .* v) iteratively
     for k in 1 : i-1
-        vTA_dia[k] = v[k] * L[Block(1,2)][k, k] + v[k + 1] * L[Block(1,2)][k + 1, k]
+        tempvar1 = L.B[1][k, k] #L[Block(1,2)][k, k]
+        tempvar2 = L.B[1][k+1, k] #L[Block(1,2)][k + 1, k]
+        vTA_dia[k] = v[k] * tempvar1 + v[k + 1] * tempvar2
     end
     for k in 2 : i-1
         sup_dotv = sup_dotv + L.Bsup[1][k - 1] * v[k - 1]
@@ -567,7 +674,7 @@ function HT_2to1(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, i, Asub_fact
     m,n = size(L.A)
     l = length(L.D)
     v = zeros(m)
-    v[1:i+1] = L[Block(1,2)][1:i+1, i]
+    v[1:i+1] = L[1:i+1, n+i]#L[Block(1,2)][1:i+1, i]
     if i < l
         v[i+2:end] = Bsub_factor[1][i:end] * Bsub_factor[2][i] + Bsub_factor_extra[1][i:end] * Bsub_factor_extra[2][i]
     end
@@ -769,7 +876,7 @@ function HT_1to1(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, i, Asub_fina
     m,n = size(L.A)
     l = length(L.D)
     v = zeros(i)
-    v[1:i-1] = L[Block(1,1)][1:i-1, i]
+    v[1:i-1] = L[1:i-1, i] #L[Block(1,1)][1:i-1, i]
     v[end] = 1
     coef = τ[i]
 
@@ -848,7 +955,6 @@ function HT_1to1(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, i, Asub_fina
         end
         #display(L.Asub[1] * L.Asub[2]' + L.Asub_extra[1] * L.Asub_extra[2]' + Asub_extra2[1] * Asub_extra2[2]')
     end
-
 end
 
 function copyBBBArrowheadMatrices(M::BBBArrowheadMatrix{T}) where T
