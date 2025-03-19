@@ -30,7 +30,7 @@ L, τ = fast_ql(A)
 @test τ[l + l-1 + l-1 + 1 : end] ≈ τ_true[l + l-1 + l-1 + 1 : end]
 
 # test if L equals F after HT on column blocks whose index are greater than 3
-@test L[l + l-1 + l-1 + 1 : end, :] ≈ F[Block.(4:N), :] # that is L[Block.(4:N), :]
+@test L[Block.(4:N), :] ≈ F[Block.(4:N), :] # that is L[l + l-1 + l-1 + 1 : end, :]
 @test L[1 : l + l-1 + l-1, l + l-1 + l-1 + 1 : end] ≈ F[Block.(1:3), Block.(4:N)] # that is L[Block.(1:3), Block.(4:N)]
 
 println("Householder transformations for column blocks whose index are greater than 3 are successful")
