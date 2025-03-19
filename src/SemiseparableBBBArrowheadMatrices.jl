@@ -19,7 +19,9 @@ struct BandedPlusSemiseparableMatrix{T,D,A,B,R} <: LayoutMatrix{T}
 end
 
 
+
 size(A::BandedPlusSemiseparableMatrix) = size(A.bands)
+copy(A::BandedPlusSemiseparableMatrix) = A # not mutable
 
 function getindex(A::BandedPlusSemiseparableMatrix, k::Integer, j::Integer)
     b1 = bandwidth(A.bands,1)
