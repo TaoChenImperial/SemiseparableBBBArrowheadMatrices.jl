@@ -68,13 +68,9 @@ a,b = size(L)
 
 X = rand(a)
 sol_true = Matrix(A) \ X
-RHS_true = (ql(A).Q*I)' * X
-RHS, sol = fast_solver(L, τ, X)
-@test RHS ≈ RHS_true
-println("RHS are true")
+sol = fast_solver(L, τ, X)
 
-@test sol ≈ sol2
-
+@test sol[1:end] ≈ sol_true[1:end]
 println("Obtained the true solution")
 
 
