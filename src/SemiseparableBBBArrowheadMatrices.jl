@@ -8,7 +8,7 @@ import BlockBandedMatrices: blockbandwidths, AbstractBlockBandedLayout, Abstract
 import Base: size, axes, getindex, +, -, *, /, ==, \, OneTo, oneto, replace_in_print_matrix, copy, diff, getproperty, adjoint, transpose, tail, _sum, inv, show, summary
 using SemiseparableMatrices: LowRankMatrix, LayoutMatrix
 
-export SemiseparableBBBArrowheadMatrix, copyBBBArrowheadMatrices, fast_ql
+export SemiseparableBBBArrowheadMatrix, copyBBBArrowheadMatrices, fast_ql, fast_solver
 
 
 struct BandedPlusSemiseparableMatrix{T,D,A,B,R} <: LayoutMatrix{T}
@@ -1018,6 +1018,386 @@ function copyBBBArrowheadMatrices(M::BBBArrowheadMatrix{T}) where T
     A33extra = zeros(l - 1)
 
     SemiseparableBBBArrowheadMatrix(A, B, C, Array{BandedMatrix{Float64}, 1}(D), Asub, Asup, Asub_extra, Bsup, Bsub, Bsub_extra, Csup, Csub, A22sub, A32sup, A31extra, A32extra, A33extra)
+end
+
+function fast_solver(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, X::Vector{T}) where T
+    RHS = zeros(size(X)[1])
+    RHS[1:end] = X[1:end]
+    ApplyQ_block_above3(L, τ, RHS)
+    ApplyQ_block_3(L, τ, RHS)
+    ApplyQ_block_2(L, τ, RHS)
+    ApplyQ_block_1(L, τ, RHS)
+
+    sol = zeros(size(τ)[1])
+    Solve_block_1(L, RHS, sol)
+    Solve_block_2(L, RHS, sol)
+    Solve_block_3(L, RHS, sol)
+    Solve_block_above3(L, RHS, sol)
+    sol
+end
+
+function ApplyQ_block_above3(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, RHS::Vector{T}) where T
+    m,n = size(L.A)
+    l = length(L.D)
+    m2, n2 = size(L.D[1])
+
+    for i in m2 + 1 : -1 : 4
+        for j in l : -1 : 1
+            coef = τ[n + (i-2) * l + j]
+            v = L.D[j][i-3, i-1]
+            vTX = v * RHS[m + (i-4) * l + j] + 1.0 * RHS[m + (i-2) * l + j]
+            RHS[m + (i-4) * l + j] = RHS[m + (i-4) * l + j] - coef * v * vTX
+            RHS[m + (i-2) * l + j] = RHS[m + (i-2) * l + j] - coef * 1.0 * vTX
+        end
+    end
+end
+
+function ApplyQ_block_3(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, RHS::Vector{T}) where T
+    m,n = size(L.A)
+    l = length(L.D)
+    m2, n2 = size(L.D[1])
+
+    X = RHS[1 : m]
+    V = zeros(m) # vector for the column rank in sub L[Block(1,3)]
+    η = zeros(m) # auxilary vector for the column rank in sub L[Block(1,3)]
+    b1 = zeros(m) # auxilary vector for the first band
+    b2 = zeros(m) # auxilary vector for the second band
+    k = 0 # coef for V
+
+    VTX = 0
+    VTV = 0
+    VTb1 = 0
+    VTb2 = 0
+    VTη = 0
+
+    for i in l : -1 : 1
+        if i < l
+            V[i+2] = L.Bsub[2][1][i]
+        end
+
+        # Compute vTX in O(1)
+        if i < l
+            VTX = VTX + V[i+2] * X[i+2]
+            VTb2 = VTb2 + V[i+2] * b2[i+2]
+        end
+
+        if i < l-1
+            VTV = VTV + V[i+3] * V[i+3]
+            VTb1 = VTb1 + V[i+2] * b1[i+2]
+        end
+
+        if i < l-2
+            VTη = VTη + V[i+3] * η[i+3]
+        end
+        
+        vTX = L.B[2][i, i] * X[i] + L.B[2][i+1, i] * X[i+1] + 1.0 * RHS[m+l+i] +
+              L.B[2][i+1, i] * k * V[i+1] + L.B[2][i+1, i] * b1[i+1] 
+        if i < l
+            vTX = vTX + L.Bsub[2][2][i] * VTX + L.Bsub[2][2][i] * k * VTV +
+            L.Bsub[2][2][i] * VTb1 + L.Bsub[2][2][i] * VTb2 + L.Bsub[2][2][i] * VTη
+        end
+
+        # update the result after applyting one Q
+        coef = τ[n+l+i]
+
+        if i < l-1
+            η[i+2] = -k * V[i+2]
+        end
+
+        if i < l
+            k = k - coef * L.Bsub[2][2][i] * vTX
+        end
+
+        b1[i] = -coef * L.B[2][i, i] * vTX
+        b2[i+1] = -coef * L.B[2][i+1, i] * vTX
+
+        RHS[m+l+i] = RHS[m+l+i] - coef * 1.0 * vTX
+    end
+    RHS[1:m] = X[1:m] + k * V[1:m] + η[1:m] + b1[1:m] + b2[1:m]
+end
+
+function ApplyQ_block_2(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, RHS::Vector{T}) where T
+    m,n = size(L.A)
+    l = length(L.D)
+    m2, n2 = size(L.D[1])
+
+    X = RHS[1 : m]
+    V = zeros(m) # vector for the column rank in sup L[Block(1,2)]
+    η = zeros(m) # auxilary vector for the column rank in sup L[Block(1,2)]
+    V1 = zeros(m) # vector for the first column rank in sub L[Block(1,2)]
+    η1 = zeros(m) # auxilary vector for the first rank in sub L[Block(1,2)]
+    V2 = zeros(m) # vector for the second column rank in sub L[Block(1,2)]
+    η2 = zeros(m) # auxilary vector for the second rank in sub L[Block(1,2)]
+    b1 = zeros(m) # auxilary vector for the first band
+    b2 = zeros(m) # auxilary vector for the second band
+    k = 0 # coef for V
+    k1 = 0 # coef for V1
+    k2 = 0 # coef for V2
+
+    V[1:m-2] = L.Bsup[1][1:end]
+
+    VTX = V1TX = V2TX = 0
+    VTV = V1TV = V2TV = 0
+    VTV1 = V1TV1 = V2TV1 = 0
+    VTV2 = V1TV2 = V2TV2 = 0
+    VTη = V1Tη = V2Tη = 0
+    VTη1 = V1Tη1 = V2Tη1 = 0
+    VTη2 = V1Tη2 = V2Tη2 = 0
+    VTb1 = V1Tb1 = V2Tb1 = 0
+    VTb2 = V1Tb2 = V2Tb2 = 0
+
+    for i in 1 : m-2
+        VTX = VTX + V[i] * X[i]
+        VTV = VTV + V[i] * V[i]
+    end
+
+    for i in l :-1 : 1
+        if i < l
+            V1[i+2] = L.Bsub[1][1][i]
+            V2[i+2] = L.Bsub_extra[1][i]
+        end
+
+        # compute vTX in O(1)
+        VTX = VTX - V[i] * X[i]
+        VTV = VTV - V[i] * V[i]
+
+        if i < l-2
+            V1Tη = V1Tη + V1[i+2] * η[i+2]
+            V2Tη = V2Tη + V2[i+2] * η[i+2]
+            V1Tη1 = V1Tη1 + V1[i+3] * η1[i+3]
+            V2Tη1 = V2Tη1 + V2[i+3] * η1[i+3]
+            V1Tη2 = V1Tη2 + V1[i+3] * η2[i+3]
+            V2Tη2 = V2Tη2 + V2[i+3] * η2[i+3]
+        end
+
+        if i < l-1
+            V1Tb1 = V1Tb1 + V1[i+2] * b1[i+2]
+            V2Tb1 = V2Tb1 + V2[i+2] * b1[i+2]
+            V1TV1 = V1TV1 + V1[i+3] * V1[i+3]
+            V2TV1 = V2TV1 + V2[i+3] * V1[i+3]
+            V1TV2 = V1TV2 + V1[i+3] * V2[i+3]
+            V2TV2 = V2TV2 + V2[i+3] * V2[i+3]
+        end
+
+        if i < l
+            V1TX = V1TX + V1[i+2] * X[i+2]
+            V2TX = V2TX + V2[i+2] * X[i+2]
+            V1Tb2 = V1Tb2 + V1[i+2] * b2[i+2]
+            V2Tb2 = V2Tb2 + V2[i+2] * b2[i+2]
+        end
+
+        vTX = L.B[1][i,i] * X[i] + L.B[1][i+1, i] * X[i+1] + 1.0 * RHS[m+i] + 
+              L.B[1][i,i] * k * V[i] + L.B[1][i+1, i] * η[i+1] + L.B[1][i+1, i] * b1[i+1]
+
+        if i > 1
+            vTX = vTX + L.Bsup[2][i-1] * VTX + L.Bsup[2][i-1] * k * VTV 
+        end
+
+        if i < l
+            vTX = vTX + L.Bsub[1][2][i] * V1TX + L.Bsub_extra[2][i] * V2TX +
+                  L.Bsub[1][2][i] * V1Tη + L.Bsub_extra[2][i] * V2Tη +
+                  L.Bsub[1][2][i] * V1Tb1 + L.Bsub_extra[2][i] * V2Tb1 +
+                  L.Bsub[1][2][i] * V1Tb2 + L.Bsub_extra[2][i] * V2Tb2 +
+                  L.Bsub[1][2][i] * k1 * V1TV1 + L.Bsub_extra[2][i] * k1 * V2TV1 + 
+                  L.Bsub[1][2][i] * V1Tη1 + L.Bsub_extra[2][i] * V2Tη1 +
+                  L.Bsub[1][2][i] * k2 * V1TV2 + L.Bsub_extra[2][i] * k2 * V2TV2 + 
+                  L.Bsub[1][2][i] * V1Tη2 + L.Bsub_extra[2][i] * V2Tη2
+        end
+
+        # update the result after applyting one Q
+        coef = τ[n+i]
+
+        if i < l
+            η[i] = k * V[i]
+        end
+
+        V[i] = 0
+
+        if i > 1
+            k = k - coef * L.Bsup[2][i-1] * vTX
+        end
+
+        if i < l-1
+            η1[i+2] = -k1 * V1[i+2]
+            η2[i+2] = -k2 * V2[i+2]
+        end
+
+        if i < l
+            k1 = k1 - coef * L.Bsub[1][2][i] * vTX
+            k2 = k2 - coef * L.Bsub_extra[2][i] * vTX
+        end
+
+
+        b1[i] = -coef * L.B[1][i, i] * vTX
+        b2[i+1] = -coef * L.B[1][i+1, i] * vTX
+
+        RHS[m+i] = RHS[m+i] - coef * 1.0 * vTX
+    end
+    RHS[1:m] = X[1:m] + k * V[1:m] + η[1:m] + k1 * V1[1:m] + η1[1:m] + k2 * V2[1:m] + η2[1:m] + b1[1:m] + b2[1:m]
+end
+
+function ApplyQ_block_1(L::SemiseparableBBBArrowheadMatrix, τ::Vector{T}, RHS::Vector{T}) where T
+    m,n = size(L.A)
+    l = length(L.D)
+    m2, n2 = size(L.D[1])
+
+    X = RHS[1:m]
+    V1 = zeros(m) # vector for the first column rank in sup L[Block(1,1)]
+    V1[1:m-2] = L.Asup[1][1:end, 1]
+    V2 = zeros(m) # vector for the second rank in sup L[Block(1,1)]
+    V2[1:m-2] = L.Asup[1][1:end, 2]
+    η1 = zeros(m) # auxilary vector for the first rank in sup L[Block(1,1)]
+    η2 = zeros(m) # auxilary vector for the second rank in sup L[Block(1,1)]
+    b1 = zeros(m) # auxilary vector for the first band
+    b2 = zeros(m) # auxilary vector for the second band
+    k1 = 0 # coef for V1
+    k2 = 0 # coef for V2
+
+    V1TX = V2TX = 0
+    V1TV1 = V2TV1 = 0
+    V1TV2 = V2TV2 = 0
+    for i in 1 : m-2
+        V1TX = V1TX + V1[i] * X[i]
+        V2TX = V2TX + V2[i] * X[i]
+        V1TV1 = V1TV1 + V1[i] * V1[i]
+        V2TV1 = V2TV1 + V2[i] * V1[i]
+        V1TV2 = V1TV2 + V1[i] * V2[i]
+        V2TV2 = V2TV2 + V2[i] * V2[i]
+    end
+    #After applying each Q, the result is X + k1*V1 + k2*V2 + η1 + η2 + b1 + b2
+    for i in n : -1 : 2
+
+        # Compute vTX in O(1)
+        V1TX = V1TX - V1[i-1] * X[i-1]
+        V2TX = V2TX - V2[i-1] * X[i-1]
+        V1TV1 = V1TV1 - V1[i-1] * V1[i-1]
+        V2TV1 = V2TV1 - V2[i-1] * V1[i-1]
+        V1TV2 = V1TV2 - V1[i-1] * V2[i-1]
+        V2TV2 = V2TV2 - V2[i-1] * V2[i-1]
+
+        vTX = L.A[i-1,i] * X[i-1] + 1.0 * X[i] +
+            L.A[i-1,i] * V1[i-1] * k1 + L.A[i-1,i] * V2[i-1] * k2 + 
+            1.0 * η1[i] + 1.0 * η2[i] + 1.0 * b1[i]
+        if i > 2
+            vTX = vTX + L.Asup[2][i-2, 1] * V1TX + L.Asup[2][i-2, 2] * V2TX +
+                  L.Asup[2][i-2, 1] * V1TV1 * k1 + L.Asup[2][i-2, 2] * V2TV1 * k1 +
+                  L.Asup[2][i-2, 1] * V1TV2 * k2 + L.Asup[2][i-2, 2] * V2TV2 * k2
+        end
+        # update the result after applyting one Q
+        coef = τ[i]
+
+        if i < n
+            η1[i-1] = k1 * V1[i-1]
+            η2[i-1] = k2 * V2[i-1]
+        end
+
+        V1[i-1] = 0
+        V2[i-1] = 0
+
+        if i > 2
+            k1 = k1 - coef * L.Asup[2][i-2, 1] * vTX
+            k2 = k2 - coef * L.Asup[2][i-2, 2] * vTX
+        end
+
+        b1[i-1] = - coef * L.A[i-1, i] * vTX
+        b2[i] = -coef * 1.0 * vTX
+
+    end
+
+    RHS[1:m] = X[1:m] + k1 * V1[1:m] + k2 * V2[1:m] + η1[1:m] + η2[1:m] + b1[1:m] + b2[1:m]
+
+end
+
+function Solve_block_1(L::SemiseparableBBBArrowheadMatrix, RHS::Vector{T}, sol::Vector{T}) where T
+    m,n = size(L.A)
+    l = length(L.D)
+    m2, n2 = size(L.D[1])
+
+    sol[1] = RHS[1] / L.A[1,1]
+    sol[2] = (RHS[2] - L.A[2,1] * sol[1]) / L.A[2,2]
+
+    S = 0 # L.Asub[2] .* RHS
+    for i in 3 : m
+        S = S + L.Asub[2][i-2] * sol[i-2]
+        sol[i] = (RHS[i] - L.A[i,i-1] * sol[i-1] - S * L.Asub[1][i-2]) / L.A[i,i]
+    end
+end
+
+function Solve_block_2(L::SemiseparableBBBArrowheadMatrix, RHS::Vector{T}, sol::Vector{T}) where T
+    m,n = size(L.A)
+    l = length(L.D)
+    m2, n2 = size(L.D[1])
+
+    S = 0 # L.Csup[1][2] .* RHS
+    for i in 3 : n
+        S = S + L.Csup[1][2][i-2] * sol[i]
+    end
+    S1 = 0 # L.Csub[2] .* RHS
+    S2 = 0 # L.A22sub[2] .* RHS
+    for i in 1 : l
+        r = RHS[n + i]
+        if i > 1
+            S1 = S1 + L.Csub[2][i-1] * sol[i-1]
+            S2 = S2 + L.A22sub[2][i-1] * sol[n + i-1]
+            r = r - S1 * L.Csub[1][i-1] - S2 * L.A22sub[1][i-1]
+        end
+
+        if i < l
+            r = r - S * L.Csup[1][1][i]
+            S = S - L.Csup[1][2][i] * sol[i+2]
+        end
+
+        r = r - L.C[1][i,i] * sol[i] - L.C[1][i, i+1] * sol[i+1]
+        sol[n + i] = r / L.D[i][1, 1]
+    end
+end
+
+function Solve_block_3(L::SemiseparableBBBArrowheadMatrix, RHS::Vector{T}, sol::Vector{T}) where T
+    m,n = size(L.A)
+    l = length(L.D)
+    m2, n2 = size(L.D[1])
+
+    S1 = 0 # L.Csup[2][2] .* RHS
+    S2 = 0 # L.A32sup[2] .* RHS
+    for i in 3 : n
+        S1 = S1 + L.Csup[2][2][i-2] * sol[i]
+    end
+    for i in 2 : l
+        S2 = S2 + L.A32sup[2][i-1] * sol[n+i]
+    end
+    
+    for i in 1 : l
+        r = RHS[n+l+i]
+        if i < l
+            r = r - S1 * L.Csup[2][1][i] - S2 * L.A32sup[1][i]
+            S1 = S1 - L.Csup[2][2][i] * sol[i+2]
+            S2 = S2 - L.A32sup[2][i] * sol[n+i+1]
+        end
+        r = r - L.C[2][i,i] * sol[i] - L.C[2][i,i+1] * sol[i+1] - L.D[i][2,1] * sol[n+i]
+        if i > 1
+            r = r - L.A31extra[i-1] * sol[i-1] - L.A32extra[i-1] * sol[n+i-1] - L.A33extra[i-1] * sol[n+l+i-1]
+        end
+        sol[n+l+i] = r / L.D[i][2,2]
+    end
+end
+
+function Solve_block_above3(L::SemiseparableBBBArrowheadMatrix, RHS::Vector{T}, sol::Vector{T}) where T
+    m,n = size(L.A)
+    l = length(L.D)
+    m2, n2 = size(L.D[1])
+
+    for k in 3 : m2
+        for i in 1 : l
+            r = RHS[n + (k-1)*l + i]
+            r = r - L.D[i][k,k-2] * sol[n + (k-3)*l + i]
+            if k > 4
+                r = r - L.D[i][k,k-4] * sol[n + (k-5)*l + i]
+            else
+                r = r - L.C[k][i,i] * sol[i] - L.C[k][i,i+1] * sol[i+1]
+            end
+            sol[n + (k-1)*l + i] = r / L.D[i][k,k]
+        end
+    end
 end
 
 end
