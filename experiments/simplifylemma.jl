@@ -20,14 +20,15 @@ u_2 = u[1:end]
 u_2[1] = 0
 τ = 2*y[1]*y[1]
 k̅ = sqrt(2*y[2]^2/(τ*u[2]^2))*(sign(y[1])*sign(y[2])/sign(u[2]))
-γ = -τ*q*e₁'*u-τ*q*k̅*u_2'*u
-ϕ = -τ*q*k̅*e₁'*u-τ*q*k̅^2*u_2'*u
-ξ = -τ*k*e₁'*u-τ*k*k̅*u_2'*u
-η = -τ*k*k̅*e₁'*u-τ*k*k̅^2*u_2'*u
+γ = -τ*q*u[1]-τ*q*k̅*u_2'*u
+ϕ = -τ*q*k̅*u[1]-τ*q*k̅^2*u_2'*u
+ξ = -τ*k*u[1]-τ*k*k̅*u_2'*u
+η = -τ*k*k̅*u[1]-τ*k*k̅^2*u_2'*u
 
 ũ,ṽ,d̃,w̃,s̃= u[2:end],v[2:end],d[2:end],w[2:end],s[2:end]
 q̃ = q + k*u[1]*w[1]-k̅*τ*w[1]+ϕ+η*u[1]*w[1]
 k̃ = k - k̅*k̅*τ + η
+e₁ = zeros(n); e₁[1] = 1
 (I-τ*(e₁+k̅ *u_2)*(e₁'+k̅ *u_2'))*A
 @test (Q*A)[2:end,2:end] ≈ diag_plus_semi_plus_specialrank1(ũ,ṽ,d̃,w̃,s̃,q̃,k̃)
 

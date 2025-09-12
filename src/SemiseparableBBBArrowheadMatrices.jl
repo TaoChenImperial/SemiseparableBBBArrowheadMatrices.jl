@@ -13,10 +13,12 @@ export SemiseparableBBBArrowheadMatrix, copyBBBArrowheadMatrices, fast_ql, fast_
 
 struct BandedPlusSemiseparableMatrix{T,D,A,B,R} <: LayoutMatrix{T}
     bands::BandedMatrix{T,D,R}
-    upperfill::LowRankMatrix{T,A,B}
     lowerfill::LowRankMatrix{T,A,B}
+    upperfill::LowRankMatrix{T,A,B}
     #BandedPlusSemiseparableMatrix{T,D,A,B,R}(bands, upperfill, lowerfill) where {T,D,A,B,R} = new{T,D,A,B,R}(bands, upperfill, lowerfill)
 end
+
+BandedPlusSemiseparableMatrix(d, (u,v), (w,s)) = BandedPlusSemiseparableMatrix(BandedMatrix(Diagonal(d)),  LowRankMatrix(u, v'), LowRankMatrix(w, s'))
 
 
 
@@ -33,6 +35,35 @@ function getindex(A::BandedPlusSemiseparableMatrix, k::Integer, j::Integer)
     else
         A.bands[k,j]
     end
+end
+
+
+"""
+Represents factors matrix for QR for banded+semi. we have
+
+    F = qrfactUnblocked!(A).factors # full QR factors
+    A[1:j,:] == F[1:j,:]
+    A[:,1:j] == F[:,1:j]
+    tril(A[:,1:j],-1) == tril(u*v[1:j]',-1)
+    d[1:j] == diag(A)[1:j]
+    triu(A[:,1:j],1) == triu(W[1:j,:]*S',1)
+    A[j+1:end,j+1:end] == B[j+1:end,j+1:end] + u[j+1:end]*([q,κ]'S[:,j+1:end])
+"""
+struct BandedPlusSemiseparableQRPerturbedFactors{T} <: LayoutMatrix{T}
+    u::Vector{T}
+    v::Vector{T}
+    d::Vector{T}
+    W::Matrix{T} # n × 2, first col is w/α, second col is β, ignored to begin with
+    S::Matrix{T} # n × 2, first col is s, second col is u'*B
+    q::T
+    κ::T
+    j::Base.RefValue{Int} # how many columns have been upp-ertriangulised
+end
+
+function BandedPlusSemiseparableQRPerturbedFactors(u,v,d,w,s,q,κ)
+    n = length(u)
+    B = BandedPlusSemiseparableMatrix(d, (u,v), (w,s))
+    BandedPlusSemiseparableQRPerturbedFactors(u,v,d,[w zeros(n)],[s B'u],q,κ,0)
 end
 
 struct SemiseparableBBBArrowheadMatrix{T} <: AbstractBlockBandedMatrix{T}
