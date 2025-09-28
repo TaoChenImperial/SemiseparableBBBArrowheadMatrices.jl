@@ -8,7 +8,7 @@ import BlockBandedMatrices: blockbandwidths, AbstractBlockBandedLayout, Abstract
 import Base: size, axes, getindex, +, -, *, /, ==, \, OneTo, oneto, replace_in_print_matrix, copy, diff, getproperty, adjoint, transpose, tail, _sum, inv, show, summary
 using SemiseparableMatrices: LowRankMatrix, LayoutMatrix
 
-export SemiseparableBBBArrowheadMatrix, copyBBBArrowheadMatrices, fast_ql, fast_solver
+export SemiseparableBBBArrowheadMatrix, copyBBBArrowheadMatrices, fast_ql, fast_solver, BandedPlusSemiseparableQRPerturbedFactors
 
 
 struct BandedPlusSemiseparableMatrix{T,D,A,B,R} <: LayoutMatrix{T}
@@ -55,15 +55,66 @@ struct BandedPlusSemiseparableQRPerturbedFactors{T} <: LayoutMatrix{T}
     d::Vector{T}
     W::Matrix{T} # n × 2, first col is w/α, second col is β, ignored to begin with
     S::Matrix{T} # n × 2, first col is s, second col is u'*B
-    q::T
-    κ::T
-    j::Base.RefValue{Int} # how many columns have been upp-ertriangulised
+    q::Base.RefValue{T}
+    κ::Base.RefValue{T}
+    j::Base.RefValue{Int} # how many columns have been upper-triangulised
 end
 
 function BandedPlusSemiseparableQRPerturbedFactors(u,v,d,w,s,q,κ)
     n = length(u)
-    B = BandedPlusSemiseparableMatrix(d, (u,v), (w,s))
-    BandedPlusSemiseparableQRPerturbedFactors(u,v,d,[w zeros(n)],[s B'u],q,κ,0)
+    # B = BandedPlusSemiseparableMatrix(d, (u[2:end],v[1:end-1]), (w[1:end-1],s[2:end]))
+    # compute B'u in O(n)
+    Bu = zeros(n)
+    wu = 0
+    uu = 0
+    for i in 1:n
+        uu = uu + u[i]^2
+    end
+
+    for i in 1:n
+        uu = uu - u[i]^2
+        Bu[i] = s[i] * wu + d[i]*u[i] + v[i] * uu
+        wu = wu + w[i] * u[i]
+    end
+    BandedPlusSemiseparableQRPerturbedFactors(u,v,d,[w zeros(n)],[s Bu],Ref(q),Ref(κ),Ref(0))
+end
+
+size(A::BandedPlusSemiseparableQRPerturbedFactors) = (length(A.d),length(A.d))
+axes(A::BandedPlusSemiseparableQRPerturbedFactors) = (1:length(A.d), 1:length(A.d))
+
+
+function getindex(A::BandedPlusSemiseparableQRPerturbedFactors, k::Integer, i::Integer)
+    if k > A.j[] && i > A.j[]
+        u_pB = 0
+
+        for l in A.j[] + 1 : i - 1
+            u_pB = u_pB + A.u[l] * (A.W[l,1] * A.S[i,1])
+        end
+
+        u_pB = u_pB + A.u[i] * A.d[i]
+
+        for l in i + 1 : length(A.u)
+            u_pB = u_pB + A.u[l] * (A.u[l] * A.v[i])
+        end
+
+        #println(u_pB)
+
+        if k > i
+            A.u[k] * A.v[i] + A.u[k] * (A.q[] * A.S[i,1] + A.κ[] * u_pB)
+        elseif k < i
+            A.W[k, 1] * A.S[i,1] + A.u[k] * (A.q[] * A.S[i,1] + A.κ[] * u_pB)
+        else
+            A.d[k] + A.u[k] * (A.q[] * A.S[i,1] + A.κ[] * u_pB)
+        end
+    else
+        if k > i
+            A.u[k] * A.v[i]
+        elseif k < i
+            A.W[k,1] * A.S[i,1] + A.W[k,2] * A.S[i,2]
+        else
+            A.d[k]
+        end
+    end
 end
 
 struct SemiseparableBBBArrowheadMatrix{T} <: AbstractBlockBandedMatrix{T}
