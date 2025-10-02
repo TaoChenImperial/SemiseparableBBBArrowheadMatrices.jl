@@ -1,8 +1,13 @@
 using BandedMatrices
 using Test, LinearAlgebra
 using SemiseparableBBBArrowheadMatrices: BandedPlusSemiseparableMatrix, SemiseparableBBBArrowheadMatrix, copyBBBArrowheadMatrices, fast_ql, fast_solver, BandedPlusSemiseparableQRPerturbedFactors
+using BandedMatrices
 using Random
 #Random.seed!(1234)
+
+
+approxrank(A, tol=1E-13) = count(≥(tol), svdvals(A))
+
 
 n = 10
 A = BandedPlusSemiseparableQRPerturbedFactors(randn(n), randn(n), randn(n), randn(n), randn(n),randn(), randn())
@@ -100,5 +105,18 @@ QA = Q*A[:,:]
 #@test A[2:end,2:end] ≈ QA[2:end,2:end]
 @test A[:,:] ≈ F[:,:]
 
+Random.seed!(1234)
+@testset "higher rank perturbations" begin
+    n = 50
+    for r = 1:3, ρ = 1:3, l = 1:5, u = 1:3 # lower, upper semiseparable rank
+        U,V = randn(n,r), randn(n,r)
+        W,S = randn(n,ρ), randn(n,ρ)
+        D = brand(n,n,l,u)
+        A = tril(U*V',-1) + D + triu(W*S',1)
+        F = qr(A).factors
 
+        @test approxrank(F[n÷2+l:end,1:n÷2-1], 1E-10) == r
+        @test approxrank(F[1:n÷2-1,n÷2+u+l:end], 1E-10) == ρ+r
+    end
+end
 
