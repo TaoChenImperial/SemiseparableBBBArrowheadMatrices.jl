@@ -1,0 +1,836 @@
+% SIAM Article Template
+\documentclass[review,onefignum,onetabnum]{siamart171218}
+
+% Information that is shared between the article and the supplement
+% (title and author information, macros, packages, etc.) goes into
+% ex_shared.tex. If there is no supplement, this file can be included
+% directly.
+
+% Packages and macros go here
+\usepackage{lipsum}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+%\usepackage{algorithmic}
+\usepackage{algorithm} 
+\renewcommand{\thealgorithm}{\thesubsection.\arabic{algorithm}}
+\makeatletter
+\@addtoreset{algorithm}{subsection}
+\makeatother
+\usepackage{algpseudocode}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{my_algorithm}{Algorithm}[section]
+
+\ifpdf
+  \DeclareGraphicsExtensions{.eps,.pdf,.png,.jpg}
+\else
+  \DeclareGraphicsExtensions{.eps}
+\fi
+
+% Add a serial/Oxford comma by default.
+\newcommand{\creflastconjunction}{, and~}
+
+% Used for creating new theorem and remark environments
+\newsiamremark{hypothesis}{Hypothesis}
+\crefname{hypothesis}{Hypothesis}{Hypotheses}
+\newsiamthm{claim}{Claim}
+
+% Sets running headers as well as PDF title and authors
+\headers{Fast QR for Banded Plus Semiseparable Matrices}{T. Chen and S. Olver}
+
+% Title. If the supplement option is on, then "Supplementary Material"
+% is automatically inserted before the title.
+\title{An O(n) QR Decomposition for Banded-Plus-Semiseparable Matrices}
+
+% Authors: full names plus addresses.
+\author{Tao Chen\thanks{Department of Mathematics, Imperial College London, London, UK
+  (\email{t.chen24@imperial.ac.uk}, \email{s.olver@imperial.ac.uk}).}
+\and Sheehan Olver\footnotemark[1]}
+
+\usepackage{amsopn}
+\DeclareMathOperator{\diag}{diag}
+
+
+%% Added on Overleaf: enabling xr
+\makeatletter
+\newcommand*{\addFileDependency}[1]{% argument=file name and extension
+  \typeout{(#1)}% latexmk will find this if $recorder=0 (however, in that case, it will ignore #1 if it is a .aux or .pdf file etc and it exists! if it doesn't exist, it will appear in the list of dependents regardless)
+  \@addtofilelist{#1}% if you want it to appear in \listfiles, not really necessary and latexmk doesn't use this
+  \IfFileExists{#1}{}{\typeout{No file #1.}}% latexmk will find this message if #1 doesn't exist (yet)
+}
+\makeatother
+
+\newcommand*{\myexternaldocument}[1]{%
+    \externaldocument{#1}%
+    \addFileDependency{#1.tex}%
+    \addFileDependency{#1.aux}%
+}
+
+% Optional PDF information
+\ifpdf
+\hypersetup{
+  pdftitle={An O(n) QR Decomposition for Banded-Plus-Semiseparable Matrices},
+  pdfauthor={D. Doe, P. T. Frank, and J. E. Smith}
+}
+\fi
+
+% The next statement enables references to information in the
+% supplement. See the xr-hyperref package for details.
+
+%% Use \myexternaldocument on Overleaf
+\myexternaldocument{ex_supplement}
+
+% FundRef data to be entered by SIAM
+%<funding-group>
+%<award-group>
+%<funding-source>
+%<named-content content-type="funder-name"> 
+%</named-content> 
+%<named-content content-type="funder-identifier"> 
+%</named-content>
+%</funding-source>
+%<award-id> </award-id>
+%</award-group>
+%</funding-group>
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We prove that the QR factorization of banded-plus-semiseparable matrices preserves the matrix structure, with the factor matrix maintaining banded-plus-semiseparable form with explicitly characterizable ranks and bandwidths. This theoretical result enables the design of linear-complexity algorithms for QR decomposition and for solving the associated linear systems. Numerical experiments validate the $O(n)$ scaling and demonstrate substantial speedups compared with existing hierarchical approaches. The algorithms have been implemented in Julia, providing an efficient and accessible platform for practical use.
+\end{abstract}
+
+\begin{keywords}
+banded-plus-semiseparable matrices, QR factorization, linear complexity, structured matrices, direct solvers
+\end{keywords}
+
+\begin{AMS}
+65F05, 65F50, 15A23, 65Y20
+\end{AMS}
+
+\section{Introduction}
+
+Banded-plus-semiseparable (BPS) matrices, expressible as \begin{equation*}
+A = \underbrace{B}_{\text{banded}} + \underbrace{\text{tril}(UV^T, -1)}_{\text{lower semiseparable, rank } r} + \underbrace{\text{triu}(WS^T, 1)}_{\text{upper semiseparable, rank } p},
+\end{equation*}
+ arise in numerous applications from PDEs with non-local interactions~\cite{knook2024quasi} to signal processing, control theory, and eigenvalue problems~\cite{vandebril2005note}. Their structure invites the development of \( O(n) \) algorithms, a goal successfully achieved for purely banded or semiseparable systems~\cite{vandebril2005implicit}, and even for the fundamental case of \emph{diagonal}-plus-semiseparable matrices as early as~\cite{eidelman1997inversion}. However, generalizing these results to the case where the banded part $B$ is a genuine banded matrix, rather than merely a diagonal one, presents significant algorithmic challenges. 
+
+Solving linear systems with BPS matrices efficiently is non-trivial, as the components interact during decomposition. Pioneering work established \( O(n) \) solvers for sequentially semiseparable matrices~\cite{chandrasekaran2002fast} and later for the banded-plus-semiseparable case via ULV decomposition~\cite{chandrasekaran2003fast}, with subsequent extensions to the hierarchically semiseparable (HSS) framework~\cite{chandrasekaran2006fast, xia2010fast, chandrasekaran2007fast, massei2020hm}. A parallel line of research extensively developed the theory and algorithms for semiseparable and quasiseparable matrices, including implicit QR algorithms for \emph{symmetric} semiseparable matrices~\cite{vandebril2005implicit}, structure-preserving analyses~\cite{delvaux2006structures, delvaux2006rank, eidelman2005qr}, approaches leveraging rational Krylov techniques~\cite{vandebril2008rational, fasino2005rational}, and alternative representations~\cite{vandebril2005note, delvaux2008givens}. Despite these advances, a clear theoretical guarantee that the standard QR factorization preserves the BPS structure has been missing, with most existing solvers relying on more complex ULV or intricate Givens-based schemes~\cite{chandrasekaran2003fast, van2004two, mastronardi2001fast, delvaux2008qr}.
+
+In this paper, we close this theoretical gap. We prove that the QR factorization of a BPS matrix yields a factor matrix \( F \) that is itself BPS, with precisely characterized lower rank \( r \), upper rank \( r+p \), and bandwidths \( l \) and \( l+m \). This pivotal result, proven via an inductive framework involving a new class of Householder-Modified BPS Matrices (HMBPSM), immediately enables the design of a straightforward \( O(n) \) QR decomposition. Furthermore, it facilitates a complete direct solver: applying \( Q^T \) and performing backward substitution on the structured factor \( R \) are also achieved in linear time~\cite{olver2013fast}. Our work thus provides a unified, QR-based, end-to-end \( O(n) \) solution for BPS systems, backed by a rigorous structure-preservation theorem.
+
+The rest of this paper is organized as follows. Section~2 presents our main theoretical contributions: the definitions, the core lemma on structure preservation under Householder transformations, and the main theorem with its proof. Section~3 details the resulting $O(n)$ algorithms for QR decomposition, application of $Q^T$, and backward substitution. Section~4 presents numerical experiments that confirm the linear complexity and demonstrate performance advantages. We conclude in Section~5 with a discussion of future work.
+\section{Main results}
+\label{sec:main}
+
+\subsection{Problem Formulation and Notation}
+
+Before we start, an important notation will be: for a matrix $M$, let $M[i:j,m:n]$ represent the submatrix of $M$ from row $i$ to row $j$ and from column $m$ to column $n$. When $i=j$ or $m=n$, the notation will be simplified as $M[i,m:n]$ or $M[i:j,m]$. We also adopt the convention that writing \textbf{end} in an index(such as $M[i:\text{end},:]$) to indicates the last valid index in that dimension.
+
+Now consider an \( n \times n \) banded-plus-semiseparable matrix \( A \), characterized by a lower triangular semiseparable part of rank \( r \), an upper triangular semiseparable part of rank \( p \), a banded part with lower bandwidth \( l \), and upper bandwidth \( m \).
+
+The matrix \( A \) admits the following representation:
+\begin{equation}
+A = B + \text{tril}(UV^T, -1) + \text{triu}(WS^T, 1)\label{express_A}
+\end{equation}
+where \( U, V \in \mathbb{R}^{n\times r} \), \( W, S \in \mathbb{R}^{n\times p} \), and \( B = (b_{ij}) \in \mathbb{R}^{n \times n} \) is a banded matrix satisfying \( b_{ij}=0 \) for \( i-j>l \) or \( j-i>m \).
+
+Define vectors \( \bar{\mathbf{u}}_i = U[i,:]^T \in \mathbb{R}^r \), \( \bar{\mathbf{v}}_i = V[i,:]^T \in \mathbb{R}^r \), \( \bar{\mathbf{w}}_i = W[i,:]^T \in \mathbb{R}^p \), and \( \bar{\mathbf{s}}_i = S[i,:]^T \in \mathbb{R}^p \) for \( i=1,\ldots,n \). The matrix \( A \) can then be expressed element-wise as:
+\begin{equation}
+A =
+\begin{bmatrix}
+b_{11} & \bar{\mathbf{w}}_1^T \bar{\mathbf{s}}_2 + b_{12} & \cdots & \bar{\mathbf{w}}_1^T \bar{\mathbf{s}}_n + b_{1n} \\
+\bar{\mathbf{u}}_2^T \bar{\mathbf{v}}_1 + b_{21} & b_{22} & \cdots & \bar{\mathbf{w}}_2^T \bar{\mathbf{s}}_n + b_{2n} \\
+\vdots & \vdots & \ddots & \vdots \\
+\bar{\mathbf{u}}_n^T \bar{\mathbf{v}}_1 + b_{n1} & \bar{\mathbf{u}}_n^T \bar{\mathbf{v}}_2 + b_{n2} & \cdots & b_{nn}
+\end{bmatrix}.
+\end{equation}
+
+Applying the QR decomposition to \( A \) yields a factor matrix \( F \), whose upper triangular part stores the matrix \( R \) and whose lower triangular part contains the Householder reflection vectors \( \mathbf{y} \) generated during the decomposition. We will demonstrate that \( F \) itself retains a banded-plus-semiseparable structure. Specifically, its lower semiseparable part has rank \( r \), its upper semiseparable part has rank \( r+p \), its lower bandwidth is \( l \), and its upper bandwidth is \( l+m \).
+
+Before proceeding with the detailed proof, let us clarify the precise structure of the factor matrix \( F \) obtained from the QR decomposition. In this work, we employ a compact representation that stores the complete information of the QR factorization in a single matrix:
+
+\begin{equation}
+F = \begin{bmatrix}
+r_{11} & r_{12} & r_{13} & \cdots & r_{1n} \\
+y_{2,1} & r_{22} & r_{23} & \cdots & r_{2n} \\
+y_{3,1} & y_{3,2} & r_{33} & \cdots & r_{3n} \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+y_{n,1} & y_{n,2} & y_{n,3} & \cdots & r_{nn}
+\end{bmatrix}
+\end{equation}
+
+where:
+- The \textbf{upper triangular part (including the main diagonal)} of \( F \) stores the elements of the upper triangular matrix \( R \), i.e.:
+  \begin{equation}
+  R = \text{triu}(F)
+  \end{equation}
+- The \textbf{strictly lower triangular part (excluding the main diagonal)} of \( F \) stores the last \( n-k \) elements of the Householder reflection vectors \( \mathbf{y}_k \) generated at each step.
+
+More specifically, at the \( k \)-th Householder transformation step (\( k = 1, 2, \ldots, n-1 \)), we construct a reflection vector \( \mathbf{y}_k \) to eliminate the subdiagonal entries of the \( k \)-th column. This vector takes the form:
+\begin{equation}\label{y_k}
+\mathbf{y}_k = \begin{bmatrix} 0 \\ \vdots \\ 0 \\ 1 \\ y_{k+1,k} \\ \vdots \\ y_{n,k} \end{bmatrix}
+\begin{array}{l} \left.\vphantom{\begin{bmatrix} 0 \\ 0 \\ 1 \end{bmatrix}}\right\} k-1 \text{ zeros} \\ \\ \left.\vphantom{\begin{bmatrix} y_{k+1,k} \\ \vdots \\ y_{n,k} \end{bmatrix}}\right\} n-k \text{ elements}
+\end{array}
+\end{equation}
+
+Following standard practice, we normalize \( \mathbf{y}_k \) such that its first nonzero element (the \( k \)-th element) equals 1. Consequently, we only need to store the elements from position \( k+1 \) to \( n \) of this vector, which are placed in the \( k \)-th column of \( F \), from row \( k+1 \) to \( n \).
+
+The advantage of this representation is that it compactly stores the information of both the orthogonal matrix \( Q \) (via the Householder vectors) and the upper triangular matrix \( R \) within a single matrix \( F \). The central result of this paper will demonstrate that for a banded-plus-semiseparable matrix \( A \), this factor matrix \( F \) itself maintains a banded-plus-semiseparable structure.
+
+It is important to note that with this normalization convention (where the first nonzero element of each Householder vector \( \mathbf{y}_k \) is 1), the full Householder transformation at the \( k \)-th step is given by \( I - \tau_k \mathbf{y}_k \mathbf{y}_k^T \), where \( \tau_k \) is a scalar coefficient. Therefore, in addition to the factor matrix \( F \), a vector \( \boldsymbol{\tau} = (\tau_1, \tau_2, \ldots, \tau_{n-1})^T \) is required to completely represent the QR decomposition. The orthogonal matrix \( Q \) can be reconstructed as the product \( Q = (I - \tau_1 \mathbf{y}_1 \mathbf{y}_1^T)(I - \tau_2 \mathbf{y}_2 \mathbf{y}_2^T) \cdots (I - \tau_{n-1} \mathbf{y}_{n-1} \mathbf{y}_{n-1}^T) \).
+
+Throughout our analysis, we will focus on the structure of the factor matrix \( F \), while acknowledging that the complete QR representation consists of the pair \( (F, \boldsymbol{\tau}) \). Our main theorem establishes that \( F \) maintains the banded-plus-semiseparable structure; the scaling coefficients \( \tau_k \) can be stored separately without affecting the structural properties of the algorithm.
+
+We proceed to prove this by induction. First, we introduce two key definitions and a pivotal lemma.
+
+\subsection{Core Definitions and a Key Lemma}
+
+\begin{definition}[Householder-Modified Banded-Plus-Semiseparable Matrix]\label{def:hmbpsm}
+Given a banded-plus-semiseparable matrix (BPSM) \( A = B + \text{tril}(UV^T, -1) + \text{triu}(WS^T, 1) \), a matrix \( C \) is termed a \emph{Householder-modified banded-plus-semiseparable matrix} (HMBPSM) related to \( A \) if it satisfies:
+\begin{equation}
+C = A + UQS^T + UKU^TA + UE + XS^T + YU^TA + Z
+\end{equation}
+for some matrices \( Q \in \mathbb{R}^{r\times p} \), \( K \in \mathbb{R}^{r\times r} \), \( E = [E_s, \mathbf{0}] \in \mathbb{R}^{r \times n} \) with \( E_s \in \mathbb{R}^{r\times \min(l+m,n)} \), \( X = \begin{bmatrix} X_s \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n\times p} \) with \( X_s \in \mathbb{R}^{\min(l,n)\times p} \), \( Y = \begin{bmatrix} Y_s \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n \times r} \) with \( Y_s \in \mathbb{R}^{\min(l,n)\times r} \), and \( Z = \begin{bmatrix} Z_s & \mathbf{0} \\ \mathbf{0} & \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n \times n} \) with \( Z_s \in \mathbb{R}^{\min(l,n)\times \min(l+m,n)} \).
+\end{definition}
+
+\begin{definition}[Householder-Modified Banded-Plus-Semiseparable Vector]
+Let \( A \in \mathbb{R}^{n \times n} \) be a BPSM as defined above. A row vector \( \mathbf{c} \in \mathbb{R}^{n-1} \) is called a \emph{Householder-modified banded-plus-semiseparable vector} (HMBPSV) related to \( A \) if it admits the representation:
+\begin{equation}
+\mathbf{c} = \mathbf{d}^T + \boldsymbol{\alpha}^T (S^T[:,2:n]) + \boldsymbol{\beta}^T ((U^TA)[:,2:n])
+\end{equation}
+for some \( \mathbf{d} = \begin{bmatrix} \mathbf{d}_s \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n-1} \) with \( \mathbf{d}_s \in \mathbb{R}^{\min(l+m,n)} \), \( \boldsymbol{\alpha} \in \mathbb{R}^p \), and \( \boldsymbol{\beta} \in \mathbb{R}^r \).
+\end{definition}
+
+\begin{lemma}\label{lemma:structure_preserve}
+Given a BPSM \( A \) and its associated HMBPSM \( C \), suppose a Householder transformation is applied to \( C \) to eliminate the subdiagonal entries of its first column, yielding \( \tilde{C} = (I - \tau \mathbf{y} \mathbf{y}^T) C \). Then the following hold:
+\begin{enumerate}
+    \item The submatrix \( \tilde{C}[2:n, 2:n] \) is an HMBPSM related to \( A[2:n, 2:n] \).
+    \item The row vector \( \tilde{C}[1, 2:n] \) is an HMBPSV related to \( A \).
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+Let us introduce the necessary notation:
+\begin{itemize}
+    \item \( A = B + \text{tril}(UV^T, -1) + \text{triu}(WS^T, 1) \), where \( U=(\mathbf{u}_1,...,\mathbf{u}_r) \in \mathbb{R}^{n\times r}\), \( V=(\mathbf{v}_1,...,\mathbf{v}_r)\in \mathbb{R}^{n\times r}\), \( W=(\mathbf{w}_1,...,\mathbf{w}_p)\in \mathbb{R}^{n\times p}\), and \(S=(\mathbf{s}_1,...,\mathbf{s}_p)\in \mathbb{R}^{n \times p}\). Here \( \mathbf{u}_i=(u_1^{(i)},...,u_n^{(i)})^T\in \mathbb{R}^n\) and \( \mathbf{v}_i=(v_1^{(i)},...,v_n^{(i)})^T\in \mathbb{R}^n\) for $i=1,...,r$; \( \mathbf{w}_i=(w_1^{(i)},...,w_n^{(i)})^T\in \mathbb{R}^n\) and \( \mathbf{s}_i=(s_1^{(i)},...,s_n^{(i)})^T\in \mathbb{R}^n\) for \( i=1,...,p\). Also, \( B=(b_{ij})_{i,j=1}^n\in \mathbb{R}^{n,n}\) with \( b_{ij}=0\) if \( i-j>l\) or \( j-i>m\).
+    \item \( C = A + UQS^T + UKU^TA + UE + XS^T + YU^TA + Z \), where \( Q, K, E, X, Y, Z \) are as in Definition \cref{def:hmbpsm}.
+    \item \( \tilde{C} = (I - \tau \mathbf{y} \mathbf{y}^T)C \), where the Householder vector \( \mathbf{y} \) can be expressed as \( \mathbf{y} = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b} \). Here, \(\mathbf{e}_1=(1,0,...,0)^T\in \mathbb{R}^n\), \( U^{(2)} \in \mathbb{R}^{n\times r} \) satisfies \( U^{(2)}[1,:] = \mathbf{0} \) and \( U^{(2)}[2:n,:] = U[2:n,:] \), \( \bar{\mathbf{k}} \in \mathbb{R}^r \), \( \mathbf{b} = (0, b_2, \ldots, b_{\min(l+1,n)}, 0, \ldots, 0)^T \in \mathbb{R}^n \), and \(\tau\) is a coefficient found to satisfy the definition of a Householder transformation.
+\end{itemize}
+
+Let \( \bar{\mathbf{u}}_1 = (u_1^{(1)}, \ldots, u_1^{(r)})^T \in \mathbb{R}^r \). We can write:
+\begin{itemize}
+    \item \( \mathbf{e}_1^T A = \mathbf{d}_1^T + \bar{\mathbf{w}}_1^T S^T \), where \( \mathbf{d}_1 = B[1,:]^T \in \mathbb{R}^n \), \( \bar{\mathbf{w}}_1 = (w_1^{(1)}, \ldots, w_1^{(p)})^T \in \mathbb{R}^p \).
+    \item \( \mathbf{b}^T A = \bar{\mathbf{d}}^T + \mathbf{f}^T S^T \), where \( \bar{\mathbf{d}} \in \mathbb{R}^n \) has non-zero entries only in its first \( \min(l+m+1, n) \) components, and \( \mathbf{f} = W^T \mathbf{b} \in \mathbb{R}^{p} \).
+\end{itemize}
+Define the auxiliary vectors:
+\begin{align}
+    \mathbf{c}_1 &= Q^T U^T \mathbf{y} \in \mathbb{R}^p \\
+    \mathbf{c}_2 &= K^T U^T \mathbf{y} \in \mathbb{R}^r \\
+    \mathbf{c}_3 &= U^T \mathbf{y} \in \mathbb{R}^r \\
+    \mathbf{c}_4 &= X^T \mathbf{y} \in \mathbb{R}^p \\
+    \mathbf{c}_5 &= Y^T \mathbf{y} \in \mathbb{R}^r \\
+    \mathbf{c}_6 &= Z^T \mathbf{y} \in \mathbb{R}^{n}, \quad \text{which has the form } \mathbf{c}_6 = \begin{bmatrix} \mathbf{c}_{6s} \\ \mathbf{0} \end{bmatrix} \text{ with } \mathbf{c}_{6s} \in \mathbb{R}^{\min(l+m,n)}.
+\end{align}
+Also, let \( \mathbf{x}^{(1)} = X[1,:]^T \in \mathbb{R}^p \), \( \mathbf{y}^{(1)} = Y[1,:]^T \in \mathbb{R}^r \), and \( \mathbf{z}^{(1)} = Z[1,:]^T \in \mathbb{R}^n \).
+
+We now compute \( (I - \tau \mathbf{y} \mathbf{y}^T) C \) by distributing the transformation over each term in the definition of \( C \).
+
+\textbf{(i) Transformation of \( A \):}
+Substituting the expressions \( \mathbf{y}=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), \( \mathbf{e}_1^TA=\mathbf{d}_1^T+\bar{\mathbf{w}}_1^TS^T\), and \( \mathbf{b}^TA=\bar{\mathbf{d}}^T+\mathbf{f}^TS^T\), we obtain:
+\begin{equation}\label{proof_first}
+\begin{aligned}
+(I - \tau \mathbf{y} \mathbf{y}^T)A = & A + \mathbf{e}_1(-\tau \mathbf{d}_1^T - \tau \bar{\mathbf{d}}^T) + \mathbf{e}_1(-\tau \bar{\mathbf{w}}_1^T - \tau \mathbf{f}^T)S^T \\
+& + \mathbf{e}_1(-\tau \bar{\mathbf{k}}^T)U^{(2)T}A + U^{(2)}(-\tau \bar{\mathbf{k}} \bar{\mathbf{w}}_1^T - \tau \bar{\mathbf{k}} \mathbf{f}^T)S^T \\
+& + U^{(2)}(-\tau \bar{\mathbf{k}} \bar{\mathbf{k}}^T)U^{(2)T}A + U^{(2)}(-\tau \bar{\mathbf{k}} \mathbf{d}_1^T - \tau \bar{\mathbf{k}} \bar{\mathbf{d}}^T) \\
+& + (-\tau \mathbf{b} \bar{\mathbf{w}}_1^T - \tau \mathbf{b} \mathbf{f}^T)S^T + (-\tau \mathbf{b} \bar{\mathbf{k}}^T)U^{(2)T}A + (-\tau \mathbf{b} \mathbf{d}_1^T - \tau \mathbf{b} \bar{\mathbf{d}}^T).
+\end{aligned}
+\end{equation}
+
+\textbf{(ii) Transformation of \( UQS^T \):} Substituting the expressions \( \mathbf{y}^TUQ=\mathbf{c}_1^T\), \( \mathbf{y}=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), and \( U=\mathbf{e}_1\bar{\mathbf{u}}_1^T+U^{(2)}\) where \( \bar{\mathbf{u}}_1=(u_1^{(1)},...,u_1^{(r)})\in \mathbb{R}^r\), we obtain
+\begin{equation}
+\begin{aligned}
+(I - \tau \mathbf{y} \mathbf{y}^T)UQS^T = & \mathbf{e}_1(\bar{\mathbf{u}}_1^T Q - \tau \mathbf{c}_1^T)S^T + U^{(2)}(Q - \tau \bar{\mathbf{k}} \mathbf{c}_1^T)S^T + (-\tau \mathbf{b} \mathbf{c}_1^T)S^T.
+\end{aligned}
+\end{equation}
+
+\textbf{(iii) Transformation of \( UKU^TA \):} Substituting the expressions \( \mathbf{y}^TUK=\mathbf{c}_2^T\), \( \mathbf{y}=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), \( U=\mathbf{e}_1\bar{\mathbf{u}}_1^T+U^{(2)}\), and \( \mathbf{e}_1^TA=\mathbf{d}_1^T+\bar{\mathbf{w}}_1^TS^T\), we obtain
+\begin{equation}
+\begin{aligned}
+& (I - \tau \mathbf{y} \mathbf{y}^T)UKU^TA \\
+= & \mathbf{e}_1(\bar{\mathbf{u}}_1^T K \bar{\mathbf{u}}_1 \mathbf{d}_1^T - \tau \mathbf{c}_2^T \bar{\mathbf{u}}_1 \mathbf{d}_1^T) + \mathbf{e}_1(\bar{\mathbf{u}}_1^T K \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T - \tau \mathbf{c}_2^T \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T)S^T + \mathbf{e}_1(\bar{\mathbf{u}}_1^T K - \tau \mathbf{c}_2^T)U^{(2)T}A \\
+& + U^{(2)}(K \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T - \tau \bar{\mathbf{k}} \mathbf{c}_2^T \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T)S^T + U^{(2)}(K - \tau \bar{\mathbf{k}} \mathbf{c}_2^T)U^{(2)T}A + U^{(2)}(K \bar{\mathbf{u}}_1 \mathbf{d}_1^T - \tau \bar{\mathbf{k}} \mathbf{c}_2^T \bar{\mathbf{u}}_1 \mathbf{d}_1^T) \\
+& + (-\tau \mathbf{b} \mathbf{c}_2^T \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T)S^T + (-\tau \mathbf{b} \mathbf{c}_2^T)U^{(2)T}A + (-\tau \mathbf{b} \mathbf{c}_2^T \bar{\mathbf{u}}_1 \mathbf{d}_1^T).
+\end{aligned}
+\end{equation}
+
+\textbf{(iv) Transformation of \( UE \):} Substituting the expressions \( \mathbf{y}^TU=\mathbf{c}_3^T\), \( \mathbf{y}=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), and \( U=\mathbf{e}_1\bar{\mathbf{u}}_1^T+U^{(2)}\), we obtain
+\begin{equation}
+\begin{aligned}
+(I - \tau \mathbf{y} \mathbf{y}^T)UE = \mathbf{e}_1(\bar{\mathbf{u}}_1^T E - \tau \mathbf{c}_3^T E) + U^{(2)}(E - \tau \bar{\mathbf{k}} \mathbf{c}_3^T E) + (-\tau \mathbf{b} \mathbf{c}_3^T E).
+\end{aligned}
+\end{equation}
+
+\textbf{(v) Transformation of \( XS^T \):} Substituting the expressions \(\mathbf{y}^TX=\mathbf{c}_4^T\) and \(\mathbf{y}=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), we obtain
+\begin{equation}
+\begin{aligned}
+(I - \tau \mathbf{y} \mathbf{y}^T)XS^T = \mathbf{e}_1(-\tau \mathbf{c}_4^T)S^T + U^{(2)}(-\tau \bar{\mathbf{k}} \mathbf{c}_4^T)S^T + (X - \tau \mathbf{b} \mathbf{c}_4^T)S^T.
+\end{aligned}
+\end{equation}
+
+\textbf{(vi) Transformation of \( YU^TA \):} Substituting the expressions \(\mathbf{y}^TY=\mathbf{c}_5^T\), \(\mathbf{y}=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), \(U=\mathbf{e}_1\bar{\mathbf{u}}_1^T+U^{(2)}\), and \(\mathbf{e}_1^TA=\mathbf{d}_1^T+\bar{\mathbf{w}}_1^TS^T\), we obtain
+\begin{equation}
+\begin{aligned}
+& (I - \tau \mathbf{y} \mathbf{y}^T)YU^TA \\
+= & \mathbf{e}_1(-\tau \mathbf{c}_5^T \bar{\mathbf{u}}_1 \mathbf{d}_1^T) + \mathbf{e}_1(-\tau \mathbf{c}_5^T \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T)S^T + \mathbf{e}_1(-\tau \mathbf{c}_5^T)U^{(2)T}A \\
+& + U^{(2)}(-\tau \bar{\mathbf{k}} \mathbf{c}_5^T \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T)S^T + U^{(2)}(-\tau \bar{\mathbf{k}} \mathbf{c}_5^T)U^{(2)T}A + U^{(2)}(-\tau \bar{\mathbf{k}} \mathbf{c}_5^T \bar{\mathbf{u}}_1 \mathbf{d}_1^T) \\
+& + (Y \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T - \tau \mathbf{b} \mathbf{c}_5^T \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T)S^T + (Y - \tau \mathbf{b} \mathbf{c}_5^T)U^{(2)T}A + (Y \bar{\mathbf{u}}_1 \mathbf{d}_1^T - \tau \mathbf{b} \mathbf{c}_5^T \bar{\mathbf{u}}_1 \mathbf{d}_1^T).
+\end{aligned}
+\end{equation}
+
+\textbf{(vii) Transformation of \( Z \):} Substituting the expressions \(\mathbf{y}^TZ=\mathbf{c}_6^T\) and \(\mathbf{y}=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), we obtain
+
+\begin{equation}\label{proof_last}
+\begin{aligned}
+(I - \tau \mathbf{y} \mathbf{y}^T)Z = \mathbf{e}_1(-\tau \mathbf{c}_6^T) + U^{(2)}(-\tau \bar{\mathbf{k}} \mathbf{c}_6^T) + (Z - \tau \mathbf{b} \mathbf{c}_6^T).
+\end{aligned}
+\end{equation}
+
+Combining equations \eqref{proof_first} through \eqref{proof_last}, we can now identify the structure of the resulting matrix \( \tilde{C} \).
+
+\textbf{Firstly}, the submatrix \( \tilde{C}[2:n, 2:n] \) satisfies:
+\begin{equation}\label{submatrix_structure}
+\tilde{C}[2:n, 2:n] = \tilde{A} + \tilde{U} \tilde{Q} \tilde{S}^T + \tilde{U} \tilde{K} \tilde{U}^T \tilde{A} + \tilde{U} \tilde{E} + \tilde{X} \tilde{S}^T + \tilde{Y} \tilde{U}^T \tilde{A} + \tilde{Z},
+\end{equation}
+where
+\begin{align*}
+    \tilde{A} &= A[2:n, 2:n] \\
+    \tilde{U} &= U[2:n, :] \\
+    \tilde{S} &= S[2:n, :]
+\end{align*}
+and the updated modification matrices are given by:
+\begin{align*}
+    \tilde{Q} &= -\tau \bar{\mathbf{k}} \bar{\mathbf{w}}_1^T - \tau \bar{\mathbf{k}} \mathbf{f}^T + Q - \tau \bar{\mathbf{k}} \mathbf{c}_1^T + K \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T - \tau \bar{\mathbf{k}} \mathbf{c}_2^T \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T - \tau \bar{\mathbf{k}} \mathbf{c}_4^T - \tau \bar{\mathbf{k}} \mathbf{c}_5^T \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T, \\
+    \tilde{K} &= -\tau \bar{\mathbf{k}} \bar{\mathbf{k}}^T + K - \tau \bar{\mathbf{k}} \mathbf{c}_2^T - \tau \bar{\mathbf{k}} \mathbf{c}_5^T, \\
+    \tilde{E} &= [\tilde{E}_s, \mathbf{0}] \in \mathbb{R}^{r \times (n-1)}, \quad \text{with} \\
+    \tilde{E}_s &= (-\tau \bar{\mathbf{k}} \mathbf{d}_1^T - \tau \bar{\mathbf{k}} \bar{\mathbf{d}}^T + K \bar{\mathbf{u}}_1 \mathbf{d}_1^T - \tau \bar{\mathbf{k}} \mathbf{c}_2^T \bar{\mathbf{u}}_1 \mathbf{d}_1^T + E - \tau \bar{\mathbf{k}} \mathbf{c}_3^T E \\
+    &\quad - \tau \bar{\mathbf{k}} \mathbf{c}_5^T \bar{\mathbf{u}}_1 \mathbf{d}_1^T - \tau \bar{\mathbf{k}} \mathbf{c}_6^T)[:, 2:\min(l+m+1, n)], \\
+    \tilde{X} &= \begin{bmatrix} \tilde{X}_s \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{(n-1) \times p}, \quad \text{with} \\
+    \tilde{X}_s &= (-\tau \mathbf{b} \bar{\mathbf{w}}_1^T - \tau \mathbf{b} \mathbf{f}^T - \tau \mathbf{b} \mathbf{c}_1^T - \tau \mathbf{b} \mathbf{c}_2^T \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T + X - \tau \mathbf{b} \mathbf{c}_4^T \\
+    &\quad + Y \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T - \tau \mathbf{b} \mathbf{c}_5^T \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T)[2:\min(l+1, n), :], \\
+    \tilde{Y} &= \begin{bmatrix} \tilde{Y}_s \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{(n-1) \times r}, \quad \text{with} \\
+    \tilde{Y}_s &= (-\tau \mathbf{b} \bar{\mathbf{k}}^T - \tau \mathbf{b} \mathbf{c}_2^T + Y - \tau \mathbf{b} \mathbf{c}_5^T)[2:\min(l+1, n), :], \\
+    \tilde{Z} &= \begin{bmatrix} \tilde{Z}_s & \mathbf{0} \\ \mathbf{0} & \mathbf{0} \end{bmatrix} \in \mathbb{R}^{(n-1) \times (n-1)}, \quad \text{with} \\
+    \tilde{Z}_s &= (-\tau \mathbf{b} \mathbf{d}_1^T - \tau \mathbf{b} \bar{\mathbf{d}}^T - \tau \mathbf{b} \mathbf{c}_2^T \bar{\mathbf{u}}_1 \mathbf{d}_1^T - \tau \mathbf{b} \mathbf{c}_3^T E + Y \bar{\mathbf{u}}_1 \mathbf{d}_1^T - \tau \mathbf{b} \mathbf{c}_5^T \bar{\mathbf{u}}_1 \mathbf{d}_1^T \\
+    &\quad + Z - \tau \mathbf{b} \mathbf{c}_6^T)[2:\min(l+1, n), 2:\min(l+m+1, n)].
+\end{align*}
+
+The forms of \( \tilde{Q}, \tilde{K}, \tilde{E}, \tilde{X}, \tilde{Y}, \tilde{Z} \) confirm that \( \tilde{C}[2:n, 2:n] \) is an HMBPSM related to \( A[2:n, 2:n] \), thus establishing the first part of the lemma.
+
+\textbf{Secondly}, the first row of the transformed matrix, \( \tilde{C}[1, 2:n] \), can be expressed as:
+\begin{equation}
+\tilde{C}[1, 2:n] = \hat{\mathbf{d}}^T + \hat{\boldsymbol{\alpha}}^T (S^T[:, 2:n]) + \hat{\boldsymbol{\beta}}^T ((U^{(2)T}A)[:, 2:n]),
+\end{equation}
+where
+\begin{align*}
+    \hat{\mathbf{d}} &= \begin{bmatrix} \hat{\mathbf{d}}_s \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n-1}, \quad \text{with} \\
+    \hat{\mathbf{d}}_s &= (\mathbf{d}_1^T - \tau \mathbf{d}_1^T - \tau \bar{\mathbf{d}}^T + \bar{\mathbf{u}}_1^T K \bar{\mathbf{u}}_1 \mathbf{d}_1^T - \tau \mathbf{c}_2^T \bar{\mathbf{u}}_1 \mathbf{d}_1^T + \bar{\mathbf{u}}_1^T E - \tau \mathbf{c}_3^T E \\
+    &\quad + \mathbf{y}^{(1)T} \bar{\mathbf{u}}_1 \mathbf{d}_1^T - \tau \mathbf{c}_5^T \bar{\mathbf{u}}_1 \mathbf{d}_1^T + \mathbf{z}^{(1)T} - \tau \mathbf{c}_6^T)^T[2:\min(l+m+1, n)], \\
+    \hat{\boldsymbol{\alpha}} &= (\bar{\mathbf{w}}_1^T - \tau \bar{\mathbf{w}}_1^T - \tau \mathbf{f}^T + \bar{\mathbf{u}}_1^T Q - \tau \mathbf{c}_1^T + \bar{\mathbf{u}}_1^T K \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T - \tau \mathbf{c}_2^T \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T \\
+    &\quad + \mathbf{x}^{(1)T} - \tau \mathbf{c}_4^T + \mathbf{y}^{(1)T} \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T - \tau \mathbf{c}_5^T \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T)^T \in \mathbb{R}^p, \\
+    \hat{\boldsymbol{\beta}} &= (-\tau \bar{\mathbf{k}}^T + \bar{\mathbf{u}}_1^T K - \tau \mathbf{c}_2^T + \mathbf{y}^{(1)T} - \tau \mathbf{c}_5^T)^T \in \mathbb{R}^r.
+\end{align*}
+
+Noting that \( U^{(2)} = U - \mathbf{e}_1 \bar{\mathbf{u}}_1^T \) and \( \mathbf{e}_1^T A = \mathbf{d}_1^T + \bar{\mathbf{w}}_1^T S^T \), we have \( U^{(2)T} A = U^T A - \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T S^T - \bar{\mathbf{u}}_1 \mathbf{d}_1^T \). Substituting this yields an alternative expression:
+\begin{equation}\label{row_structure}
+\tilde{C}[1, 2:n] = \tilde{\mathbf{d}}^T + \tilde{\boldsymbol{\alpha}}^T (S^T[:, 2:n]) + \tilde{\boldsymbol{\beta}}^T ((U^T A)[:, 2:n]),
+\end{equation}
+where
+\begin{align*}
+    \tilde{\mathbf{d}} &= \begin{bmatrix} \tilde{\mathbf{d}}_s \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n-1}, \quad \text{with} \\
+    \tilde{\mathbf{d}}_s &= (\mathbf{d}_1^T - \tau \mathbf{d}_1^T - \tau \bar{\mathbf{d}}^T + \bar{\mathbf{u}}_1^T E - \tau \mathbf{c}_3^T E + \mathbf{z}^{(1)T} - \tau \mathbf{c}_6^T + \tau \bar{\mathbf{k}}^T \bar{\mathbf{u}}_1 \mathbf{d}_1^T)^T[2:\min(l+m+1, n)], \\
+    \tilde{\boldsymbol{\alpha}} &= (\bar{\mathbf{w}}_1^T - \tau \bar{\mathbf{w}}_1^T - \tau \mathbf{f}^T + \bar{\mathbf{u}}_1^T Q - \tau \mathbf{c}_1^T + \mathbf{x}^{(1)T} - \tau \mathbf{c}_4^T + \tau \bar{\mathbf{k}}^T \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^T)^T \in \mathbb{R}^p, \\
+    \tilde{\boldsymbol{\beta}} &= (-\tau \bar{\mathbf{k}}^T + \bar{\mathbf{u}}_1^T K - \tau \mathbf{c}_2^T + \mathbf{y}^{(1)T} - \tau \mathbf{c}_5^T)^T \in \mathbb{R}^r.
+\end{align*}
+
+This confirms that \( \tilde{C}[1, 2:n] \) is an HMBPSV related to \( A \), completing the proof of the lemma.
+\end{proof}
+
+\subsection{Main Theorem and its Proof}
+
+Equipped with \cref{lemma:structure_preserve}, we now state and prove the main theorem concerning the structure of the QR factor matrix \( F \).
+
+\begin{theorem}\label{thm:structure_preserve}
+After applying the QR decomposition to a banded-plus-semiseparable matrix \( A \) (as expressed in Eq. \eqref{express_A}) with lower semiseparable rank \( r \), upper semiseparable rank \( p \), lower bandwidth \( l \), and upper bandwidth \( m \), the resulting factor matrix \( F \) is also a banded-plus-semiseparable matrix. Specifically:
+\begin{itemize}
+    \item Its lower semiseparable part has rank \( r \).
+    \item Its upper semiseparable part has rank \( r + p \).
+    \item Its banded part has lower bandwidth \( l \) and upper bandwidth \( l + m \).
+\end{itemize}
+\end{theorem}
+
+\begin{proof}
+The QR decomposition is computed by performing a sequence of \( n-1 \) Householder transformations, eliminating the subdiagonal entries of \( A \) column by column.
+
+Let \( A^{(i)} \) denote the matrix after the \( i \)-th Householder transformation, with \( A^{(0)} = A \). Define \( A_i = A[i:n, i:n] \), \( U_i = U[i:n, :] \), \( V_i = V[i:n, :] \), \( S_i = S[i:n, :] \), and \( W_i = W[i:n, :] \). Let \( \bar{\mathbf{u}}_i = (u_i^{(1)}, \ldots, u_i^{(r)})^T \) and \( \bar{\mathbf{w}}_i = (w_i^{(1)}, \ldots, w_i^{(p)})^T \). Let \( \bar{S} = U^T A \in \mathbb{R}^{r \times n} \).
+
+We prove by induction that after the \( j \)-th transformation (\( 0 \le j < n \)):
+\begin{enumerate}
+    \item The submatrix \( A^{(j)}[j+1:n, j+1:n] \) is an HMBPSM related to \( A_{j+1} \).
+    \item The \( j \)-th row of the final factor \( F \), \( F[j, j+1:n] \), is an HMBPSV related to \( A_j \).
+    \item The \( j \)-th column of \( F \) below the diagonal, \( F[j+1:n, j] \), has the form \( (U \bar{\mathbf{k}}_{j+1})[j+1:n] + \mathbf{b}_{j+1}[2:n+1-j] \), where \( \bar{\mathbf{k}}_{j+1} \in \mathbb{R}^r \) and \( \mathbf{b}_{j+1} \in \mathbb{R}^{n+1-j} \) is non-zero only in its first \( \min(l+1, n+1-j) \) entries.
+\end{enumerate}
+
+\textbf{Base Case (j=0):} Initially, \( A^{(0)} = A \) is trivially an HMBPSM (with \( Q, K, E, X, Y, Z = \mathbf{0} \)) related to \( A_1 = A \).
+
+\textbf{Inductive Step:} Assume the induction hypothesis holds for \( j \). That is, \( A^{(j)}[j+1:n, j+1:n] \) is an HMBPSM related to \( A_{j+1} \), and for \( i = 1, \ldots, j \):
+\begin{equation}
+F[i+1:n, i] = (U \bar{\mathbf{k}}_{i+1})[i+1:n] + \mathbf{b}_{i+1}[2:n+1-i], \label{F_tril}
+\end{equation}
+\begin{equation}
+F[i, i+1:n] = \tilde{\mathbf{d}}_{i+1} + (\tilde{\boldsymbol{\alpha}}_{i+1}^T S^T)[i+1:n] + (\tilde{\boldsymbol{\beta}}_{i+1}^T \bar{S})[i+1:n], \label{F_triu}
+\end{equation}
+with \( \tilde{\boldsymbol{\alpha}}_{i+1} \in \mathbb{R}^p \), \( \tilde{\boldsymbol{\beta}}_{i+1} \in \mathbb{R}^r \), and \( \tilde{\mathbf{d}}_{i+1} \in \mathbb{R}^{n-i} \) non-zero only in its first \( \min(l+m, n-i) \) entries.
+
+Furthermore, assume:
+\begin{equation}
+\begin{aligned}
+A^{(j)}[j+1:n, j+1:n] = & A_{j+1} + U_{j+1} Q_{j+1} S_{j+1}^T + U_{j+1} K_{j+1} U_{j+1}^T A_{j+1} \\
+& + U_{j+1} E_{j+1} + X_{j+1} S_{j+1}^T + Y_{j+1} U_{j+1}^T A_{j+1} + Z_{j+1}, \label{After_HT}
+\end{aligned}
+\end{equation}
+where the modification matrices \( Q_{j+1}, K_{j+1}, E_{j+1}, X_{j+1}, Y_{j+1}, Z_{j+1} \) possess the sparsity patterns specified in Definition 2.1.
+
+If \( j < n-1 \), we now perform the \( (j+1) \)-th Householder transformation on this HMBPSM. Let \( \mathbf{y}_{j+1} \) be the corresponding Householder vector(unlike the form given in \eqref{y_k}, here \( \mathbf{y}_{j+1} \) is a vector of length $n-j$ applied to the corresponding submatrix, and we will follow this convention until the end of section \ref{sec:fastqr}). It can be expressed as \( \mathbf{y}_{j+1} = \mathbf{e}_{j+1} + U^{(j+2)} \bar{\mathbf{k}}_{j+2} + \mathbf{b}_{j+2} \), where \( \mathbf{e}_{j+1} \in \mathbb{R}^{n-j} \) is the first standard basis vector, \( U^{(j+2)} \in \mathbb{R}^{(n-j) \times r} \) satisfies \( U^{(j+2)}[1,:] = \mathbf{0} \) and \( U^{(j+2)}[2:n-j, :] = U[j+2:n, :] \), \( \bar{\mathbf{k}}_{j+2} \in \mathbb{R}^r \), and \( \mathbf{b}_{j+2} \in \mathbb{R}^{n-j} \) is non-zero only in its first \( \min(l+1, n-j) \) entries. This vector defines the \( (j+1) \)-th column of \( F \):
+\begin{equation}
+F[j+2:n, j+1] = (U \bar{\mathbf{k}}_{j+2})[j+2:n] + \mathbf{b}_{j+2}[2:n-j]. \label{F_tril_2}
+\end{equation}
+
+We now apply Lemma \cref{lemma:structure_preserve} to the HMBPSM \( C = A^{(j)}[j+1:n, j+1:n] \), which is related to \( A_{j+1} \). The Householder transformation \( (I - \tau_{j+1} \mathbf{y}_{j+1} \mathbf{y}_{j+1}^T) \) is applied to \( C \), here \(\tau_{j+1}\) is a coefficient found to satisfy the definition of a Householder transformation.
+
+From the lemma, the resulting submatrix \( A^{(j+1)}[j+2:n, j+2:n] \) is an HMBPSM related to \( A_{j+2} \). Its structure is given by equations analogous to \eqref{submatrix_structure}, with updated modification matrices \( Q_{j+2}, K_{j+2}, E_{j+2}, X_{j+2}, Y_{j+2}, Z_{j+2} \), which retain the required sparsity patterns. This satisfies condition 1 for \( j+1 \).
+
+Furthermore, the lemma states that \( A^{(j+1)}[j+1, j+2:n] \) is an HMBPSV related to \( A_{j+1} \). This row becomes \( F[j+1, j+2:n] \) in the final factor matrix. Following the derivation \eqref{row_structure} in the lemma, and using the relation
+\begin{equation}\label{eq:relation_UA}
+U_{j+1}^T A_{j+1}[:, 2:n-j] = (U^T A - \sum_{t=1}^{j} \bar{\mathbf{u}}_t \bar{\mathbf{w}}_t^T S^T)[:, j+2:n] - \sum_{t=\max(j-m+2,1)}^{j} \bar{\mathbf{u}}_t (B[t, j+2:n]),
+\end{equation}
+we can express this row in the form:
+\begin{equation}
+\begin{aligned}
+F[j+1, j+2:n] = & \tilde{\mathbf{d}}_{j+2}^T + (\tilde{\boldsymbol{\alpha}}_{j+2}^T S^T)[j+2:n] + (\tilde{\boldsymbol{\beta}}_{j+2}^T \bar{S})[j+2:n], \label{F_triu_2}
+\end{aligned}
+\end{equation}
+
+where \( \tilde{\mathbf{d}}_{j+2} \) only nonzero in the first $\min(l+m, n-j-1)$ entries, \( \tilde{\boldsymbol{\alpha}}_{j+2}\in \mathbb{R}^p\), and \( \tilde{\boldsymbol{\beta}}_{j+2}\in \mathbb{R}^r \). This satisfies condition 2 for \( j+1 \). Condition 3 for \( j+1 \) is already established by \eqref{F_tril_2}.
+
+By the principle of induction, the hypotheses hold for all \( j = 0, \ldots, n-1 \).
+
+Upon completion of all \( n-1 \) transformations, the factor matrix \( F \) is fully determined. Aggregating the results from \eqref{F_tril} and \eqref{F_triu}, we conclude that \( F \) can be written in the form:
+\begin{equation}
+F = B_F + \text{tril}(U \bar{K}^T, -1) + \text{triu}([\bar{A},\bar{B}] [S,\bar{S}^T]^T, 1), \label{express_F}
+\end{equation}
+where
+\begin{itemize}
+    \item \( \bar{K} \in \mathbb{R}^{n \times r} \) is defined by \( \bar{K}[i,:] = \bar{\mathbf{k}}_{i+1}^T \) for \( i=1,\ldots,n-1 \) and \( \bar{K}[n,:] = \mathbf{0} \).
+    \item \( \bar{A} \in \mathbb{R}^{n \times p} \) is defined by \( \bar{A}[i,:] = \boldsymbol{\alpha}_{i+1}^T \) for \( i=1,\ldots,n-1 \) and \( \bar{A}[n,:] = \mathbf{0} \).
+    \item \( \bar{B} \in \mathbb{R}^{n \times r} \) is defined by \( \bar{B}[i,:] = \boldsymbol{\beta}_{i+1}^T \) for \( i=1,\ldots,n-1 \) and \( \bar{B}[n,:] = \mathbf{0} \).
+    \item \( B_F \) is a banded matrix with lower bandwidth \( l \) and upper bandwidth \( l+m \), defined by:
+    \[
+    B_F[i,j] =
+    \begin{cases}
+        A^{(i)}[i,i], & i = j < n \\
+        A^{(n-1)}[n,n], & i = j = n \\
+        \mathbf{b}_{j+1}[i-j+1], & 0 < i - j \le l \\
+        \tilde{\mathbf{d}}_{i+1}[j-i], & 0 < j - i \le l + m \\
+        0, & \text{otherwise}.
+    \end{cases}
+    \]
+\end{itemize}
+
+The representation in \eqref{express_F} explicitly shows that \( F \) is a banded-plus-semiseparable matrix with a lower semiseparable rank of \( r \), an upper semiseparable rank of \( r+p \), a lower bandwidth of \( l \), and an upper bandwidth of \( l+m \). This completes the proof.
+\end{proof}
+
+
+
+\section{Algorithms}
+\label{sec:algorithms}
+
+\subsection{Fast QR Decomposition for BPS Matrices}
+\label{sec:fastqr}
+
+Based on the structure-preserving theorem proven in Section~\ref{sec:main}, we now present the detailed $O(n)$ algorithm for computing the QR decomposition of a banded-plus-semiseparable matrix. The algorithm exploits the proven fact that the factor matrix $F$ maintains a BPS structure.
+
+\begin{my_algorithm}[Fast QR]\label{algo:fastqr}
+
+This algorithm computes the QR decomposition of a BPS matrix $A = B + \text{tril}(UV^T, -1) + \text{triu}(WS^T, 1)$, producing the structured factor matrix $F$ (which contains both $R$ and the Householder vectors) and the scalar coefficients $\boldsymbol{\tau}$, in $O(n)$ operations.
+
+\textbf{Input:}
+\begin{itemize}
+    \item $B$: Banded matrix with lower bandwidth $l$, upper bandwidth $m$.
+    \item $U, V \in \mathbb{R}^{n \times r}$: Generators for the lower semiseparable part of rank $r$.
+    \item $W, S \in \mathbb{R}^{n \times p}$: Generators for the upper semiseparable part of rank $p$.
+\end{itemize}
+
+\textbf{Output:}
+\begin{itemize}
+    \item $F$: The structured factor matrix, maintained as a BPS matrix with lower rank $r$, upper rank $r+p$, lower bandwidth $l$, and upper bandwidth $l+m$. It is stored via its components:
+    \begin{itemize}
+        \item $B_F$: The updated banded part.
+        \item $\bar{K} \in \mathbb{R}^{n \times r}$: Generator for the lower semiseparable part of $F$.
+        \item $\bar{A} \in \mathbb{R}^{n \times p}, \bar{B} \in \mathbb{R}^{n \times r}$: Generators for the upper semiseparable part of $F$.
+    \end{itemize}
+    \item $\boldsymbol{\tau} \in \mathbb{R}^{n}$: The scalar coefficients for the Householder transformations.
+\end{itemize}
+
+\textbf{Procedure:}
+
+1. \textbf{Initialization:}
+\begin{itemize}
+    \item Set $A^{(0)} = A$. The initial state is an Householder-Modified BPS Matrix with modification matrices $Q, K, E, X, Y, Z$ all set to zero. This corresponds to the original BPS matrix $A$.
+    \item Initialize the output components $B_F$, $\bar{K}$, $\bar{A}$, $\bar{B}$ to zero matrices of their respective sizes. Also compute $\bar{S} = U^T A$. \textit{Note: The matrix $\bar{S}$ can be computed initially in $O(n(r+p))$ time due to the structure of $A$.}
+\end{itemize}
+
+2. \textbf{For $k = 1$ to $n-1$, eliminate the subdiagonal entries of the $k$th column:}
+
+   \textit{We process the submatrix $A^{(k-1)}[k:n, k:n]$, which is an HMBPSM related to $A_{k} = A[k:n, k:n]$.}
+
+   \textbf{(a) Form the Householder vector $\mathbf{y}_{k+1}$:}
+   \begin{itemize}
+       \item Extract the first column of the current HMBPSM.
+       \item According to the inductive proof of Theorem \ref{thm:structure_preserve}, the vector $\mathbf{y}_{k}$ has the specific form:
+         \[
+         \mathbf{y}_{k} = \mathbf{e}_k + U^{(k+1)} \bar{\mathbf{k}}_{k+1} + \mathbf{b}_{k+1}
+         \]
+       \item Based on the definition of a Householder transformation and the structure of our current HMBPSM, we can obtain $\bar{\mathbf{k}}_{k+1}$, $\mathbf{b}_{k+1}$, $\tau_{k}$, and the diagonal entry generated in the current column(denoted as $A^{(k)}[k,k]$), in $O(1)$.
+       \item Set the $k$-th component to $\tau$ as $\tau_k$
+   \end{itemize}
+
+   \textbf{(b) Store the $k$-th column of $F$:}
+   \begin{itemize}
+       \item The subdiagonal part of this column is given by $\mathbf{y}_{k}[2:\text{end}]$. From its structure, we have:
+         \[
+         F[k+1:n, k] = (U \bar{\mathbf{k}}_{k+1})[k+1:n] + \mathbf{b}_{k+1}[2:n-k+1]
+         \]
+       \item Store $\bar{\mathbf{k}}_{k+1}^T$ as the $k$-th row of $\bar{K}$.
+       \item The vector $\mathbf{b}_{k+1}[2:\text{end}]$, which is non-zero only in its first $\min(l, n-k-1)$ entries, is stored in the corresponding subdiagonal positions of the banded part $B_F$.
+       \item Set the digonal part $B_F[k,k]$ to $A^{(k)}[k,k]$, which was obtained in the previous step.
+   \end{itemize}
+
+   \textbf{(c) Compute and store the $k$-th row of $F$:}
+   \begin{itemize}
+       \item This row, $F[k, k+1:n]$, is the first row of the transformed submatrix after the Householder reflection is applied. It is an Householder-Modified BPS Vector:
+         \[
+         F[k, k+1:n] = \tilde{\mathbf{d}}_{k+1}^T + (\tilde{\boldsymbol{\alpha}}_{k+1}^T S^T)[k+1:n] + (\tilde{\boldsymbol{\beta}}_{k+1}^T \bar{S})[k+1:n]
+         \]
+       \item The vectors $\tilde{\boldsymbol{\alpha}}_{k+1} \in \mathbb{R}^p$ and $\tilde{\boldsymbol{\beta}}_{k+1} \in \mathbb{R}^r$ are computed based on the proof in theorem \ref{thm:structure_preserve}. Store $\tilde{\boldsymbol{\alpha}}_{k+1}^T$ and $\tilde{\boldsymbol{\beta}}_{k+1}^T$ as the $k$-th rows of $\bar{A}$ and $\bar{B}$, respectively.
+       \item The vector $\tilde{\mathbf{d}}_{k+2}$, which is non-zero only in its first $\min(l+m, n-k)$ entries, is stored in the corresponding superdiagonal entries of the banded part $B_F$.
+   \end{itemize}
+
+   \textbf{(d) Update the remaining submatrix (Implicit HMBPSM update):}
+   \begin{itemize}
+       \item Update matrices $Q, K, E, X, Y, Z$ as derived in the proof of Lemma \ref{lemma:structure_preserve}.
+       \item Actually, we only need to store and update the nonzero parts of $E, X, Y, Z$, which are $E_s, X_s, Y_s, Z_s$, and they require $O(1)$ storage only.
+       \item These updates consist of low-rank operations and manipulations of matrices with limited non-zero rows/columns, which can be done in $O(1)$ time. 
+   \end{itemize}
+
+3. \textbf{Final step ($k = n$):}
+\begin{itemize}
+    \item The last diagonal element $F[n, n] = A^{(n-1)}[n, n]$ is simply the last remaining 1-by-1 submatrix after the $n-1$ Householder transformations. Store it in $B_F[n, n]$.
+\end{itemize}
+
+4. \textbf{Output:}
+\begin{itemize}
+    \item The complete QR factorization is represented by the structured factor matrix $F$, defined as $B_F + \text{tril}(U \bar{K}^T, -1) + \text{triu}([\bar{A},\bar{B}] [S,\bar{S}^T]^T, 1)$, and the vector $\boldsymbol{\tau}$.
+\end{itemize}
+
+\end{my_algorithm}
+
+\subsubsection*{Complexity Analysis}
+
+The algorithm runs for $n-1$ steps. The cost per step can be expressed as a polynomial in term of $r$, $p$, $l$, and $m$. Since these are constants independent of $n$, the total complexity is $O(n)$. The memory footprint is also $O(n)$, as we store only the generators and banded components.
+
+\begin{remark}
+
+To maintain the $O(1)$ per-step complexity in Algorithm 3.1, two key quantities must be computed efficiently during the Householder updates:
+
+\begin{itemize}
+    \item \textbf{Inner product matrix $U_k^T U_k$}: The computation of intermediate vectors $\mathbf{c}_1, \dots, \mathbf{c}_6$ requires evaluating expressions like $U_k^T \mathbf{y}_k = U_k^T(\mathbf{e}_k + U^{(k+1)}\bar{\mathbf{k}}_{k+1} + \mathbf{b}_{k+1})$, which involves $U_k^T U^{(k+1)}$ that is equal to $U_{k+1}^TU_{k+1}$. we precompute a lookup table:
+    \[
+    \text{UU\_lookup}[k] = U[k:n,:]^T U[k:n,:] \quad \text{for } k = 1,\dots,n
+    \]
+    This can be computed in $O(nr^2)$ time via a backward accumulation.
+
+    \item \textbf{Partial sum $\sum_{t=1}^{j} \bar{\mathbf{u}}_t \bar{\mathbf{w}}_t^T$}: The update of the upper triangular part in equation \eqref{eq:relation_UA} requires this sum. We precompute:
+    \[
+    \text{UV\_lookup}[j] = \sum_{t=1}^{j} \bar{\mathbf{u}}_t \bar{\mathbf{w}}_t^T \quad \text{for } j = 1,\dots,n-1
+    \]
+    This is computed in $O(nrp)$ time via forward accumulation.
+\end{itemize}
+Both precomputations require $O(n)$ total time and enable $O(1)$ access to the required quantities at each step of the factorization, thus preserving the overall $O(n)$ complexity.
+\end{remark}
+
+\subsection{Fast Solver for BPS Matrices}
+\label{sec:solver}
+
+Theorem \ref{thm:structure_preserve} not only enables an efficient QR decomposition but also facilitates a complete direct solver for linear systems of the form \( A\mathbf{x} = \mathbf{b} \), where \( A \) is a banded-plus-semiseparable matrix. The solver consists of two phases after the QR factorization \( A = QR \):
+1. Application of \( Q^T \) to the right-hand side vector \( \mathbf{b} \) to form \( \mathbf{c} = Q^T \mathbf{b} \).
+2. Solution of the upper triangular system \( R\mathbf{x} = \mathbf{c} \) via backward substitution.
+
+We now present \( O(n) \) algorithms for both phases, leveraging the structured representation of the factorization output by Algorithm \ref{algo:fastqr}.
+
+\subsubsection{Fast Application of \( Q^T \)}
+
+The orthogonal matrix \( Q \) is represented as a product of Householder transformations:
+\[
+Q = (I - \tau_1 \mathbf{y}_1 \mathbf{y}_1^T)(I - \tau_2 \mathbf{y}_2 \mathbf{y}_2^T) \cdots (I - \tau_{n-1} \mathbf{y}_{n-1} \mathbf{y}_{n-1}^T).
+\]
+Applying \( Q^T \) to a vector \( \mathbf{b} \) thus requires computing:
+\[
+Q^T\mathbf{b} = (I - \tau_{n-1} \mathbf{y}_{n-1} \mathbf{y}_{n-1}^T) \cdots (I - \tau_2 \mathbf{y}_2 \mathbf{y}_2^T)(I - \tau_1 \mathbf{y}_1 \mathbf{y}_1^T)\mathbf{b}.
+\]
+
+The Householder vectors \( \mathbf{y}_k \) are stored in the factor matrix \( F \) according to the normalization convention established in Section~\ref{sec:main}:
+\[
+\mathbf{y}_k[j] = 
+\begin{cases}
+0, & j < k \\
+1, & j = k \\
+F[j,k], & j > k
+\end{cases}
+\quad \text{for } k = 1, \ldots, n-1.
+\]
+
+From Theorem \ref{thm:structure_preserve}, the factor matrix \( F \) admits the BPS representation:
+\begin{equation}
+F = B_F + \text{tril}(U_F V_F^T, -1) + \text{triu}(W_F S_F^T, 1),
+\label{eq:F_structure_solver}
+\end{equation}
+where \( U_F, V_F \in \mathbb{R}^{n \times r} \), \( W_F, S_F \in \mathbb{R}^{n \times (r+p)} \), and \( B_F \) is banded with lower bandwidth \( l \) and upper bandwidth \( l+m \).
+
+This structure implies that each Householder vector \( \mathbf{y}_k \) can be expressed as:
+\begin{equation}
+\mathbf{y}_k = \bar{\mathbf{e}}_k + U_F^{(k+1)} \bar{\mathbf{v}}_k + \mathbf{d}_k,
+\label{eq:y_structure}
+\end{equation}
+where:
+\begin{itemize}
+    \item \( \bar{\mathbf{e}}_k \in \mathbb{R}^n \) is the \( k \)-th standard basis vector,
+    \item \( U_F^{(k+1)} \in \mathbb{R}^{n \times r} \) satisfies \( U_F^{(k+1)}[1:k,:] = \mathbf{0} \) and \( U_F^{(k+1)}[k+1:n,:] = U_F[k+1:n,:] \),
+    \item \( \bar{\mathbf{v}}_k = V_F[k,:]^T \in \mathbb{R}^r \),
+    \item \( \mathbf{d}_k \in \mathbb{R}^n \) is non-zero only in positions \( k+1 \) to \( \min(k+l, n) \), with \( \mathbf{d}_k[j] = B_F[j,k] \) for \( j = k+1, \ldots, \min(k+l, n) \).
+\end{itemize}
+
+Algorithm~\ref{algo_applyQ} exploits this structure to compute \( Q^T\mathbf{b} \) in \( O(n) \) operations by maintaining a compressed representation of the intermediate vectors throughout the transformation process.
+
+\begin{algorithm}
+\caption{Fast Application of \( Q^T \) to a Vector}\label{algo_applyQ}
+\begin{algorithmic}[1]
+\State \textbf{Input:} Factor matrix \( F \) in BPS form: \( F = B_F + \text{tril}(U_F V_F^T, -1) + \text{triu}(W_F S_F^T, 1) \); coefficient vector \( \boldsymbol{\tau} = [\tau_1, \ldots, \tau_{n-1},0]^T \in \mathbb{R}^{n} \); right-hand side vector \( \mathbf{b} \in \mathbb{R}^n \)
+\State \textbf{Output:} \( \mathbf{c} = Q^T\mathbf{b} \in \mathbb{R}^n \)
+
+\State Initialize:
+\begin{itemize}
+    \item \( O \gets \mathbf{0}_{n \times r} \): Storage for accumulated low-rank updates
+    \item \( G \gets \mathbf{0}_{n \times (l+1)} \): Storage for banded component updates
+    \item \( \mathbf{h} \gets \mathbf{0}_r \): Accumulator for semiseparable component
+    \item Let \( \mathbf{o}_i \) denote the \( i \)-th column of \( O \)
+    \item Let \( \mathbf{g}_i \) denote the \( i \)-th column of \( G \)
+\end{itemize}
+
+\State Express initial vector: \( \mathbf{b}^{(0)} = \mathbf{b} + U_F^{(1)} \mathbf{h} + \sum_{i=1}^r \mathbf{o}_i + \sum_{i=1}^{l+1} \mathbf{g}_i \)
+
+\For{\( k = 1 \) to \( n-1 \)}
+    \State Compute inner product: \( c \gets \mathbf{y}_k^T \mathbf{b}^{(k-1)} \) (exploit BPS structure of \( \mathbf{y}_k \) and precompute some lookup tables for for \( O(1) \) computation)
+    
+    \State Update low-rank storage: \( O[k,:] \gets U_F[k,:] \odot \mathbf{h}^T \) (element-wise multiplication)
+    
+    \State Update semiseparable accumulator: \( \mathbf{h} \gets \mathbf{h} - \tau_k c \cdot V_F[k,:]^T \)
+    
+    \State Update banded component:
+    \State \( G[k,1] \gets -\tau_k c \) (diagonal contribution)
+    \For{\( t = 1 \) to \( \min(l, n-k) \)}
+        \State \( G[k+t,t+1] \gets -\tau_k c \cdot B_F[k+t,k] \) (subdiagonal contributions)
+    \EndFor
+    
+    \State Current representation: \( \mathbf{b}^{(k)} = \mathbf{b} + U_F^{(k+1)} \mathbf{h} + \sum_{i=1}^r \mathbf{o}_i + \sum_{i=1}^{l+1} \mathbf{g}_i \)
+\EndFor
+
+\State Compute final result explicitly: \( \mathbf{c} \gets \mathbf{b} + U_F^{(n)} \mathbf{h} + \sum_{i=1}^r \mathbf{o}_i + \sum_{i=1}^{l+1} \mathbf{g}_i \)
+
+\State \Return \( \mathbf{c} \)
+\end{algorithmic}
+\end{algorithm}
+
+\begin{theorem}
+Algorithm~\ref{algo_applyQ} correctly computes \( \mathbf{c} = Q^T\mathbf{b} \) in \( O(n) \) operations.
+\end{theorem}
+
+\begin{proof}
+The proof proceeds by induction on the transformation steps. Let \( \mathbf{b}^{(0)} = \mathbf{b} \) and assume that after \( k-1 \) steps, the algorithm maintains the representation:
+\[
+\mathbf{b}^{(k-1)} = \mathbf{b} + U_F^{(k)} \mathbf{h}^{(k-1)} + \sum_{i=1}^r \mathbf{o}_i^{(k-1)} + \sum_{i=1}^{l+1} \mathbf{g}_i^{(k-1)},
+\]
+where the superscripts on $\mathbf{h}$, $\mathbf{o}$, and $\mathbf{g}$ denote the state after the \( (k-1) \)-th iteration.
+
+The \( k \)-th Householder transformation gives:
+\[
+\mathbf{b}^{(k)} = (I - \tau_k \mathbf{y}_k \mathbf{y}_k^T) \mathbf{b}^{(k-1)} = \mathbf{b}^{(k-1)} - \tau_k (\mathbf{y}_k^T \mathbf{b}^{(k-1)}) \mathbf{y}_k.
+\]
+
+Substituting the structured form of \( \mathbf{y}_k \) from \eqref{eq:y_structure} and the inductive representation:
+\begin{align*}
+\mathbf{b}^{(k)} &= \mathbf{b} + U_F^{(k)} \mathbf{h}^{(k-1)} + \sum_{i=1}^r \mathbf{o}_i^{(k-1)} + \sum_{i=1}^{l+1} \mathbf{g}_i^{(k-1)} \\
+&\quad - \tau_k c (\bar{\mathbf{e}}_k + U_F^{(k+1)} \bar{\mathbf{v}}_k + \mathbf{d}_k) \\
+&= \mathbf{b} + U_F^{(k+1)} (\mathbf{h}^{(k-1)} - \tau_k c \bar{\mathbf{v}}_k) \\
+&\quad + \left( \sum_{i=1}^r \mathbf{o}_i^{(k-1)} + (U_F^{(k)} - U_F^{(k+1)}) \mathbf{h}^{(k-1)} \right) \\
+&\quad + \left( \mathbf{g}_1^{(k-1)} - \tau_k c \bar{\mathbf{e}}_k \right) + \left( \sum_{i=2}^{l+1} \mathbf{g}_i^{(k-1)} - \tau_k c \mathbf{d}_k \right).
+\end{align*}
+
+The algorithm updates precisely these components:
+\begin{itemize}
+    \item \( \mathbf{h}^{(k)} = \mathbf{h}^{(k-1)} - \tau_k c \bar{\mathbf{v}}_k \),
+    \item \( O[k,:] = U_F[k,:] \odot \mathbf{h}^{(k-1)T} \) captures \( (U_F^{(k)} - U_F^{(k+1)}) \mathbf{h}^{(k-1)} \),
+    \item Banded updates in \( G \) capture the remaining terms.
+\end{itemize}
+
+Thus, the representation is maintained correctly throughout all \( n-1 \) steps. Each step requires \( O(1) \) operations due to the constant-bounded parameters \( r, p, l, m \), yielding overall \( O(n) \) complexity.
+\end{proof}
+
+\subsubsection{Fast Backward Substitution}
+
+After computing \( \mathbf{c} = Q^T\mathbf{b} \), we solve the upper triangular system \( R\mathbf{x} = \mathbf{c} \), where \( R = \text{triu}(F) \) inherits the BPS structure of \( F \). Specifically, the upper triangular part of \( F \) satisfies:
+\[
+R = B_R + \text{triu}(W_F S_F^T, 1),
+\]
+where \( B_R = \text{triu}(B_F) \) is the upper triangular part of the banded component, maintaining upper bandwidth \( l+m \).
+
+Algorithm~\ref{algo_backsub} exploits this structure to perform backward substitution in \( O(n) \) operations by maintaining a running sum for the semiseparable contributions.
+
+\begin{algorithm}
+\caption{Fast Backward Substitution for Structured \( R \)}\label{algo_backsub}
+\begin{algorithmic}[1]
+\State \textbf{Input:} Upper triangular matrix \( R = \text{triu}(F) \) in structured form; transformed right-hand side \( \mathbf{c} \in \mathbb{R}^n \)
+\State \textbf{Output:} Solution \( \mathbf{x} \in \mathbb{R}^n \) satisfying \( R\mathbf{x} = \mathbf{c} \)
+
+\State Initialize:
+\begin{itemize}
+    \item \( \mathbf{x} \gets \mathbf{0}_n \): solution vector
+    \item \( \mathbf{s} \gets \mathbf{0}_{r+p} \): Accumulator for semiseparable contributions
+\end{itemize}
+
+\For{\( j = n \) down to \( 1 \)}
+    \State Initialize residual: \( \text{res} \gets 0 \)
+    
+    \State Add semiseparable contribution: \( \text{res} \gets \text{res} + W_F[j,:] \cdot \mathbf{s} \)
+    
+    \State Add banded contributions:
+    \For{\( k = j+1 \) to \( \min(j+l+m, n) \)}
+        \State \( \text{res} \gets \text{res} + B_R[j,k] \cdot \mathbf{x}[k] \)
+    \EndFor
+    
+    \State Solve for \( x_j \): \( \mathbf{x}[j] \gets (\mathbf{c}[j] - \text{res}) / B_R[j,j] \)
+    
+    \State Update semiseparable accumulator: \( \mathbf{s} \gets \mathbf{s} + S_F[j,:]^T \cdot \mathbf{x}[j] \)
+\EndFor
+
+\State \Return \( \mathbf{x} \)
+\end{algorithmic}
+\end{algorithm}
+
+\begin{theorem}
+Algorithm~\ref{algo_backsub} correctly solves \( R\mathbf{x} = \mathbf{c} \) in \( O(n) \) operations.
+\end{theorem}
+
+\begin{proof}
+The algorithm implements standard backward substitution while exploiting the structure of \( R \). For each index \( j \) from \( n \) down to \( 1 \), the equation:
+\[
+R[j,j] x_j + \sum_{k=j+1}^n R[j,k] x_k = c_j
+\]
+is solved for \( x_j \).
+
+The key insight is that the off-diagonal entries \( R[j,k] \) for \( k > j \) can be decomposed as:
+\[
+R[j,k] = B_R[j,k] + W_F[j,:] \cdot S_F[k,:]^T.
+\]
+
+The banded contributions \( B_R[j,k] \) are non-zero only for \( k = j+1, \ldots, \min(j+l+m, n) \), requiring \( O(1) \) operations per row. The semiseparable contributions are accumulated in the vector \( \mathbf{s} \), which stores:
+\[
+\mathbf{s} = \sum_{i=j+1}^n S_F[i,:]^T x_i.
+\]
+
+At step \( j \), the product \( W_F[j,:] \cdot \mathbf{s} \) thus captures all semiseparable contributions from previously computed solution components. After computing \( x_j \), the accumulator is updated to include its contribution.
+
+Each iteration requires \( O(1) \) operations, yielding overall \( O(n) \) complexity. The correctness follows by induction from \( j = n \) down to \( 1 \).
+\end{proof}
+
+\subsubsection{Overall Solver Complexity}
+
+Combining the QR decomposition (Algorithm \ref{algo:fastqr}), the fast application of \( Q^T \) (Algorithm~\ref{algo_applyQ}), and the fast backward substitution (Algorithm~\ref{algo_backsub}) yields a complete direct solver for BPS linear systems with \( O(n) \) complexity.
+
+\begin{corollary}
+For a banded-plus-semiseparable matrix \( A \in \mathbb{R}^{n \times n} \) with constant-bounded ranks and bandwidths, the linear system \( A\mathbf{x} = \mathbf{b} \) can be solved in \( O(n) \) operations using the QR-based approach.
+\end{corollary}
+
+\begin{proof}
+Algorithm \ref{algo:fastqr} computes the QR decomposition in \( O(n) \) operations. Algorithm~\ref{algo_applyQ} applies \( Q^T \) in \( O(n) \) operations. Algorithm~\ref{algo_backsub} solves the triangular system in \( O(n) \) operations. The overall complexity is therefore linear in the problem size \( n \).
+\end{proof}
+
+\section{Numerical results}
+\label{sec:experiments}
+
+To validate the theoretical complexity and demonstrate the practical efficiency of our proposed algorithms, we implemented the fast QR decomposition and the complete linear solver in Julia. The implementation is publicly available in the SemiseparableMatrices.jl package\footnote{\url{https://github.com/JuliaLinearAlgebra/SemiseparableMatrices.jl}}, providing an open-source resource for the scientific computing community. All numerical tests use banded-plus-semiseparable matrices with fixed structural parameters $l=4$, $m=5$, $r=2$, $p=3$ to isolate the scaling behavior with respect to the matrix size $n$. Computations were carried out on a MacBook Air equipped with an Apple M2 chip (8-core CPU, 8 GB RAM), without GPU acceleration or access to external computing resources.
+
+\subsection{Linear Complexity Verification}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{plot_linearity.pdf}
+\caption{Log-log plot of the total solver time (QR decomposition + application of $Q^T$ + backward substitution) versus matrix size $n$. The dashed reference line has slope 1, indicating ideal linear scaling.}
+\label{fig:scaling}
+\end{figure}
+
+Figure~\ref{fig:scaling} demonstrates the linear time complexity of our complete solver for banded-plus-semiseparable linear systems. The total execution time, encompassing all three phases (QR decomposition, application of $Q^T$, and backward substitution), scales as $O(n)$ across five orders of magnitude, from $n=100$ to $n=10^6$. The close alignment with the reference line of slope 1 confirms the complexity analysis in Section~\ref{sec:algorithms}.
+
+\subsection{Comparison with HODLR QR}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{plot_comparison.pdf}
+\caption{Comparison of QR decomposition times between our fast BPS QR algorithm and the HODLR QR implementation from~\cite{massei2020hm}. Both algorithms operate on banded-plus-semiseparable matrices with parameters $l=4$, $m=5$, $r=2$, $p=3$.}
+\label{fig:comparison}
+\end{figure}
+
+We compare our fast QR decomposition against the state-of-the-art HODLR (Hierarchically Off-Diagonal Low-Rank) QR implementation from the hm-toolbox~\cite{massei2020hm}. The hm-toolbox provides efficient MATLAB routines for various structured matrices, including HODLR and HSS matrices, and represents one of the most mature implementations for hierarchical matrix computations.
+
+Figure~\ref{fig:comparison} shows the execution times for QR decomposition of BPS matrices using both approaches. Our algorithm demonstrates superior scaling for larger matrix sizes. This performance advantage stems from several factors:
+
+\begin{itemize}
+\item \textbf{Specialized structure exploitation}: Our algorithm is specifically designed for the banded-plus-semiseparable structure, avoiding the overhead of general hierarchical representations.
+\item \textbf{Reduced Computational Overhead}: By working directly with the semiseparable generators rather than building a hierarchical representation, we avoid the logarithmic factors inherent in tree-based approaches.
+\end{itemize}
+
+The performance gap widens with increasing $n$, confirming that our method is particularly well-suited for large-scale problems. For $n=150000$, our implementation achieves approximately 7$\times$ speedup over the HODLR approach, demonstrating the practical benefits of our specialized algorithm.
+
+
+\section{Conclusions}
+\label{sec:conclusions}
+
+In this paper, we have established a fundamental theoretical result for BPS matrices and developed efficient algorithms based on this foundation. Our main contribution is the proof that the QR factorization of a BPS matrix preserves the banded-plus-semiseparable structure, with precisely characterized ranks and bandwidths in the resulting factor matrix. This theoretical insight enabled the design of a complete $O(n)$ direct solver for BPS linear systems, comprising:
+\begin{itemize}
+\item A structure-preserving QR decomposition algorithm (Algorithm~\ref{algo:fastqr})
+\item An efficient $O(n)$ application of $Q^T$ (Algorithm~\ref{algo_applyQ})
+\item A fast backward substitution routine (Algorithm~\ref{algo_backsub})
+\end{itemize}
+
+The numerical experiments confirm the linear scaling of our approach and demonstrate significant performance advantages over existing HODLR-based methods. Our implementation in the SemiseparableMatrices.jl package provides the scientific computing community with efficient, open-source tools for working with this important class of structured matrices.
+
+\subsection*{Future Work}
+
+A compelling extension involves applying our methodology to blocked banded matrices arising in $hp$-FEM for the bad Helmholtz equation~\cite{knook2024quasi}. The key challenge is generalizing our framework to \emph{block} banded-plus-semiseparable matrices while maintaining $O(N)$ complexity. The primary difficulty lies in applying Householder transformations from one block to subsequent blocks in $O(n)$ time(where $n$ is block size and $N$ the total size), rather than $O(n^3)$. While our current framework doesn't directly apply, the core insight of structure preservation provides a promising foundation for this challenging extension.
+
+
+
+\bibliographystyle{siamplain}
+\bibliography{references}
+\end{document}
