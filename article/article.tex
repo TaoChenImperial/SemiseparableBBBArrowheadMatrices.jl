@@ -13,7 +13,21 @@
 \usepackage{epstopdf}
 %\usepackage{algorithmic}
 \usepackage{algorithm} 
+
+
+\usepackage{todonotes}
+\newcommand{\sotodo}{\todo[color=green]}
+\newcommand{\sotodoinline}{\todo[color=green,inline=true]}
+\newcommand{\tctodo}{\todo[color=red]}
+\newcommand{\tctodoinline}{\todo[color=red,inline=true]}
+
 \renewcommand{\thealgorithm}{\thesubsection.\arabic{algorithm}}
+
+\def\bbR{{\mathbb R}}
+\def\BPS{{\mathrm{BPS}}_{(r,p),(l,u)}^{n \times n}}
+\def\calP{{\mathcal P}}
+\def\calV{{\mathcal V}}
+
 \makeatletter
 \@addtoreset{algorithm}{subsection}
 \makeatother
@@ -36,11 +50,11 @@
 \newsiamthm{claim}{Claim}
 
 % Sets running headers as well as PDF title and authors
-\headers{Fast QR for Banded Plus Semiseparable Matrices}{T. Chen and S. Olver}
+\headers{QR for Banded-Plus-Semiseparable Matrices}{T. Chen and S. Olver}
 
 % Title. If the supplement option is on, then "Supplementary Material"
 % is automatically inserted before the title.
-\title{An O(n) QR Decomposition for Banded-Plus-Semiseparable Matrices}
+\title{The  QR Factorization for Banded-Plus-Semiseparable Matrices is computable in linear complexity}
 
 % Authors: full names plus addresses.
 \author{Tao Chen\thanks{Department of Mathematics, Imperial College London, London, UK
@@ -49,6 +63,8 @@
 
 \usepackage{amsopn}
 \DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\triu}{triu}
+\DeclareMathOperator{\tril}{tril}
 
 
 %% Added on Overleaf: enabling xr
@@ -69,7 +85,7 @@
 % Optional PDF information
 \ifpdf
 \hypersetup{
-  pdftitle={An O(n) QR Decomposition for Banded-Plus-Semiseparable Matrices},
+  pdftitle={The  QR factorization of a Banded-Plus-Semiseparable Matrix is Computable with Linear Complexity},
   pdfauthor={D. Doe, P. T. Frank, and J. E. Smith}
 }
 \fi
@@ -98,7 +114,7 @@
 \maketitle
 
 \begin{abstract}
-We prove that the QR factorization of banded-plus-semiseparable matrices preserves the matrix structure, with the factor matrix maintaining banded-plus-semiseparable form with explicitly characterizable ranks and bandwidths. This theoretical result enables the design of linear-complexity algorithms for QR decomposition and for solving the associated linear systems. Numerical experiments validate the $O(n)$ scaling and demonstrate substantial speedups compared with existing hierarchical approaches. The algorithms have been implemented in Julia, providing an efficient and accessible platform for practical use.
+We show that each stage of the QR factorization of banded-plus-semiseparable matrices computed using Householder reflections has a specific structured perturbation. This theoretical result enables the design of linear-complexity algorithms for QR factorization and for solving the associated linear systems. Numerical experiments validate the optimal linear complexity  and demonstrate substantial speedups compared with existing hierarchical approaches. The algorithms have been implemented in an open-source Julia package, providing an efficient and accessible platform for practical use.
 \end{abstract}
 
 \begin{keywords}
@@ -111,32 +127,50 @@ banded-plus-semiseparable matrices, QR factorization, linear complexity, structu
 
 \section{Introduction}
 
-Banded-plus-semiseparable (BPS) matrices, expressible as \begin{equation*}
-A = \underbrace{B}_{\text{banded}} + \underbrace{\text{tril}(UV^T, -1)}_{\text{lower semiseparable, rank } r} + \underbrace{\text{triu}(WS^T, 1)}_{\text{upper semiseparable, rank } p},
+\sotodoinline{Do we want to allow for complex numbers?}
+
+\sotodoinline{What to say about QR algorithm?}
+
+\sotodoinline{Add a nullspace problem coming from the ultraspherical spectral method?}
+
+\sotodoinline{Does it generalise to rectangular?}
+
+\sotodoinline{Say something about inverses of banded matrices being banded-plus-semiseparable?}
+
+\sotodoinline{Add stability plot}
+
+Banded-plus-semiseparable (BPS) matrices, expressible as \sotodo{Change all the ${}^T$ to ${}^\top$}
+\begin{equation*}
+A = \underbrace{B}_{\text{banded}} + \underbrace{\tril(UV^T, -1)}_{\text{lower semiseparable, rank } r} + \underbrace{\triu(WS^T, 1)}_{\text{upper semiseparable, rank } p} \in \bbR^{n \times n},
 \end{equation*}
- arise in numerous applications from PDEs with non-local interactions~\cite{knook2024quasi} to signal processing, control theory, and eigenvalue problems~\cite{vandebril2005note}. Their structure invites the development of \( O(n) \) algorithms, a goal successfully achieved for purely banded or semiseparable systems~\cite{vandebril2005implicit}, and even for the fundamental case of \emph{diagonal}-plus-semiseparable matrices as early as~\cite{eidelman1997inversion}. However, generalizing these results to the case where the banded part $B$ is a genuine banded matrix, rather than merely a diagonal one, presents significant algorithmic challenges. 
+ arise in numerous applications from PDEs with non-local interactions~\cite{knook2024quasi}\sotodo{This is a bizarre reference and description. Is it AI generated?} to signal processing, control theory, and eigenvalue problems~\cite{vandebril2005note}\sotodo{Add citations to Arieh Iserles W-systems papers}. Their structure requires only $O(n)$ storage which invites the development of \( O(n) \) algorithms, a goal successfully achieved for iterations of the QR algorithm for symmetric semiseparable systems~\cite{vandebril2005implicit}, and for solving linear systems with \emph{diagonal}-plus-semiseparable matrices~\cite{eidelman1997inversion}. 
+  However, generalizing these results to the case where the banded part $B$ is a genuine banded matrix, rather than merely a diagonal one, presents significant algorithmic challenges. 
 
-Solving linear systems with BPS matrices efficiently is non-trivial, as the components interact during decomposition. Pioneering work established \( O(n) \) solvers for sequentially semiseparable matrices~\cite{chandrasekaran2002fast} and later for the banded-plus-semiseparable case via ULV decomposition~\cite{chandrasekaran2003fast}, with subsequent extensions to the hierarchically semiseparable (HSS) framework~\cite{chandrasekaran2006fast, xia2010fast, chandrasekaran2007fast, massei2020hm}. A parallel line of research extensively developed the theory and algorithms for semiseparable and quasiseparable matrices, including implicit QR algorithms for \emph{symmetric} semiseparable matrices~\cite{vandebril2005implicit}, structure-preserving analyses~\cite{delvaux2006structures, delvaux2006rank, eidelman2005qr}, approaches leveraging rational Krylov techniques~\cite{vandebril2008rational, fasino2005rational}, and alternative representations~\cite{vandebril2005note, delvaux2008givens}. Despite these advances, a clear theoretical guarantee that the standard QR factorization preserves the BPS structure has been missing, with most existing solvers relying on more complex ULV or intricate Givens-based schemes~\cite{chandrasekaran2003fast, van2004two, mastronardi2001fast, delvaux2008qr}.
 
-In this paper, we close this theoretical gap. We prove that the QR factorization of a BPS matrix yields a factor matrix \( F \) that is itself BPS, with precisely characterized lower rank \( r \), upper rank \( r+p \), and bandwidths \( l \) and \( l+m \). This pivotal result, proven via an inductive framework involving a new class of Householder-Modified BPS Matrices (HMBPSM), immediately enables the design of a straightforward \( O(n) \) QR decomposition. Furthermore, it facilitates a complete direct solver: applying \( Q^T \) and performing backward substitution on the structured factor \( R \) are also achieved in linear time~\cite{olver2013fast}. Our work thus provides a unified, QR-based, end-to-end \( O(n) \) solution for BPS systems, backed by a rigorous structure-preservation theorem.
+\sotodoinline{Clarify exact relationship between prior work and ours}
 
-The rest of this paper is organized as follows. Section~2 presents our main theoretical contributions: the definitions, the core lemma on structure preservation under Householder transformations, and the main theorem with its proof. Section~3 details the resulting $O(n)$ algorithms for QR decomposition, application of $Q^T$, and backward substitution. Section~4 presents numerical experiments that confirm the linear complexity and demonstrate performance advantages. We conclude in Section~5 with a discussion of future work.
+Pioneering work established \( O(n) \) solvers for sequentially\sotodo{What's a sequentially semiseparable matrix?} semiseparable matrices~\cite{chandrasekaran2002fast} and later for the banded-plus-semiseparable case via ULV factorization~\cite{chandrasekaran2003fast}. Banded-plus-semiseparable matrices can be viewed as  hierarchically semiseparable (HSS) matrices, and solvers using HSS structure is a well-developed area~\cite{chandrasekaran2006fast, chandrasekaran2007fast, xia2010fast, massei2020hm}. A parallel line of research extensively developed the theory and algorithms for semiseparable and quasiseparable matrices, including implicit QR algorithms for \emph{symmetric} semiseparable matrices~\cite{vandebril2005implicit}, structure-preserving analyses~\cite{eidelman2005qr, delvaux2006structures, delvaux2006rank}, approaches leveraging rational Krylov techniques~\cite{fasino2005rational, vandebril2008rational}, and alternative representations~\cite{vandebril2005note, delvaux2008givens}. Despite these advances, a clear theoretical guarantee that the standard QR factorization preserves the BPS structure has been missing, with most existing solvers relying on more complex ULV or intricate Givens-based schemes~\cite{mastronardi2001fast, chandrasekaran2003fast, van2004two, delvaux2008qr}. A special case of BPS matrices are almost banded matrices which were used in \cite{olver2013fast} to represent discretisations of differential equations using the ultraspherical spectral method. An optimal complexity adaptive QR factorization was introduced, which also gives an optimal complexity QR factorization for BPS matrices with now lower semiseparable part ($r = 0$). It also introduced an optimal complexity back-substitution for upper-triangular BPS matrices, an algorithm we also use.
+
+In this paper, we close this theoretical gap. We prove that the QR factorization of a BPS matrix yields a factor matrix \( F \), which is the matrix containing both $R$ and the Householder reflectors encoding $Q$,  that is itself BPS, with precisely characterized lower rank \( r \), upper rank \( r+p \), and bandwidths \( l \) and \( l+m \). This pivotal result, proven via an inductive framework involving a new class of Householder-Modified BPS Matrices (HMBPSM), which enables the design of an \( O(n) \) QR factorization. Furthermore, it facilitates a complete direct solver: applying \( Q^T \) and performing backward substitution on the structured factor \( R \) are also achieved in linear time. Our work thus provides a unified, QR-based, end-to-end \( O(n) \) solution for BPS systems, backed by a rigorous structure-preservation theorem.
+
+The rest of this paper is organized as follows. Section~2 presents our main theoretical contributions: the definitions, the core lemma on structure preservation under Householder transformations, and the main theorem with its proof. Section~3 details the resulting $O(n)$ algorithms for QR factorization, application of $Q^T$, and backward substitution. Section~4 presents numerical experiments that confirm the linear complexity and demonstrate performance advantages. We conclude in Section~5 with a discussion of future work.
 \section{Main results}
 \label{sec:main}
 
 \subsection{Problem Formulation and Notation}
 
-Before we start, an important notation will be: for a matrix $M$, let $M[i:j,m:n]$ represent the submatrix of $M$ from row $i$ to row $j$ and from column $m$ to column $n$. When $i=j$ or $m=n$, the notation will be simplified as $M[i,m:n]$ or $M[i:j,m]$. We also adopt the convention that writing \textbf{end} in an index(such as $M[i:\text{end},:]$) to indicates the last valid index in that dimension.
+Before we start, an important notation will be: for a matrix $M$, let $M[i:j,m:n]$ represent the submatrix of $M$ from row $i$ to row $j$ and from column $m$ to column $n$. When $i=j$ or $m=n$, the notation will be simplified as $M[i,m:n]$\sotodo{Not actually defined. And I think it would be cleaner if its a column vector} or $M[i:j,m]$. We also adopt the convention that writing \textbf{end}\sotodo{I don't think we should use end here} in an index(such as $M[i:\text{end},:]$) to indicates the last valid index in that dimension.
 
-Now consider an \( n \times n \) banded-plus-semiseparable matrix \( A \), characterized by a lower triangular semiseparable part of rank \( r \), an upper triangular semiseparable part of rank \( p \), a banded part with lower bandwidth \( l \), and upper bandwidth \( m \).
+\begin{definition}
+    A {\it banded-plus-semseparable matrix} (BPS) with lower-semisepable rank $r$, upper-semiseparable rank $p$, lower-bandwidth $l$ and upper-bandwidth $m$\sotodo{I usually use $u$ for upper-bandwidth}  is $A \in \BPS \subset \bbR^{n \times n}$ such that
+\[
+A = B + \tril(UV^T, -1) + \triu(WS^T, 1)\label{express_A}
+\]
+where \( U, V \in \mathbb{R}^{n\times r} \), \( W, S \in \mathbb{R}^{n\times p} \), and\sotodo{Change $i$ to $k$} \( B = (b_{ij})_{i,j=1}^n \in \mathbb{R}^{n \times n} \) is a banded matrix satisfying \( b_{ij}=0 \) for \( i-j>l \) or \( j-i>m \).
+\end{definition}
 
-The matrix \( A \) admits the following representation:
-\begin{equation}
-A = B + \text{tril}(UV^T, -1) + \text{triu}(WS^T, 1)\label{express_A}
-\end{equation}
-where \( U, V \in \mathbb{R}^{n\times r} \), \( W, S \in \mathbb{R}^{n\times p} \), and \( B = (b_{ij}) \in \mathbb{R}^{n \times n} \) is a banded matrix satisfying \( b_{ij}=0 \) for \( i-j>l \) or \( j-i>m \).
 
-Define vectors \( \bar{\mathbf{u}}_i = U[i,:]^T \in \mathbb{R}^r \), \( \bar{\mathbf{v}}_i = V[i,:]^T \in \mathbb{R}^r \), \( \bar{\mathbf{w}}_i = W[i,:]^T \in \mathbb{R}^p \), and \( \bar{\mathbf{s}}_i = S[i,:]^T \in \mathbb{R}^p \) for \( i=1,\ldots,n \). The matrix \( A \) can then be expressed element-wise as:
+Define vectors \( \bar{\mathbf{u}}_i = U[i,:]^T \in \mathbb{R}^r \), \( \bar{\mathbf{v}}_i = V[i,:]^T \in \mathbb{R}^r \)\sotodo{Shouldn't these be the columns of $V$? and why the bar?}, \( \bar{\mathbf{w}}_i = W[i,:]^T \in \mathbb{R}^p \), and \( \bar{\mathbf{s}}_i = S[i,:]^T \in \mathbb{R}^p \) for \( i=1,\ldots,n \). The matrix \( A \) can then be expressed element-wise as: \sotodo{Only number equations that are cited}
 \begin{equation}
 A =
 \begin{bmatrix}
@@ -147,9 +181,9 @@ b_{11} & \bar{\mathbf{w}}_1^T \bar{\mathbf{s}}_2 + b_{12} & \cdots & \bar{\mathb
 \end{bmatrix}.
 \end{equation}
 
-Applying the QR decomposition to \( A \) yields a factor matrix \( F \), whose upper triangular part stores the matrix \( R \) and whose lower triangular part contains the Householder reflection vectors \( \mathbf{y} \) generated during the decomposition. We will demonstrate that \( F \) itself retains a banded-plus-semiseparable structure. Specifically, its lower semiseparable part has rank \( r \), its upper semiseparable part has rank \( r+p \), its lower bandwidth is \( l \), and its upper bandwidth is \( l+m \).
+Applying the QR factorization to \( A \) yields a factor matrix \( F \), whose upper triangular part stores the matrix \( R \) and whose lower triangular part contains the Householder reflection vectors \( \mathbf{y} \) generated during the factorization. We will demonstrate that \( F \) itself retains a banded-plus-semiseparable structure. Specifically, its lower semiseparable part has rank \( r \), its upper semiseparable part has rank \( r+p \), its lower bandwidth is \( l \), and its upper bandwidth is \( l+m \).
 
-Before proceeding with the detailed proof, let us clarify the precise structure of the factor matrix \( F \) obtained from the QR decomposition. In this work, we employ a compact representation that stores the complete information of the QR factorization in a single matrix:
+Before proceeding with the detailed proof, let us clarify the precise structure of the factor matrix \( F \) obtained from the QR factorization. In this work, following the convention of LAPack \sotodo{add citation}, we employ a compact representation that stores the complete information of the QR factorization in a single matrix:
 
 \begin{equation}
 F = \begin{bmatrix}
@@ -160,13 +194,7 @@ y_{3,1} & y_{3,2} & r_{33} & \cdots & r_{3n} \\
 y_{n,1} & y_{n,2} & y_{n,3} & \cdots & r_{nn}
 \end{bmatrix}
 \end{equation}
-
-where:
-- The \textbf{upper triangular part (including the main diagonal)} of \( F \) stores the elements of the upper triangular matrix \( R \), i.e.:
-  \begin{equation}
-  R = \text{triu}(F)
-  \end{equation}
-- The \textbf{strictly lower triangular part (excluding the main diagonal)} of \( F \) stores the last \( n-k \) elements of the Householder reflection vectors \( \mathbf{y}_k \) generated at each step.
+where: the upper triangular part (including the main diagonal) of \( F \) stores the elements of the upper triangular matrix \( R \), i.e.: $R = \triu(F)$, and thestrictly lower triangular part (excluding the main diagonal) of \( F \) stores the last \( n-k \) elements of (rescaled) Householder reflection vectors \( \mathbf{y}_k \) generated at each step.
 
 More specifically, at the \( k \)-th Householder transformation step (\( k = 1, 2, \ldots, n-1 \)), we construct a reflection vector \( \mathbf{y}_k \) to eliminate the subdiagonal entries of the \( k \)-th column. This vector takes the form:
 \begin{equation}\label{y_k}
@@ -174,12 +202,11 @@ More specifically, at the \( k \)-th Householder transformation step (\( k = 1, 
 \begin{array}{l} \left.\vphantom{\begin{bmatrix} 0 \\ 0 \\ 1 \end{bmatrix}}\right\} k-1 \text{ zeros} \\ \\ \left.\vphantom{\begin{bmatrix} y_{k+1,k} \\ \vdots \\ y_{n,k} \end{bmatrix}}\right\} n-k \text{ elements}
 \end{array}
 \end{equation}
-
-Following standard practice, we normalize \( \mathbf{y}_k \) such that its first nonzero element (the \( k \)-th element) equals 1. Consequently, we only need to store the elements from position \( k+1 \) to \( n \) of this vector, which are placed in the \( k \)-th column of \( F \), from row \( k+1 \) to \( n \).
+Following the LAPack format, we normalize \( \mathbf{y}_k \) such that its first nonzero element (the \( k \)-th element) equals 1. Consequently, we only need to store the elements from position \( k+1 \) to \( n \) of this vector, which are placed in the \( k \)-th column of \( F \), from row \( k+1 \) to \( n \).
 
 The advantage of this representation is that it compactly stores the information of both the orthogonal matrix \( Q \) (via the Householder vectors) and the upper triangular matrix \( R \) within a single matrix \( F \). The central result of this paper will demonstrate that for a banded-plus-semiseparable matrix \( A \), this factor matrix \( F \) itself maintains a banded-plus-semiseparable structure.
 
-It is important to note that with this normalization convention (where the first nonzero element of each Householder vector \( \mathbf{y}_k \) is 1), the full Householder transformation at the \( k \)-th step is given by \( I - \tau_k \mathbf{y}_k \mathbf{y}_k^T \), where \( \tau_k \) is a scalar coefficient. Therefore, in addition to the factor matrix \( F \), a vector \( \boldsymbol{\tau} = (\tau_1, \tau_2, \ldots, \tau_{n-1})^T \) is required to completely represent the QR decomposition. The orthogonal matrix \( Q \) can be reconstructed as the product \( Q = (I - \tau_1 \mathbf{y}_1 \mathbf{y}_1^T)(I - \tau_2 \mathbf{y}_2 \mathbf{y}_2^T) \cdots (I - \tau_{n-1} \mathbf{y}_{n-1} \mathbf{y}_{n-1}^T) \).
+It is important to note that with this normalization convention (where the first nonzero element of each Householder vector \( \mathbf{y}_k \) is 1), the full Householder transformation at the \( k \)-th step is given by \( I - \tau_k \mathbf{y}_k \mathbf{y}_k^T \), where \( \tau_k \) is a scalar coefficient. Therefore, in addition to the factor matrix \( F \), a vector \( \boldsymbol{\tau} = (\tau_1, \tau_2, \ldots, \tau_{n-1})^T \) is required to completely represent the QR factorization. The orthogonal matrix \( Q \) can be reconstructed as the product \( Q = (I - \tau_1 \mathbf{y}_1 \mathbf{y}_1^T)(I - \tau_2 \mathbf{y}_2 \mathbf{y}_2^T) \cdots (I - \tau_{n-1} \mathbf{y}_{n-1} \mathbf{y}_{n-1}^T) \).
 
 Throughout our analysis, we will focus on the structure of the factor matrix \( F \), while acknowledging that the complete QR representation consists of the pair \( (F, \boldsymbol{\tau}) \). Our main theorem establishes that \( F \) maintains the banded-plus-semiseparable structure; the scaling coefficients \( \tau_k \) can be stored separately without affecting the structural properties of the algorithm.
 
@@ -187,43 +214,66 @@ We proceed to prove this by induction. First, we introduce two key definitions a
 
 \subsection{Core Definitions and a Key Lemma}
 
-\begin{definition}[Householder-Modified Banded-Plus-Semiseparable Matrix]\label{def:hmbpsm}
-Given a banded-plus-semiseparable matrix (BPSM) \( A = B + \text{tril}(UV^T, -1) + \text{triu}(WS^T, 1) \), a matrix \( C \) is termed a \emph{Householder-modified banded-plus-semiseparable matrix} (HMBPSM) related to \( A \) if it satisfies:
-\begin{equation}
-C = A + UQS^T + UKU^TA + UE + XS^T + YU^TA + Z
-\end{equation}
-for some matrices \( Q \in \mathbb{R}^{r\times p} \), \( K \in \mathbb{R}^{r\times r} \), \( E = [E_s, \mathbf{0}] \in \mathbb{R}^{r \times n} \) with \( E_s \in \mathbb{R}^{r\times \min(l+m,n)} \), \( X = \begin{bmatrix} X_s \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n\times p} \) with \( X_s \in \mathbb{R}^{\min(l,n)\times p} \), \( Y = \begin{bmatrix} Y_s \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n \times r} \) with \( Y_s \in \mathbb{R}^{\min(l,n)\times r} \), and \( Z = \begin{bmatrix} Z_s & \mathbf{0} \\ \mathbf{0} & \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n \times n} \) with \( Z_s \in \mathbb{R}^{\min(l,n)\times \min(l+m,n)} \).
+While the final factor matrix of a QR factorization is a BPS matrix, at  intermediate  stages it has a specific structured perturbation. Here we describe this structure in terms of a linear space that, at each stage, the principle submatrix lies in:
+
+\begin{definition}[BPS Factors Perturbation Matrix]\label{def:hmbpsm}
+Given 
+\[
+A = B + \tril(UV^T, -1) + \triu(WS^T, 1)  \in \BPS 
+\]
+a \emph{BPS Factors Perturbation Matrix} (BPSFPM) is in the vector space 
+\begin{align*}
+\calP(A) &:= \bigg\{
+UQS^T + UKU^TA + UE + XS^T + YU^TA + Z :\\
+&\qquad\quad  Q \in \mathbb{R}^{r\times p}, K \in \mathbb{R}^{r\times r}, \\
+&\qquad\quad E = [E_s \in \mathbb{R}^{r\times \min(l+m,n)}, \mathbf{0}] \in \mathbb{R}^{r \times n} ,\\
+ &\qquad\quad  X = \begin{bmatrix} X_s \in \mathbb{R}^{\min(l,n)\times p}  \\ \mathbf{0} \end{bmatrix}  \in \mathbb{R}^{n \times p}, \\
+ &\qquad\quad  Y = \begin{bmatrix} Y_s \in \mathbb{R}^{\min(l,n)\times r}  \\ \mathbf{0} \end{bmatrix}   \in \mathbb{R}^{n \times r},\\ 
+&\qquad\quad Z = \begin{bmatrix} Z_s  \in \mathbb{R}^{\min(l,n)\times \min(l+m,n)} & \mathbf{0} \\ \mathbf{0} & \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n \times n}
+\bigg\} \subset \bbR^{n \times n}.
+\end{align*}
 \end{definition}
 
-\begin{definition}[Householder-Modified Banded-Plus-Semiseparable Vector]
-Let \( A \in \mathbb{R}^{n \times n} \) be a BPSM as defined above. A row vector \( \mathbf{c} \in \mathbb{R}^{n-1} \) is called a \emph{Householder-modified banded-plus-semiseparable vector} (HMBPSV) related to \( A \) if it admits the representation:
-\begin{equation}
-\mathbf{c} = \mathbf{d}^T + \boldsymbol{\alpha}^T (S^T[:,2:n]) + \boldsymbol{\beta}^T ((U^TA)[:,2:n])
-\end{equation}
-for some \( \mathbf{d} = \begin{bmatrix} \mathbf{d}_s \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n-1} \) with \( \mathbf{d}_s \in \mathbb{R}^{\min(l+m,n)} \), \( \boldsymbol{\alpha} \in \mathbb{R}^p \), and \( \boldsymbol{\beta} \in \mathbb{R}^r \).
+In addition, we need to describe the structure of the upper-triangular part in terms of a structured vector:
+
+
+\begin{definition}[BPS Factors Vector]
+Given \( A \in  \BPS \) a \emph{BPS Factors Vector} (BPSFV) is a row vector\sotodo{should we change to column vector?} in the vector space
+\begin{align*}
+\calV(A) &:= \bigg\{\mathbf{d}^T + \boldsymbol{\alpha}^T (S^T[:,2:n]) + \boldsymbol{\beta}^T ((U^TA)[:,2:n]) : \\
+&\qquad\quad \mathbf{d} = \begin{bmatrix} \mathbf{d}_s \in \mathbb{R}^{\min(l+m,n-1)}  \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n-1}, \boldsymbol{\alpha} \in \mathbb{R}^p , \boldsymbol{\beta} \in \mathbb{R}^r\bigg\} \subset \bbR^{1 \times (n-1)}.
+\end{align*}
 \end{definition}
+
 
 \begin{lemma}\label{lemma:structure_preserve}
-Given a BPSM \( A \) and its associated HMBPSM \( C \), suppose a Householder transformation is applied to \( C \) to eliminate the subdiagonal entries of its first column, yielding \( \tilde{C} = (I - \tau \mathbf{y} \mathbf{y}^T) C \). Then the following hold:
+Given \( A \in \BPS \) and  \( P \in \calP(A) \), suppose a Householder transformation is applied to \( A+P \) to eliminate the subdiagonal entries of its first column, yielding\sotodo{generalise so it doesn't need to be Householder} \( \tilde{C} = (I - \tau \mathbf{y} \mathbf{y}^T) (A+P) \). Then the following hold:
 \begin{enumerate}
-    \item The submatrix \( \tilde{C}[2:n, 2:n] \) is an HMBPSM related to \( A[2:n, 2:n] \).
-    \item The row vector \( \tilde{C}[1, 2:n] \) is an HMBPSV related to \( A \).
+    \item The principal submatrix satisfies \( \tilde{C}[2:n, 2:n] = A[2:n, 2:n] + \tilde P\) for \(\tilde P  \in \calP(A[2:n, 2:n]) \).
+    \item The first row satisfies \( \tilde{C}[1, 2:n] \in \calV(A) \).
 \end{enumerate}
 \end{lemma}
 
 \begin{proof}
+    \sotodoinline{I'll start updating the proof tomorrow}
 Let us introduce the necessary notation:
 \begin{itemize}
-    \item \( A = B + \text{tril}(UV^T, -1) + \text{triu}(WS^T, 1) \), where \( U=(\mathbf{u}_1,...,\mathbf{u}_r) \in \mathbb{R}^{n\times r}\), \( V=(\mathbf{v}_1,...,\mathbf{v}_r)\in \mathbb{R}^{n\times r}\), \( W=(\mathbf{w}_1,...,\mathbf{w}_p)\in \mathbb{R}^{n\times p}\), and \(S=(\mathbf{s}_1,...,\mathbf{s}_p)\in \mathbb{R}^{n \times p}\). Here \( \mathbf{u}_i=(u_1^{(i)},...,u_n^{(i)})^T\in \mathbb{R}^n\) and \( \mathbf{v}_i=(v_1^{(i)},...,v_n^{(i)})^T\in \mathbb{R}^n\) for $i=1,...,r$; \( \mathbf{w}_i=(w_1^{(i)},...,w_n^{(i)})^T\in \mathbb{R}^n\) and \( \mathbf{s}_i=(s_1^{(i)},...,s_n^{(i)})^T\in \mathbb{R}^n\) for \( i=1,...,p\). Also, \( B=(b_{ij})_{i,j=1}^n\in \mathbb{R}^{n,n}\) with \( b_{ij}=0\) if \( i-j>l\) or \( j-i>m\).
+    \item \( A = B + \tril(UV^T, -1) + \triu(WS^T, 1) \), where \( U=(\mathbf{u}_1,...,\mathbf{u}_r) \in \mathbb{R}^{n\times r}\), \( V=(\mathbf{v}_1,...,\mathbf{v}_r)\in \mathbb{R}^{n\times r}\), \( W=(\mathbf{w}_1,...,\mathbf{w}_p)\in \mathbb{R}^{n\times p}\), and \(S=(\mathbf{s}_1,...,\mathbf{s}_p)\in \mathbb{R}^{n \times p}\). Here \( \mathbf{u}_i=(u_1^{(i)},...,u_n^{(i)})^T\in \mathbb{R}^n\) and \( \mathbf{v}_i=(v_1^{(i)},...,v_n^{(i)})^T\in \mathbb{R}^n\) for $i=1,...,r$; \( \mathbf{w}_i=(w_1^{(i)},...,w_n^{(i)})^T\in \mathbb{R}^n\) and \( \mathbf{s}_i=(s_1^{(i)},...,s_n^{(i)})^T\in \mathbb{R}^n\) for \( i=1,...,p\). Also, \( B=(b_{ij})_{i,j=1}^n\in \mathbb{R}^{n,n}\) with \( b_{ij}=0\) if \( i-j>l\) or \( j-i>m\).
     \item \( C = A + UQS^T + UKU^TA + UE + XS^T + YU^TA + Z \), where \( Q, K, E, X, Y, Z \) are as in Definition \cref{def:hmbpsm}.
     \item \( \tilde{C} = (I - \tau \mathbf{y} \mathbf{y}^T)C \), where the Householder vector \( \mathbf{y} \) can be expressed as \( \mathbf{y} = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b} \). Here, \(\mathbf{e}_1=(1,0,...,0)^T\in \mathbb{R}^n\), \( U^{(2)} \in \mathbb{R}^{n\times r} \) satisfies \( U^{(2)}[1,:] = \mathbf{0} \) and \( U^{(2)}[2:n,:] = U[2:n,:] \), \( \bar{\mathbf{k}} \in \mathbb{R}^r \), \( \mathbf{b} = (0, b_2, \ldots, b_{\min(l+1,n)}, 0, \ldots, 0)^T \in \mathbb{R}^n \), and \(\tau\) is a coefficient found to satisfy the definition of a Householder transformation.
 \end{itemize}
 
 Let \( \bar{\mathbf{u}}_1 = (u_1^{(1)}, \ldots, u_1^{(r)})^T \in \mathbb{R}^r \). We can write:
-\begin{itemize}
-    \item \( \mathbf{e}_1^T A = \mathbf{d}_1^T + \bar{\mathbf{w}}_1^T S^T \), where \( \mathbf{d}_1 = B[1,:]^T \in \mathbb{R}^n \), \( \bar{\mathbf{w}}_1 = (w_1^{(1)}, \ldots, w_1^{(p)})^T \in \mathbb{R}^p \).
-    \item \( \mathbf{b}^T A = \bar{\mathbf{d}}^T + \mathbf{f}^T S^T \), where \( \bar{\mathbf{d}} \in \mathbb{R}^n \) has non-zero entries only in its first \( \min(l+m+1, n) \) components, and \( \mathbf{f} = W^T \mathbf{b} \in \mathbb{R}^{p} \).
-\end{itemize}
+\[
+\mathbf{e}_1^T A = \underbrace{\mathbf{d}_1^T}_{\min(m+1,n)\hbox{ nonzero entries}} + \underbrace{\bar{\mathbf{w}}_1^T}_{\in \bbR^{1 \times p}} S^T,
+\]
+where \( \mathbf{d}_1 = B[1,:]^T \in \mathbb{R}^n \), \( \bar{\mathbf{w}}_1 = (w_1^{(1)}, \ldots, w_1^{(p)})^T \in \mathbb{R}^p,\) and
+\[
+\mathbf{b}^T A = \underbrace{\bar{\mathbf{d}}^T}_{\min(l+m+1, n) \hbox{ nonzero entries}} + {\underbrace{\mathbf{f}^T}_{\mathbf{b}^T W  \in \mathbb{R}^{1 \times p} }} S^T.
+\]
+
+
+
 Define the auxiliary vectors:
 \begin{align}
     \mathbf{c}_1 &= Q^T U^T \mathbf{y} \in \mathbb{R}^p \\
@@ -241,12 +291,13 @@ We now compute \( (I - \tau \mathbf{y} \mathbf{y}^T) C \) by distributing the tr
 Substituting the expressions \( \mathbf{y}=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), \( \mathbf{e}_1^TA=\mathbf{d}_1^T+\bar{\mathbf{w}}_1^TS^T\), and \( \mathbf{b}^TA=\bar{\mathbf{d}}^T+\mathbf{f}^TS^T\), we obtain:
 \begin{equation}\label{proof_first}
 \begin{aligned}
-(I - \tau \mathbf{y} \mathbf{y}^T)A = & A + \mathbf{e}_1(-\tau \mathbf{d}_1^T - \tau \bar{\mathbf{d}}^T) + \mathbf{e}_1(-\tau \bar{\mathbf{w}}_1^T - \tau \mathbf{f}^T)S^T \\
-& + \mathbf{e}_1(-\tau \bar{\mathbf{k}}^T)U^{(2)T}A + U^{(2)}(-\tau \bar{\mathbf{k}} \bar{\mathbf{w}}_1^T - \tau \bar{\mathbf{k}} \mathbf{f}^T)S^T \\
-& + U^{(2)}(-\tau \bar{\mathbf{k}} \bar{\mathbf{k}}^T)U^{(2)T}A + U^{(2)}(-\tau \bar{\mathbf{k}} \mathbf{d}_1^T - \tau \bar{\mathbf{k}} \bar{\mathbf{d}}^T) \\
+(I - \tau \mathbf{y} \mathbf{y}^T)A = & A + \mathbf{e}_1 \big[ \underbrace{(-\tau \mathbf{d}_1^T - \tau \bar{\mathbf{d}}^T)}_{\min(l+m+1,n)\hbox{ nonzero entries}} + \underbrace{(-\tau \bar{\mathbf{w}}_1^T - \tau \mathbf{f}^T)}_{\in \bbR^{1 \times p}}S^T \\
+& + \underbrace{(-\tau \bar{\mathbf{k}}^T)}_{\in \bbR^{1 \times r}}U^{(2)T}A\big] + U^{(2)}\underbrace{(-\tau \bar{\mathbf{k}} \bar{\mathbf{w}}_1^T - \tau \bar{\mathbf{k}} \mathbf{f}^T)}_{\in \bbR^{r \times p}} S^T \\
+& + U^{(2)}\underbrace{(-\tau \bar{\mathbf{k}} \bar{\mathbf{k}}^T)}_{\in \bbR^{r \times r}}U^{(2)T}A + U^{(2)}(-\tau \bar{\mathbf{k}} \mathbf{d}_1^T - \tau \bar{\mathbf{k}} \bar{\mathbf{d}}^T) \\
 & + (-\tau \mathbf{b} \bar{\mathbf{w}}_1^T - \tau \mathbf{b} \mathbf{f}^T)S^T + (-\tau \mathbf{b} \bar{\mathbf{k}}^T)U^{(2)T}A + (-\tau \mathbf{b} \mathbf{d}_1^T - \tau \mathbf{b} \bar{\mathbf{d}}^T).
 \end{aligned}
 \end{equation}
+Dropping the first column, we  see that the first row of the term in brackets is in $\calV(A)$. Dropping the first row and column of the remaining terms are in $\calP(A[2:n,2:n])$. 
 
 \textbf{(ii) Transformation of \( UQS^T \):} Substituting the expressions \( \mathbf{y}^TUQ=\mathbf{c}_1^T\), \( \mathbf{y}=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), and \( U=\mathbf{e}_1\bar{\mathbf{u}}_1^T+U^{(2)}\) where \( \bar{\mathbf{u}}_1=(u_1^{(1)},...,u_1^{(r)})\in \mathbb{R}^r\), we obtain
 \begin{equation}
@@ -362,7 +413,7 @@ This confirms that \( \tilde{C}[1, 2:n] \) is an HMBPSV related to \( A \), comp
 Equipped with \cref{lemma:structure_preserve}, we now state and prove the main theorem concerning the structure of the QR factor matrix \( F \).
 
 \begin{theorem}\label{thm:structure_preserve}
-After applying the QR decomposition to a banded-plus-semiseparable matrix \( A \) (as expressed in Eq. \eqref{express_A}) with lower semiseparable rank \( r \), upper semiseparable rank \( p \), lower bandwidth \( l \), and upper bandwidth \( m \), the resulting factor matrix \( F \) is also a banded-plus-semiseparable matrix. Specifically:
+After applying the QR factorization to a banded-plus-semiseparable matrix \( A \) (as expressed in Eq. \eqref{express_A}) with lower semiseparable rank \( r \), upper semiseparable rank \( p \), lower bandwidth \( l \), and upper bandwidth \( m \), the resulting factor matrix \( F \) is also a banded-plus-semiseparable matrix. Specifically:
 \begin{itemize}
     \item Its lower semiseparable part has rank \( r \).
     \item Its upper semiseparable part has rank \( r + p \).
@@ -371,7 +422,7 @@ After applying the QR decomposition to a banded-plus-semiseparable matrix \( A \
 \end{theorem}
 
 \begin{proof}
-The QR decomposition is computed by performing a sequence of \( n-1 \) Householder transformations, eliminating the subdiagonal entries of \( A \) column by column.
+The QR factorization is computed by performing a sequence of \( n-1 \) Householder transformations, eliminating the subdiagonal entries of \( A \) column by column.
 
 Let \( A^{(i)} \) denote the matrix after the \( i \)-th Householder transformation, with \( A^{(0)} = A \). Define \( A_i = A[i:n, i:n] \), \( U_i = U[i:n, :] \), \( V_i = V[i:n, :] \), \( S_i = S[i:n, :] \), and \( W_i = W[i:n, :] \). Let \( \bar{\mathbf{u}}_i = (u_i^{(1)}, \ldots, u_i^{(r)})^T \) and \( \bar{\mathbf{w}}_i = (w_i^{(1)}, \ldots, w_i^{(p)})^T \). Let \( \bar{S} = U^T A \in \mathbb{R}^{r \times n} \).
 
@@ -428,7 +479,7 @@ By the principle of induction, the hypotheses hold for all \( j = 0, \ldots, n-1
 
 Upon completion of all \( n-1 \) transformations, the factor matrix \( F \) is fully determined. Aggregating the results from \eqref{F_tril} and \eqref{F_triu}, we conclude that \( F \) can be written in the form:
 \begin{equation}
-F = B_F + \text{tril}(U \bar{K}^T, -1) + \text{triu}([\bar{A},\bar{B}] [S,\bar{S}^T]^T, 1), \label{express_F}
+F = B_F + \tril(U \bar{K}^T, -1) + \triu([\bar{A},\bar{B}] [S,\bar{S}^T]^T, 1), \label{express_F}
 \end{equation}
 where
 \begin{itemize}
@@ -456,14 +507,16 @@ The representation in \eqref{express_F} explicitly shows that \( F \) is a bande
 \section{Algorithms}
 \label{sec:algorithms}
 
-\subsection{Fast QR Decomposition for BPS Matrices}
+\subsection{Fast QR factorization for BPS Matrices}
 \label{sec:fastqr}
 
-Based on the structure-preserving theorem proven in Section~\ref{sec:main}, we now present the detailed $O(n)$ algorithm for computing the QR decomposition of a banded-plus-semiseparable matrix. The algorithm exploits the proven fact that the factor matrix $F$ maintains a BPS structure.
+Based on the structure-preserving theorem proven in Section~\ref{sec:main}, we now present the detailed $O(n)$ algorithm for computing the QR factorization of a banded-plus-semiseparable matrix. The algorithm exploits the proven fact that the factor matrix $F$ maintains a BPS structure.
+
+\sotodoinline{Make an algorithm environment. Possibly split into sub-algorithms}
 
 \begin{my_algorithm}[Fast QR]\label{algo:fastqr}
 
-This algorithm computes the QR decomposition of a BPS matrix $A = B + \text{tril}(UV^T, -1) + \text{triu}(WS^T, 1)$, producing the structured factor matrix $F$ (which contains both $R$ and the Householder vectors) and the scalar coefficients $\boldsymbol{\tau}$, in $O(n)$ operations.
+This algorithm computes the QR factorization of a BPS matrix $A = B + \tril(UV^T, -1) + \triu(WS^T, 1)$, producing the structured factor matrix $F$ (which contains both $R$ and the Householder vectors) and the scalar coefficients $\boldsymbol{\tau}$, in $O(n)$ operations.
 
 \textbf{Input:}
 \begin{itemize}
@@ -541,7 +594,7 @@ This algorithm computes the QR decomposition of a BPS matrix $A = B + \text{tril
 
 4. \textbf{Output:}
 \begin{itemize}
-    \item The complete QR factorization is represented by the structured factor matrix $F$, defined as $B_F + \text{tril}(U \bar{K}^T, -1) + \text{triu}([\bar{A},\bar{B}] [S,\bar{S}^T]^T, 1)$, and the vector $\boldsymbol{\tau}$.
+    \item The complete QR factorization is represented by the structured factor matrix $F$, defined as $B_F + \tril(U \bar{K}^T, -1) + \triu([\bar{A},\bar{B}] [S,\bar{S}^T]^T, 1)$, and the vector $\boldsymbol{\tau}$.
 \end{itemize}
 
 \end{my_algorithm}
@@ -573,7 +626,7 @@ Both precomputations require $O(n)$ total time and enable $O(1)$ access to the r
 \subsection{Fast Solver for BPS Matrices}
 \label{sec:solver}
 
-Theorem \ref{thm:structure_preserve} not only enables an efficient QR decomposition but also facilitates a complete direct solver for linear systems of the form \( A\mathbf{x} = \mathbf{b} \), where \( A \) is a banded-plus-semiseparable matrix. The solver consists of two phases after the QR factorization \( A = QR \):
+Theorem \ref{thm:structure_preserve} not only enables an efficient QR factorization but also facilitates a complete direct solver for linear systems of the form \( A\mathbf{x} = \mathbf{b} \), where \( A \) is a banded-plus-semiseparable matrix. The solver consists of two phases after the QR factorization \( A = QR \):
 1. Application of \( Q^T \) to the right-hand side vector \( \mathbf{b} \) to form \( \mathbf{c} = Q^T \mathbf{b} \).
 2. Solution of the upper triangular system \( R\mathbf{x} = \mathbf{c} \) via backward substitution.
 
@@ -603,7 +656,7 @@ F[j,k], & j > k
 
 From Theorem \ref{thm:structure_preserve}, the factor matrix \( F \) admits the BPS representation:
 \begin{equation}
-F = B_F + \text{tril}(U_F V_F^T, -1) + \text{triu}(W_F S_F^T, 1),
+F = B_F + \tril(U_F V_F^T, -1) + \triu(W_F S_F^T, 1),
 \label{eq:F_structure_solver}
 \end{equation}
 where \( U_F, V_F \in \mathbb{R}^{n \times r} \), \( W_F, S_F \in \mathbb{R}^{n \times (r+p)} \), and \( B_F \) is banded with lower bandwidth \( l \) and upper bandwidth \( l+m \).
@@ -626,7 +679,7 @@ Algorithm~\ref{algo_applyQ} exploits this structure to compute \( Q^T\mathbf{b} 
 \begin{algorithm}
 \caption{Fast Application of \( Q^T \) to a Vector}\label{algo_applyQ}
 \begin{algorithmic}[1]
-\State \textbf{Input:} Factor matrix \( F \) in BPS form: \( F = B_F + \text{tril}(U_F V_F^T, -1) + \text{triu}(W_F S_F^T, 1) \); coefficient vector \( \boldsymbol{\tau} = [\tau_1, \ldots, \tau_{n-1},0]^T \in \mathbb{R}^{n} \); right-hand side vector \( \mathbf{b} \in \mathbb{R}^n \)
+\State \textbf{Input:} Factor matrix \( F \) in BPS form: \( F = B_F + \tril(U_F V_F^T, -1) + \triu(W_F S_F^T, 1) \); coefficient vector \( \boldsymbol{\tau} = [\tau_1, \ldots, \tau_{n-1},0]^T \in \mathbb{R}^{n} \); right-hand side vector \( \mathbf{b} \in \mathbb{R}^n \)
 \State \textbf{Output:} \( \mathbf{c} = Q^T\mathbf{b} \in \mathbb{R}^n \)
 
 \State Initialize:
@@ -699,18 +752,18 @@ Thus, the representation is maintained correctly throughout all \( n-1 \) steps.
 
 \subsubsection{Fast Backward Substitution}
 
-After computing \( \mathbf{c} = Q^T\mathbf{b} \), we solve the upper triangular system \( R\mathbf{x} = \mathbf{c} \), where \( R = \text{triu}(F) \) inherits the BPS structure of \( F \). Specifically, the upper triangular part of \( F \) satisfies:
+After computing \( \mathbf{c} = Q^T\mathbf{b} \), we solve the upper triangular system \( R\mathbf{x} = \mathbf{c} \), where \( R = \triu(F) \) inherits the BPS structure of \( F \). Specifically, the upper triangular part of \( F \) satisfies:
 \[
-R = B_R + \text{triu}(W_F S_F^T, 1),
+R = B_R + \triu(W_F S_F^T, 1),
 \]
-where \( B_R = \text{triu}(B_F) \) is the upper triangular part of the banded component, maintaining upper bandwidth \( l+m \).
+where \( B_R = \triu(B_F) \) is the upper triangular part of the banded component, maintaining upper bandwidth \( l+m \).
 
-Algorithm~\ref{algo_backsub} exploits this structure to perform backward substitution in \( O(n) \) operations by maintaining a running sum for the semiseparable contributions.
+Algorithm~\ref{algo_backsub}, which is equivalent to the one introduced in \cite{olver2013fast}, exploits this structure to perform backward substitution in \( O(n) \) operations by maintaining a running sum for the semiseparable contributions.
 
 \begin{algorithm}
 \caption{Fast Backward Substitution for Structured \( R \)}\label{algo_backsub}
 \begin{algorithmic}[1]
-\State \textbf{Input:} Upper triangular matrix \( R = \text{triu}(F) \) in structured form; transformed right-hand side \( \mathbf{c} \in \mathbb{R}^n \)
+\State \textbf{Input:} Upper triangular matrix \( R = \triu(F) \) in structured form; transformed right-hand side \( \mathbf{c} \in \mathbb{R}^n \)
 \State \textbf{Output:} Solution \( \mathbf{x} \in \mathbb{R}^n \) satisfying \( R\mathbf{x} = \mathbf{c} \)
 
 \State Initialize:
@@ -739,11 +792,11 @@ Algorithm~\ref{algo_backsub} exploits this structure to perform backward substit
 \end{algorithm}
 
 \begin{theorem}
-Algorithm~\ref{algo_backsub} correctly solves \( R\mathbf{x} = \mathbf{c} \) in \( O(n) \) operations.
+Algorithm~\ref{algo_backsub}  solves \( R\mathbf{x} = \mathbf{c} \) in \( O(n) \) operations.
 \end{theorem}
 
 \begin{proof}
-The algorithm implements standard backward substitution while exploiting the structure of \( R \). For each index \( j \) from \( n \) down to \( 1 \), the equation:
+For completeness we include the proof from \cite{olver2013fast}. The algorithm implements standard backward substitution while exploiting the structure of \( R \). For each index \( j \) from \( n \) down to \( 1 \), the equation:
 \[
 R[j,j] x_j + \sum_{k=j+1}^n R[j,k] x_k = c_j
 \]
@@ -759,58 +812,58 @@ The banded contributions \( B_R[j,k] \) are non-zero only for \( k = j+1, \ldots
 \mathbf{s} = \sum_{i=j+1}^n S_F[i,:]^T x_i.
 \]
 
-At step \( j \), the product \( W_F[j,:] \cdot \mathbf{s} \) thus captures all semiseparable contributions from previously computed solution components. After computing \( x_j \), the accumulator is updated to include its contribution.
+At step \( j \), the\sotodo{Inner product? I prefer ${}^\top$ to $\cdot$} product \( W_F[j,:] \cdot \mathbf{s} \) thus captures all semiseparable contributions from previously computed solution components. After computing \( x_j \), the accumulator is updated to include its contribution.
 
 Each iteration requires \( O(1) \) operations, yielding overall \( O(n) \) complexity. The correctness follows by induction from \( j = n \) down to \( 1 \).
 \end{proof}
 
 \subsubsection{Overall Solver Complexity}
 
-Combining the QR decomposition (Algorithm \ref{algo:fastqr}), the fast application of \( Q^T \) (Algorithm~\ref{algo_applyQ}), and the fast backward substitution (Algorithm~\ref{algo_backsub}) yields a complete direct solver for BPS linear systems with \( O(n) \) complexity.
+Combining the QR factorization (Algorithm \ref{algo:fastqr}), the fast application of \( Q^T \) (Algorithm~\ref{algo_applyQ}), and the fast backward substitution (Algorithm~\ref{algo_backsub}) yields a complete direct solver for BPS linear systems with \( O(n) \) complexity.
 
 \begin{corollary}
 For a banded-plus-semiseparable matrix \( A \in \mathbb{R}^{n \times n} \) with constant-bounded ranks and bandwidths, the linear system \( A\mathbf{x} = \mathbf{b} \) can be solved in \( O(n) \) operations using the QR-based approach.
 \end{corollary}
 
 \begin{proof}
-Algorithm \ref{algo:fastqr} computes the QR decomposition in \( O(n) \) operations. Algorithm~\ref{algo_applyQ} applies \( Q^T \) in \( O(n) \) operations. Algorithm~\ref{algo_backsub} solves the triangular system in \( O(n) \) operations. The overall complexity is therefore linear in the problem size \( n \).
+Algorithm \ref{algo:fastqr} computes the QR factorization in \( O(n) \) operations. Algorithm~\ref{algo_applyQ} applies \( Q^T \) in \( O(n) \) operations. Algorithm~\ref{algo_backsub} solves the triangular system in \( O(n) \) operations. The overall complexity is therefore linear in the problem size \( n \).
 \end{proof}
 
 \section{Numerical results}
 \label{sec:experiments}
 
-To validate the theoretical complexity and demonstrate the practical efficiency of our proposed algorithms, we implemented the fast QR decomposition and the complete linear solver in Julia. The implementation is publicly available in the SemiseparableMatrices.jl package\footnote{\url{https://github.com/JuliaLinearAlgebra/SemiseparableMatrices.jl}}, providing an open-source resource for the scientific computing community. All numerical tests use banded-plus-semiseparable matrices with fixed structural parameters $l=4$, $m=5$, $r=2$, $p=3$ to isolate the scaling behavior with respect to the matrix size $n$. Computations were carried out on a MacBook Air equipped with an Apple M2 chip (8-core CPU, 8 GB RAM), without GPU acceleration or access to external computing resources.
+To validate the theoretical complexity and demonstrate the practical efficiency of our proposed algorithms, we implemented the fast QR factorization and the complete linear solver in Julia. The implementation is publicly available in the SemiseparableMatrices.jl package\sotodo{Make this a citation}\footnote{\url{https://github.com/JuliaLinearAlgebra/SemiseparableMatrices.jl}}, providing an open-source resource for the scientific computing community. All numerical tests use banded-plus-semiseparable matrices with fixed structural parameters $l=4$, $m=5$, $r=2$, $p=3$ to isolate the scaling behavior with respect to the matrix size $n$. Computations were carried out on a MacBook Air equipped with an Apple M2 chip (8-core CPU, 8 GB RAM), without GPU acceleration or access to external computing resources.
 
 \subsection{Linear Complexity Verification}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.8\textwidth]{plot_linearity.pdf}
-\caption{Log-log plot of the total solver time (QR decomposition + application of $Q^T$ + backward substitution) versus matrix size $n$. The dashed reference line has slope 1, indicating ideal linear scaling.}
+\caption{Log-log plot of the total solver time (QR factorization + application of $Q^T$ + backward substitution) versus matrix size $n$. The dashed reference line has slope 1, indicating ideal linear scaling. \sotodoinline{Add different parameters for ranks and bands}\sotodoinline{Add more ticks on the y-axis}}
 \label{fig:scaling}
 \end{figure}
 
-Figure~\ref{fig:scaling} demonstrates the linear time complexity of our complete solver for banded-plus-semiseparable linear systems. The total execution time, encompassing all three phases (QR decomposition, application of $Q^T$, and backward substitution), scales as $O(n)$ across five orders of magnitude, from $n=100$ to $n=10^6$. The close alignment with the reference line of slope 1 confirms the complexity analysis in Section~\ref{sec:algorithms}.
+Figure~\ref{fig:scaling} demonstrates the linear time complexity of our complete solver for banded-plus-semiseparable linear systems. The total execution time, encompassing all three phases (QR factorization, application of $Q^T$, and backward substitution), scales as $O(n)$ across five orders of magnitude, from $n=100$ to $n=10^6$. The close alignment with the reference line of slope 1 confirms the complexity analysis in Section~\ref{sec:algorithms}.
 
 \subsection{Comparison with HODLR QR}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.8\textwidth]{plot_comparison.pdf}
-\caption{Comparison of QR decomposition times between our fast BPS QR algorithm and the HODLR QR implementation from~\cite{massei2020hm}. Both algorithms operate on banded-plus-semiseparable matrices with parameters $l=4$, $m=5$, $r=2$, $p=3$.}
+\caption{Comparison of QR factorization times between our fast BPS QR algorithm and the HODLR QR implementation from~\cite{massei2020hm}. Both algorithms operate on banded-plus-semiseparable matrices with parameters $l=4$, $m=5$, $r=2$, $p=3$. \sotodoinline{Use different markers so clearer when black-and-white.} \sotodoinline{Go to $n = 10^6$}}
 \label{fig:comparison}
 \end{figure}
 
-We compare our fast QR decomposition against the state-of-the-art HODLR (Hierarchically Off-Diagonal Low-Rank) QR implementation from the hm-toolbox~\cite{massei2020hm}. The hm-toolbox provides efficient MATLAB routines for various structured matrices, including HODLR and HSS matrices, and represents one of the most mature implementations for hierarchical matrix computations.
+We compare our fast QR factorization against the state-of-the-art HODLR (Hierarchically Off-Diagonal Low-Rank) QR implementation from the hm-toolbox~\cite{massei2020hm}. The hm-toolbox provides efficient MATLAB routines for various structured matrices, including HODLR and HSS matrices, and represents one of the most mature implementations for hierarchical matrix computations.
 
-Figure~\ref{fig:comparison} shows the execution times for QR decomposition of BPS matrices using both approaches. Our algorithm demonstrates superior scaling for larger matrix sizes. This performance advantage stems from several factors:
+Figure~\ref{fig:comparison} shows the execution times for QR factorization of BPS matrices using both approaches. Our algorithm demonstrates superior scaling for larger matrix sizes. This performance advantage stems from several factors:
 
 \begin{itemize}
 \item \textbf{Specialized structure exploitation}: Our algorithm is specifically designed for the banded-plus-semiseparable structure, avoiding the overhead of general hierarchical representations.
 \item \textbf{Reduced Computational Overhead}: By working directly with the semiseparable generators rather than building a hierarchical representation, we avoid the logarithmic factors inherent in tree-based approaches.
 \end{itemize}
 
-The performance gap widens with increasing $n$, confirming that our method is particularly well-suited for large-scale problems. For $n=150000$, our implementation achieves approximately 7$\times$ speedup over the HODLR approach, demonstrating the practical benefits of our specialized algorithm.
+The performance gap widens with increasing $n$, confirming that our method is particularly well-suited for large-scale problems. For $n=150,000$, our implementation achieves approximately 7$\times$ speedup over the HODLR approach, demonstrating the practical benefits of our specialized algorithm.
 
 
 \section{Conclusions}
@@ -818,7 +871,7 @@ The performance gap widens with increasing $n$, confirming that our method is pa
 
 In this paper, we have established a fundamental theoretical result for BPS matrices and developed efficient algorithms based on this foundation. Our main contribution is the proof that the QR factorization of a BPS matrix preserves the banded-plus-semiseparable structure, with precisely characterized ranks and bandwidths in the resulting factor matrix. This theoretical insight enabled the design of a complete $O(n)$ direct solver for BPS linear systems, comprising:
 \begin{itemize}
-\item A structure-preserving QR decomposition algorithm (Algorithm~\ref{algo:fastqr})
+\item A structure-preserving QR factorization algorithm (Algorithm~\ref{algo:fastqr})
 \item An efficient $O(n)$ application of $Q^T$ (Algorithm~\ref{algo_applyQ})
 \item A fast backward substitution routine (Algorithm~\ref{algo_backsub})
 \end{itemize}
@@ -827,9 +880,10 @@ The numerical experiments confirm the linear scaling of our approach and demonst
 
 \subsection*{Future Work}
 
-A compelling extension involves applying our methodology to blocked banded matrices arising in $hp$-FEM for the bad Helmholtz equation~\cite{knook2024quasi}. The key challenge is generalizing our framework to \emph{block} banded-plus-semiseparable matrices while maintaining $O(N)$ complexity. The primary difficulty lies in applying Householder transformations from one block to subsequent blocks in $O(n)$ time(where $n$ is block size and $N$ the total size), rather than $O(n^3)$. While our current framework doesn't directly apply, the core insight of structure preservation provides a promising foundation for this challenging extension.
 
+A compelling extension involves applying our methodology to specific blocked banded matrices arising in $hp$-FEM~\cite{knook2024quasi}. These have optimal complexity so-called reverse Cholesky factorizations (Cholesky from the bottom right instead of the top left) for positive definite problems. One of our motativations for the present work is developing an optimal complexity QL factorization for these special block banded matrices.  The key challenge is generalizing our framework to \emph{block} banded-plus-semiseparable matrices while maintaining $O(N)$ complexity. The primary difficulty lies in applying Householder transformations from one block to subsequent blocks in $O(n)$ time(where $n$ is block size and $N$ the total size), rather than $O(n^3)$. While our current framework doesn't directly apply, the core insight of structure preservation provides a promising foundation for this challenging extension.
 
+\sotodoinline{Fix capitalization}
 
 \bibliographystyle{siamplain}
 \bibliography{references}

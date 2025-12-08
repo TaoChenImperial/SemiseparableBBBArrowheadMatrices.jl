@@ -1,0 +1,63 @@
+\begin{thebibliography}{10}
+
+\bibitem{chandrasekaran2007fast}
+{\sc S.~Chandrasekaran, P.~Dewilde, M.~Gu, W.~Lyons, and T.~Pals}, {\em A fast solver for hss representations via sparse matrices}, SIAM Journal on Matrix Analysis and Applications, 29 (2007), pp.~67--81.
+
+\bibitem{chandrasekaran2002fast}
+{\sc S.~Chandrasekaran, P.~Dewilde, M.~Gu, T.~Pals, and A.-J. van~der Veen}, {\em Fast stable solver for sequentially semi-separable linear systems of equations}, in International Conference on High-Performance Computing, Springer, 2002, pp.~545--554.
+
+\bibitem{chandrasekaran2003fast}
+{\sc S.~Chandrasekaran and M.~Gu}, {\em Fast and stable algorithms for banded plus semiseparable systems of linear equations}, SIAM Journal on Matrix Analysis and Applications, 25 (2003), pp.~373--384.
+
+\bibitem{chandrasekaran2006fast}
+{\sc S.~Chandrasekaran, M.~Gu, and T.~Pals}, {\em A fast ulv decomposition solver for hierarchically semiseparable representations}, SIAM Journal on Matrix Analysis and Applications, 28 (2006), pp.~603--622.
+
+\bibitem{delvaux2006rank}
+{\sc S.~Delvaux and M.~Van~Barel}, {\em Rank structures preserved by the qr-algorithm: the singular case}, Journal of Computational and Applied Mathematics, 189 (2006), pp.~157--178.
+
+\bibitem{delvaux2006structures}
+{\sc S.~Delvaux and M.~Van~Barel}, {\em Structures preserved by the qr-algorithm}, Journal of Computational and Applied Mathematics, 187 (2006), pp.~29--40.
+
+\bibitem{delvaux2008givens}
+{\sc S.~Delvaux and M.~Van~Barel}, {\em A givens-weight representation for rank structured matrices}, SIAM Journal on Matrix Analysis and Applications, 29 (2008), pp.~1147--1170.
+
+\bibitem{delvaux2008qr}
+{\sc S.~Delvaux and M.~Van~Barel}, {\em A qr-based solver for rank structured matrices}, SIAM Journal on Matrix Analysis and Applications, 30 (2008), pp.~464--490.
+
+\bibitem{eidelman1997inversion}
+{\sc Y.~Eidelman and I.~Gohberg}, {\em Inversion formulas and linear complexity algorithm for diagonal plus semiseparable matrices}, Computers \& Mathematics with Applications, 33 (1997), pp.~69--79.
+
+\bibitem{eidelman2005qr}
+{\sc Y.~Eidelman, I.~Gohberg, and V.~Olshevsky}, {\em The qr iteration method for hermitian quasiseparable matrices of an arbitrary order}, Linear Algebra and its Applications, 404 (2005), pp.~305--324.
+
+\bibitem{fasino2005rational}
+{\sc D.~Fasino}, {\em Rational krylov matrices and qr steps on hermitian diagonal-plus-semiseparable matrices}, Numerical linear algebra with applications, 12 (2005), pp.~743--754.
+
+\bibitem{knook2024quasi}
+{\sc K.~Knook, S.~Olver, and I.~Papadopoulos}, {\em Quasi-optimal complexity $ hp $-fem for poisson on a rectangle}, arXiv preprint arXiv:2402.11299,  (2024).
+
+\bibitem{massei2020hm}
+{\sc S.~Massei, L.~Robol, and D.~Kressner}, {\em hm-toolbox: Matlab software for hodlr and hss matrices}, SIAM Journal on Scientific Computing, 42 (2020), pp.~C43--C68.
+
+\bibitem{mastronardi2001fast}
+{\sc N.~Mastronardi, S.~Chandrasekaran, and S.~Van~Huffel}, {\em Fast and stable two-way algorithm for diagonal plus semi-separable systems of linear equations}, Numerical linear algebra with applications, 8 (2001), pp.~7--12.
+
+\bibitem{olver2013fast}
+{\sc S.~Olver and A.~Townsend}, {\em A fast and well-conditioned spectral method}, siam REVIEW, 55 (2013), pp.~462--489.
+
+\bibitem{van2004two}
+{\sc E.~Van~Camp, N.~Mastronardi, and M.~Van~Barel}, {\em Two fast algorithms for solving diagonal-plus-semiseparable linear systems}, Journal of Computational and Applied Mathematics, 164 (2004), pp.~731--747.
+
+\bibitem{vandebril2005implicit}
+{\sc R.~Vandebril, M.~Van~Barel, and N.~Mastronardi}, {\em An implicit qr algorithm for symmetric semiseparable matrices}, Numerical Linear Algebra with Applications, 12 (2005), pp.~625--658.
+
+\bibitem{vandebril2005note}
+{\sc R.~Vandebril, M.~Van~Barel, and N.~Mastronardi}, {\em A note on the representation and definition of semiseparable matrices}, Numerical Linear Algebra with Applications, 12 (2005), pp.~839--858.
+
+\bibitem{vandebril2008rational}
+{\sc R.~Vandebril, M.~Van~Barel, and N.~Mastronardi}, {\em Rational qr-iteration without inversion}, Numerische Mathematik, 110 (2008), pp.~561--575.
+
+\bibitem{xia2010fast}
+{\sc J.~Xia, S.~Chandrasekaran, M.~Gu, and X.~S. Li}, {\em Fast algorithms for hierarchically semiseparable matrices}, Numerical Linear Algebra with Applications, 17 (2010), pp.~953--976.
+
+\end{thebibliography}
