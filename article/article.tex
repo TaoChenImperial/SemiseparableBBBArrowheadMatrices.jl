@@ -214,14 +214,14 @@ We proceed to prove this by induction. First, we introduce two key definitions a
 
 \subsection{Core Definitions and a Key Lemma}
 
-While the final factor matrix of a QR factorization is a BPS matrix, at  intermediate  stages it has a specific structured perturbation. Here we describe this structure in terms of a linear space that, at each stage, the principle submatrix lies in:
+While the final factor matrix of a QR factorization is a BPS matrix, at  intermediate  stages it has a specific structured perturbation. Here we describe this structure in terms of a linear space that, at each stage, the perturbation to the principle submatrix lies in:
 
-\begin{definition}[BPS Factors Perturbation Matrix]\label{def:hmbpsm}
+\begin{definition}\label{def:hmbpsm}
 Given 
 \[
 A = B + \tril(UV^T, -1) + \triu(WS^T, 1)  \in \BPS 
 \]
-a \emph{BPS Factors Perturbation Matrix} (BPSFPM) is in the vector space 
+define the vector space:
 \begin{align*}
 \calP(A) &:= \bigg\{
 UQS^T + UKU^TA + UE + XS^T + YU^TA + Z :\\
@@ -237,8 +237,8 @@ UQS^T + UKU^TA + UE + XS^T + YU^TA + Z :\\
 In addition, we need to describe the structure of the upper-triangular part in terms of a structured vector:
 
 
-\begin{definition}[BPS Factors Vector]
-Given \( A \in  \BPS \) a \emph{BPS Factors Vector} (BPSFV) is a row vector\sotodo{should we change to column vector?} in the vector space
+\begin{definition}
+Given \( A \in  \BPS \) define the vector space
 \begin{align*}
 \calV(A) &:= \bigg\{\mathbf{d}^T + \boldsymbol{\alpha}^T (S^T[:,2:n]) + \boldsymbol{\beta}^T ((U^TA)[:,2:n]) : \\
 &\qquad\quad \mathbf{d} = \begin{bmatrix} \mathbf{d}_s \in \mathbb{R}^{\min(l+m,n-1)}  \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n-1}, \boldsymbol{\alpha} \in \mathbb{R}^p , \boldsymbol{\beta} \in \mathbb{R}^r\bigg\} \subset \bbR^{1 \times (n-1)}.
