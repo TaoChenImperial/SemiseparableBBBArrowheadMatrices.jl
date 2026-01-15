@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.12.12)  7 JAN 2026 13:32
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.12.12)  15 JAN 2026 16:29
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -798,18 +798,7 @@ Document Style - pseudocode environments for use with the `algorithmicx' style
 \c@endhypothesisctr=\count354
 \c@currclaimctr=\count355
 \c@endclaimctr=\count356
-
-
-Package xr Warning: 
-No file ex_supplement.aux
-LABELS NOT IMPORTED.
- on input line 97.
-
-(ex_supplement.tex)
-No file ex_supplement.tex.
-(ex_supplement.aux)
-No file ex_supplement.aux.
-(./article.aux)
+ (./article.aux)
 \openout1 = `article.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 112.
@@ -885,6 +874,9 @@ Overfull \hbox (5.39346pt too wide) in paragraph at lines 165--166
 []\OT1/cmr/m/it/10 A banded-plus-semseparable ma-trix (BPS) with lower-semisepa
 ble|
  []
+
+
+LaTeX Warning: Marginpar on page 2 moved.
 
 
 LaTeX Warning: Marginpar on page 2 moved.
@@ -995,37 +987,85 @@ Overfull \hbox (4.45177pt too wide) in paragraph at lines 825--826
 \OMS/cmsy/m/n/10 2 \U/msb/m/n/10 R[]$ \OT1/cmr/m/it/10 with constant-|
  []
 
-<plot_linearity.pdf, id=306, 451.6875pt x 301.125pt>
+[15]
+Overfull \hbox (14.10608pt too wide) in paragraph at lines 847--849
+[]\OT1/cmr/m/n/10 (Householder-modified upper-triangular ma-trix (HMUTM)). [][]
+[] \OT1/cmr/m/it/10 Given|
+ []
+
+
+Overfull \hbox (9.93936pt too wide) in paragraph at lines 855--857
+[]\OT1/cmr/m/n/10 (Householder-modified upper-triangular vec-tor (HMUTV)). [][]
+[] \OT1/cmr/m/it/10 Given|
+ []
+
+[16]
+Overfull \hbox (69.4584pt too wide) detected at line 941
+[]|
+ []
+
+[17]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 971.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 971.
+
+
+Overfull \hbox (5.5611pt too wide) detected at line 1007
+[][]\OML/cmm/m/it/10 R[]\OT1/cmr/m/n/10 [\OML/cmm/m/it/10 j \OT1/cmr/m/n/10 + 1
+ : \OML/cmm/m/it/10 n; j \OT1/cmr/m/n/10 + 1 : \OML/cmm/m/it/10 n\OT1/cmr/m/n/1
+0 ] = \OML/cmm/m/it/10 R[] \OT1/cmr/m/n/10 + \OML/cmm/m/it/10 R[]U[]\OT1/cmr/m/
+n/10 
+[]\OML/cmm/m/it/10 U[] \OT1/cmr/m/n/10 + ^^H[]\OML/cmm/m/it/10 U[] \OT1/cmr/m/n
+/10 + \OML/cmm/m/it/10 R[]U[]\OT1/cmr/m/n/10 	[] + ^^C[]\OML/cmm/m/it/10 ;|
+ []
+
+[18]
+Underfull \hbox (badness 1824) in paragraph at lines 1055--1056
+[] \OT1/cmr/m/n/10 b. Us-ing the up-date for-mu-las from Lemma [][]4.3[][] (as 
+de-rived in its
+ []
+
+[19] [20]
+<plot_linearity.pdf, id=403, 451.6875pt x 301.125pt>
 File: plot_linearity.pdf Graphic file (type pdf)
 <use plot_linearity.pdf>
-Package pdftex.def Info: plot_linearity.pdf  used on input line 841.
+Package pdftex.def Info: plot_linearity.pdf  used on input line 1088.
 (pdftex.def)             Requested size: 296.30812pt x 197.54846pt.
-[15]
-<plot_comparison.pdf, id=320, 451.6875pt x 301.125pt>
+<plot_comparison.pdf, id=406, 451.6875pt x 301.125pt>
 File: plot_comparison.pdf Graphic file (type pdf)
 <use plot_comparison.pdf>
-Package pdftex.def Info: plot_comparison.pdf  used on input line 852.
+Package pdftex.def Info: plot_comparison.pdf  used on input line 1099.
 (pdftex.def)             Requested size: 296.30812pt x 197.54846pt.
-
-Overfull \hbox (5.21587pt too wide) in paragraph at lines 863--864
+ [21 <./plot_linearity.pdf>]
+Overfull \hbox (5.21587pt too wide) in paragraph at lines 1110--1111
 []\OT1/cmr/bx/n/10 Reduced Com-pu-ta-tional Over-head\OT1/cmr/m/n/10 : By work-
 ing di-rectly with the semisep-|
  []
 
-[16 <./plot_linearity.pdf>] [17 <./plot_comparison.pdf>] (./article.bbl)
+
+Underfull \vbox (badness 7796) has occurred while \output is active []
+
+ [22 <./plot_comparison.pdf>] (./article.bbl
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [23])
 \tf@thm=\write5
 \openout5 = `article.thm'.
 
 
-[18] (./article.aux)
+[24] (./article.aux)
 Package rerunfilecheck Info: File `article.out' has not changed.
-(rerunfilecheck)             Checksum: 2B54051DA6A6AF5DBF1E7D12CC55F17D;2754.
+(rerunfilecheck)             Checksum: F462B9F208E7BAADB5B85F6E103D4DC6;3867.
  ) 
 Here is how much of TeX's memory you used:
- 24699 strings out of 476025
- 471604 string characters out of 5790016
+ 24778 strings out of 476025
+ 472777 string characters out of 5790016
  1894388 words of memory out of 5000000
- 44598 multiletter control sequences out of 15000+600000
+ 44637 multiletter control sequences out of 15000+600000
  522821 words of font info for 70 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  99i,18n,94p,1864b,1131s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1054,10 +1094,10 @@ st/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2023/texmf-dis
 t/fonts/type1/public/amsfonts/cm/cmti8.pfb></usr/local/texlive/2023/texmf-dist/
 fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2023/texmf-d
 ist/fonts/type1/public/amsfonts/symbols/msbm7.pfb>
-Output written on article.pdf (18 pages, 466575 bytes).
+Output written on article.pdf (24 pages, 498144 bytes).
 PDF statistics:
- 975 PDF objects out of 1000 (max. 8388607)
- 734 compressed objects within 8 object streams
- 139 named destinations out of 1000 (max. 500000)
- 151 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1076 PDF objects out of 1200 (max. 8388607)
+ 828 compressed objects within 9 object streams
+ 180 named destinations out of 1000 (max. 500000)
+ 183 words of extra memory for PDF output out of 10000 (max. 10000000)
 

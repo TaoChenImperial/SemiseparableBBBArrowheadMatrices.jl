@@ -162,7 +162,7 @@ The rest of this paper is organized as follows. Section~2 presents our main theo
 Before we start, an important notation will be: for a matrix $M$, let $M[i:j,m:n]$ represent the submatrix of $M$ from row $i$ to row $j$ and from column $m$ to column $n$. When $i=j$ or $m=n$, the notation will be simplified as $M[i,m:n]$\sotodo{Not actually defined. And I think it would be cleaner if its a column vector} or $M[i:j,m]$. We also adopt the convention that writing \textbf{end}\sotodo{I don't think we should use end here} in an index(such as $M[i:\text{end},:]$) to indicates the last valid index in that dimension.
 
 \begin{definition}
-    A {\it banded-plus-semseparable matrix} (BPS) with lower-semisepable rank $r$, upper-semiseparable rank $p$, lower-bandwidth $l$ and upper-bandwidth $m$\sotodo{I usually use $u$ for upper-bandwidth}  is $A \in \BPS \subset \bbR^{n \times n}$ such that
+    A {\it banded-plus-semseparable matrix} (BPS) with lower-semisepable rank $r$, upper-semiseparable rank $p$, lower-bandwidth $l$\sotodo{I prefer $\ell$} and upper-bandwidth $m$\sotodo{I usually use $u$ for upper-bandwidth}  is $A \in \BPS \subset \bbR^{n \times n}$ such that
 \[
 A = B + \tril(UV^T, -1) + \triu(WS^T, 1)\label{express_A}
 \]
