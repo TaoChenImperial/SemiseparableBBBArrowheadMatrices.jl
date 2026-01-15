@@ -127,8 +127,6 @@ banded-plus-semiseparable matrices, QR factorization, linear complexity, structu
 
 \section{Introduction}
 
-\sotodoinline{test for git push via overleaf}
-
 \sotodoinline{Do we want to allow for complex numbers?}
 
 \sotodoinline{What to say about QR algorithm?}
@@ -506,7 +504,7 @@ The representation in \eqref{express_F} explicitly shows that \( F \) is a bande
 
 
 
-\section{Algorithms}
+\section{Main algorithms}
 \label{sec:algorithms}
 
 \subsection{Fast QR factorization for BPS Matrices}
@@ -831,6 +829,253 @@ For a banded-plus-semiseparable matrix \( A \in \mathbb{R}^{n \times n} \) with 
 Algorithm \ref{algo:fastqr} computes the QR factorization in \( O(n) \) operations. Algorithm~\ref{algo_applyQ} applies \( Q^T \) in \( O(n) \) operations. Algorithm~\ref{algo_backsub} solves the triangular system in \( O(n) \) operations. The overall complexity is therefore linear in the problem size \( n \).
 \end{proof}
 
+\section{Fast RQ Computation for Symmetric BPS Matrices}
+\label{sec:fastrq}
+
+The fast QR factorization developed in the previous section not only provides a direct linear system solver but also forms the foundation for iterative algorithms such as the QR algorithm for computing eigenvalues. A core step in the QR iteration is the formation of the $RQ$ product. For symmetric banded-plus-semiseparable (BPS) matrices, we show that the $RQ$ product also preserves the BPS structure, leading to the design of a linear-complexity algorithm for its fast computation.
+
+\subsection{Structure, Definitions, and a Key Lemma for the Symmetric Case}
+
+Consider a symmetric BPS matrix $A$ of the form
+\begin{equation}\label{express_A_symm}
+    A = B + \tril(UV^\top, -1) + \triu(VU^\top, 1),
+\end{equation}
+where $B$ is a symmetric banded matrix with lower and upper bandwidth $l$, and $U, V \in \mathbb{R}^{n \times r}$ generate the lower and upper semiseparable parts of rank $r$. Let $A=QR$ be its QR factorization. Since $A$ is symmetric, we have $RQ = Q^\top A Q$, and thus $RQ$ is also symmetric.
+
+To describe the structure of intermediate matrices in the computation of $RQ$, we introduce definitions analogous to those in Section 2 but tailored for the symmetric case and the $R$ factor.
+
+\begin{definition}[Householder-modified upper-triangular matrix (HMUTM)]\label{def:hmutm}
+Given an $n\times n$ upper triangular matrix $R$ and an $n\times r$ matrix $U$, a matrix $\Gamma$ is called a Householder-modified upper-triangular matrix (HMUTM) of $R$ under $U$ if
+\begin{equation}
+    \Gamma = R + RU\Omega U^\top + \Phi U^\top + RU\Psi + \Lambda,
+\end{equation}
+where $\Omega \in \mathbb{R}^{r\times r}$; $\Phi=\begin{bmatrix} \Phi_s \\ \mathbf{0} \end{bmatrix}\in \mathbb{R}^{n\times r}$ with $\Phi_s\in \mathbb{R}^{\min(l,n)\times r}$; $\Psi=[\Psi_s, \mathbf{0}]\in \mathbb{R}^{r \times n}$ with $\Psi_s\in \mathbb{R}^{r\times \min(l,n)}$; and $\Lambda=\begin{bmatrix} \Lambda_s & \mathbf{0} \\ \mathbf{0} & \mathbf{0} \end{bmatrix}\in \mathbb{R}^{n \times n}$ with $\Lambda_s \in \mathbb{R}^{\min(l,n)\times \min(l,n)}$.
+\end{definition}
+
+\begin{definition}[Householder-modified upper-triangular vector (HMUTV)]\label{def:hmutv}
+Given an $n\times n$ upper triangular matrix $R$ and an $n\times r$ matrix $U$, a vector $\boldsymbol{\sigma}$ of length $n-1$ is called a Householder-modified upper-triangular vector (HMUTV) of $R$ under $U$ if
+\begin{equation}
+    \boldsymbol{\sigma} = \boldsymbol{\eta} + (RU\boldsymbol{\mu})[2:n],
+\end{equation}
+for some $\boldsymbol{\eta}=\begin{bmatrix} \boldsymbol{\eta}_s \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n-1}$ with $\boldsymbol{\eta}_s\in \mathbb{R}^{\min(l,n)}$ and $\boldsymbol{\mu}\in \mathbb{R}^r$.
+\end{definition}
+
+These definitions characterize the structured perturbations that appear in the $R$ factor when it is right-multiplied by a sequence of Householder reflectors (i.e., by $Q$). The following lemma is the symmetric counterpart to Lemma \ref{lemma:structure_preserve} and is the engine of the inductive proof.
+
+\begin{lemma}[Structure preservation under right-multiplication by a Householder reflector]\label{lemma:structure_preserve_rq}
+Given an $n\times n$ upper triangular matrix $R$, an $n\times r$ matrix $U$, and an HMUTM $\Gamma$ of $R$ under $U$, consider its right-multiplication by a Householder reflector: $\widetilde{\Gamma} = \Gamma (I - \tau \mathbf{y} \mathbf{y}^\top)$. Assume the Householder vector has the form $\mathbf{y} = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$, where $\mathbf{e}_1$ is the first standard basis vector, $U^{(2)}\in\mathbb{R}^{n\times r}$ satisfies $U^{(2)}[1,:]=\mathbf{0}$ and $U^{(2)}[2:n,:]=U[2:n,:]$, $\bar{\mathbf{k}}\in\mathbb{R}^r$, and $\mathbf{b}\in\mathbb{R}^{n}$ is nonzero only in its entries $2$ through $\min(l+1, n)$,. Then the following hold:
+\begin{enumerate}
+    \item The submatrix $\widetilde{\Gamma}[2:n, 2:n]$ is an HMUTM of $R[2:n,2:n]$ under $U[2:n,:]$.
+    \item The vector $\widetilde{\Gamma}[2:n, 1]$ is an HMUTV of $R$ under $U$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+Let $U = (\mathbf{u}_1,\ldots,\mathbf{u}_r)$ where $\mathbf{u}_i = (u_1^{(i)},\ldots,u_n^{(i)})^\top$, and denote $\bar{\mathbf{u}}_1 = (u_1^{(1)},\ldots,u_1^{(r)})^\top \in \mathbb{R}^r$. Write $\Gamma = R + RU\Omega U^\top + \Phi U^\top + RU\Psi + \Lambda$ with matrices $\Omega, \Phi, \Psi, \Lambda$ having the sparsity patterns specified in Definition \ref{def:hmutm}.
+
+Define the auxiliary vectors:
+\begin{align*}
+    \boldsymbol{\delta}_1 &= \Omega U^\top \mathbf{y} \in \mathbb{R}^r, &
+    \boldsymbol{\delta}_2 &= U^\top \mathbf{y} \in \mathbb{R}^r, \\
+    \boldsymbol{\delta}_3 &= \Psi \mathbf{y} \in \mathbb{R}^r, &
+    \boldsymbol{\delta}_4 &= \Lambda \mathbf{y} \in \mathbb{R}^n.
+\end{align*}
+Note that $\boldsymbol{\delta}_4$ has the form $\boldsymbol{\delta}_4 = \begin{bmatrix} \boldsymbol{\delta}_{4s} \\ \mathbf{0} \end{bmatrix}$ with $\boldsymbol{\delta}_{4s} \in \mathbb{R}^{\min(l,n)}$ due to the structure of $\Lambda$.
+
+Also let $\mathbf{r}^{(1)} = R[1,:]^\top$, $\boldsymbol{\phi}^{(1)} = \Phi[1,:]^\top$, $\boldsymbol{\psi}^{(1)} = \Psi[:,1]$, and $\boldsymbol{\lambda}^{(1)} = \Lambda[:,1]$, and $\boldsymbol{\gamma} = Rb$.
+
+We compute $\widetilde{\Gamma} = \Gamma - \tau \Gamma \mathbf{y} \mathbf{y}^\top$ by distributing the operation over each term in $\Gamma$.
+
+\textbf{(i) Transformation of $R$:} Writing $\mathbf{y} = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$ and $R\mathbf{b} = \boldsymbol{\gamma}$ where $\boldsymbol{\gamma}$ is nonzero only in its first $\min(l+1,n)$ entries, we obtain:
+\begin{equation}\label{eq:r_transform}
+\begin{aligned}
+R(I - \tau \mathbf{y}\mathbf{y}^\top) = &R + R(-\tau\mathbf{e}_1)\mathbf{e}_1^\top + RU^{(2)}(-\tau\bar{\mathbf{k}})\mathbf{e}_1^\top + (-\tau\boldsymbol{\gamma})\mathbf{e}_1^\top \\
+&-\tau R\mathbf{e}_1\bar{\mathbf{k}}^\top U^{(2)\top} -\tau R\mathbf{e}_1\mathbf{b}^\top + RU^{(2)}(-\tau\bar{\mathbf{k}}\bar{\mathbf{k}}^\top)U^{(2)\top} \\
+&+ (-\tau\boldsymbol{\gamma}\bar{\mathbf{k}}^\top)U^{(2)\top} + RU^{(2)}(-\tau\bar{\mathbf{k}}\mathbf{b}^\top) + (-\tau\boldsymbol{\gamma}\mathbf{b}^\top).
+\end{aligned}
+\end{equation}
+
+\textbf{(ii) Transformation of $RU\Omega U^\top$:} Using $\mathbf{y} = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$, $\Omega U^\top\mathbf{y} = \boldsymbol{\delta}_1$, and $U = \mathbf{e}_1\bar{\mathbf{u}}_1^\top + U^{(2)}$, we get:
+\begin{equation}
+\begin{aligned}
+RU\Omega U^\top(I &- \tau\mathbf{y}\mathbf{y}^\top) = R\mathbf{e}_1(\bar{\mathbf{u}}_1^\top\Omega\bar{\mathbf{u}}_1 - \tau\bar{\mathbf{u}}_1^\top\boldsymbol{\delta}_1)\mathbf{e}_1^\top + RU^{(2)}(\Omega\bar{\mathbf{u}}_1 - \tau\boldsymbol{\delta}_1)\mathbf{e}_1^\top \\
+&+ R\mathbf{e}_1\bar{\mathbf{u}}_1^\top\Omega U^{(2)\top} -\tau R\mathbf{e}_1\bar{\mathbf{u}}_1^\top\boldsymbol{\delta}_1\bar{\mathbf{k}}^\top U^{(2)\top} -\tau R\mathbf{e}_1\bar{\mathbf{u}}_1^\top\boldsymbol{\delta}_1\mathbf{b}^\top \\
+&+ RU^{(2)}(\Omega - \tau \boldsymbol{\delta}_1\bar{\mathbf{k}}^\top)U^{(2)\top} + RU^{(2)}(-\tau\boldsymbol{\delta}_1\mathbf{b}^\top).
+\end{aligned}
+\end{equation}
+
+\textbf{(iii) Transformation of $\Phi U^\top$:} Using $\mathbf{y} = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$, $U^\top\mathbf{y} = \boldsymbol{\delta}_2$, and $U = \mathbf{e}_1\bar{\mathbf{u}}_1^\top + U^{(2)}$, we get:
+\begin{equation}
+\Phi U^\top(I - \tau\mathbf{y}\mathbf{y}^\top) = (\Phi\bar{\mathbf{u}}_1 - \tau\Phi\boldsymbol{\delta}_2)\mathbf{e}_1^\top + (\Phi - \tau\Phi\boldsymbol{\delta}_2\bar{\mathbf{k}}^\top)U^{(2)\top} + (-\tau\Phi\boldsymbol{\delta}_2\mathbf{b}^\top).
+\end{equation}
+
+\textbf{(iv) Transformation of $RU\Psi$:} Using $\mathbf{y} = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$, $\Psi\mathbf{y} = \boldsymbol{\delta}_3$, and $U = \mathbf{e}_1\bar{\mathbf{u}}_1^\top + U^{(2)}$,  we get:
+\begin{equation}
+\begin{aligned}
+RU\Psi(I &- \tau\mathbf{y}\mathbf{y}^\top) = (-\tau R\mathbf{e}_1\bar{\mathbf{u}}_1^\top\boldsymbol{\delta}_3)\mathbf{e}_1^\top + RU^{(2)}(-\tau\boldsymbol{\delta}_3)\mathbf{e}_1^\top + R\mathbf{e}_1\bar{\mathbf{u}}_1^\top\Psi \\
+&-\tau R\mathbf{e}_1\bar{\mathbf{u}}_1^\top\boldsymbol{\delta}_3\bar{\mathbf{k}}^\top U^{(2)\top} -\tau R\mathbf{e}_1\bar{\mathbf{u}}_1^\top\boldsymbol{\delta}_3\mathbf{b}^\top \\
+&+ RU^{(2)}(-\tau\boldsymbol{\delta}_3\bar{\mathbf{k}}^\top)U^{(2)\top} + RU^{(2)}(\Psi - \tau\boldsymbol{\delta}_3\mathbf{b}^\top).
+\end{aligned}
+\end{equation}
+
+\textbf{(v) Transformation of $\Lambda$:} Using $\mathbf{y} = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$ and $\Lambda \mathbf{y} = \boldsymbol{\delta}_4$, we get:
+\begin{equation}\label{eq:lambda_transform}
+\Lambda(I - \tau\mathbf{y}\mathbf{y}^\top) = (-\tau\boldsymbol{\delta}_4)\mathbf{e}_1^\top + (-\tau\boldsymbol{\delta}_4\bar{\mathbf{k}}^\top)U^{(2)\top} + (\Lambda - \tau \boldsymbol{\delta}_4\mathbf{b}^\top).
+\end{equation}
+
+Summing contributions (i)--(v), we identify the structure of $\widetilde{\Gamma}$.
+
+\textbf{First}, the submatrix $\widetilde{\Gamma}[2:n, 2:n]$ satisfies:
+\begin{equation}\label{eq:submatrix_structure_rq}
+\widetilde{\Gamma}[2:n, 2:n] = \tilde{R} + \tilde{R}\tilde{U}\tilde{\Omega}\tilde{U}^\top + \tilde{\Phi}\tilde{U}^\top + \tilde{R}\tilde{U}\tilde{\Psi} + \tilde{\Lambda},
+\end{equation}
+where $\tilde{R} = R[2:n,2:n]$, $\tilde{U} = U[2:n,:]$, and the updated matrices are:
+\begin{align*}
+\tilde{\Omega} &= -\tau\bar{\mathbf{k}}\bar{\mathbf{k}}^\top + \Omega - \tau\boldsymbol{\delta}_1\bar{\mathbf{k}}^\top - \tau\boldsymbol{\delta}_3\bar{\mathbf{k}}^\top \in \mathbb{R}^{r\times r}, \\
+\tilde{\Phi} &= \begin{bmatrix} \tilde{\Phi}_s \\ \mathbf{0} \end{bmatrix}\in \mathbb{R}^{(n-1)\times r}, \quad
+\tilde{\Phi}_s = (-\tau\boldsymbol{\gamma}\bar{\mathbf{k}}^\top + \Phi - \tau\Phi\boldsymbol{\delta}_2\bar{\mathbf{k}}^\top - \tau\boldsymbol{\delta}_4\bar{\mathbf{k}}^\top)[2:\min(l+1,n),:] \in \mathbb{R}^{\min(l,n-1)\times r}, \\
+\tilde{\Psi} &= [\tilde{\Psi}_s, \mathbf{0}]\in \mathbb{R}^{r\times (n-1)}, \quad
+\tilde{\Psi}_s = (-\tau\bar{\mathbf{k}}\mathbf{b}^\top - \tau\boldsymbol{\delta}_1\mathbf{b}^\top + \Psi - \tau\boldsymbol{\delta}_3\mathbf{b}^\top)[:,2:\min(l+1,n)] \in \mathbb{R}^{r\times \min(l,n-1)}, \\
+\tilde{\Lambda} &= \begin{bmatrix} \tilde{\Lambda}_s & \mathbf{0} \\ \mathbf{0} & \mathbf{0} \end{bmatrix}\in \mathbb{R}^{(n-1)\times (n-1)}, \\
+\tilde{\Lambda}_s &= (-\tau\boldsymbol{\gamma}\mathbf{b}^\top - \tau\Phi\boldsymbol{\delta}_2\mathbf{b}^\top + \Lambda - \tau\boldsymbol{\delta}_4\mathbf{b}^\top)[2:\min(l+1,n),2:\min(l+1,n)] \in \mathbb{R}^{\min(l,n-1)\times \min(l,n-1)}.
+\end{align*}
+This confirms that $\widetilde{\Gamma}[2:n, 2:n]$ is an HMUTM of $\tilde{R}$ under $\tilde{U}$.
+
+\textbf{Second}, the vector $\widetilde{\Gamma}[2:n, 1]$ is given by:
+\begin{equation}\label{eq:col_structure_rq}
+\widetilde{\Gamma}[2:n, 1] = \boldsymbol{\eta} + (RU\boldsymbol{\mu})[2:n],
+\end{equation}
+where
+\begin{align*}
+\boldsymbol{\eta} &= \begin{bmatrix} \boldsymbol{\eta}_s \\ \mathbf{0} \end{bmatrix}, \quad
+\boldsymbol{\eta}_s = (-\tau \boldsymbol{\gamma} + \Phi\bar{\mathbf{u}}_1 - \tau\Phi\boldsymbol{\delta}_2 - \tau\boldsymbol{\delta}_4 + \boldsymbol{\lambda}^{(1)})[2:\min(l+1,n)] \in \mathbb{R}^{\min(l,n-1)}, \\
+\boldsymbol{\mu} &= -\tau \bar{\mathbf{k}} + \Omega\bar{\mathbf{u}}_1 - \tau\boldsymbol{\delta}_1 - \tau\boldsymbol{\delta}_3 + \boldsymbol{\psi}^{(1)} \in \mathbb{R}^r.
+\end{align*}
+This matches the form of an HMUTV (Definition \ref{def:hmutv}).
+
+\textbf{Finally}, the $(1,1)$ entry of $\widetilde{\Gamma}$ is updated as:
+\begin{equation}\label{eq:diag_update_rq}
+\begin{aligned}
+\tilde{\Gamma}[1,1] = &R[1,1] -\tau R[1,1] -\tau\mathbf{r}^{(1)\top}U^{(2)}\bar{\mathbf{k}} -\tau\gamma[1] \\
+&+ R[1,1](\bar{\mathbf{u}}_1^\top\Omega\bar{\mathbf{u}}_1 -\tau\bar{\mathbf{u}}_1^\top\boldsymbol{\delta}_1) +\mathbf{r}^{(1)\top}U^{(2)}(\Omega\bar{\mathbf{u}}_1 -\tau\boldsymbol{\delta}_1) \\
+&+\boldsymbol{\phi}^{(1)\top}\bar{\mathbf{u}}_1 -\tau\boldsymbol{\phi}^{(1)\top}\boldsymbol{\delta}_2 -\tau R[1,1]\bar{\mathbf{u}}_1^\top\boldsymbol{\delta}_3 +R[1,1]\bar{\mathbf{u}}_1^\top\boldsymbol{\psi}^{(1)} \\
+&-\tau\mathbf{r}^{(1)\top}U^{(2)}\boldsymbol{\delta}_3 +\mathbf{r}^{(1)\top}U^{(2)}\boldsymbol{\psi}^{(1)} -\tau \boldsymbol{\delta}_4[1] +\Lambda[1,1].
+\end{aligned}
+\end{equation}
+
+The updates \eqref{eq:submatrix_structure_rq}, \eqref{eq:col_structure_rq}, and \eqref{eq:diag_update_rq} provide the complete formulas needed to advance the structured representation by one Householder transformation.
+\end{proof}
+
+\subsection{Structure-Preserving Theorem for $RQ$}
+
+Equipped with Lemma \ref{lemma:structure_preserve_rq}, we can now state and prove the main structural result for the $RQ$ product.
+
+\begin{theorem}[Structure of $RQ$ for symmetric BPS matrices]\label{thm:structure_rq}
+Let $A$ be a symmetric BPS matrix as in \eqref{express_A_symm} with semiseparable rank $r$ and bandwidth $l$, and let $A=QR$ be its QR factorization. Then the matrix $RQ$ is also a symmetric BPS matrix. Specifically, it can be expressed as
+\begin{equation}\label{express_RQ}
+    RQ = B_R + \tril(\Theta \Delta^\top, -1) + \triu(\Delta \Theta^\top, 1),
+\end{equation}
+where
+\begin{itemize}
+    \item $\Theta = R U \in \mathbb{R}^{n \times r}$,
+    \item $\Delta \in \mathbb{R}^{n \times r}$ is a low-rank generator matrix,
+    \item $B_R$ is a symmetric banded matrix with lower and upper bandwidth $l$.
+\end{itemize}
+Thus, the $RQ$ product has a lower and upper semiseparable rank of $r$ and a lower and upper bandwidth of $l$.
+\end{theorem}
+
+\begin{proof}
+The proof proceeds by induction on the steps of applying $Q$ (as a product of Householder reflectors) to $R$ from the right. Define $R^{(0)} = R$ and $R^{(j)} = R (I - \tau_1 \mathbf{y}_1 \mathbf{y}_1^\top) \cdots (I - \tau_j \mathbf{y}_j \mathbf{y}_j^\top)$ for $j=1,\ldots,n-1$, so that $R^{(n-1)} = RQ$.
+
+From the proof of Theorem \ref{thm:structure_preserve}, the Householder vectors have the form:
+\begin{equation}
+\mathbf{y}_k[k:n] = \mathbf{e}_1 + U^{(k+1)}\bar{\mathbf{k}}_{k+1} + \mathbf{b}_{k+1}, \quad k=1,\ldots,n-1,
+\end{equation}
+where $\mathbf{e}_1\in\mathbb{R}^{n-k+1}$, $U^{(k+1)}\in\mathbb{R}^{(n-k+1)\times r}$ satisfies $U^{(k+1)}[1,:]=\mathbf{0}$ and $U^{(k+1)}[2:n-k+1,:]=U[k+1:n,:]$, $\bar{\mathbf{k}}_{k+1}\in\mathbb{R}^r$, and $\mathbf{b}_{k+1}\in\mathbb{R}^{n-k+1}$ is nonzero only in its entries $2$ through $\min(l+1, n-k+1)$.
+
+Let $R_k = R[k:n, k:n]$ and $U_k = U[k:n, :]$. We prove by induction that for $j=0,\ldots,n-1$:
+\begin{enumerate}
+    \item $R^{(j)}[j+1:n, j+1:n]$ is an HMUTM of $R_{j+1}$ under $U_{j+1}$.
+    \item $R^{(j)}[j+1:n, j]$ is an HMUTV of $R_{j+1}$ under $U_{j+1}$.
+\end{enumerate}
+
+\textbf{Base case ($j=0$):} $R^{(0)}=R$ is trivially an HMUTM of $R_1$ under $U_1$ with all perturbation matrices zero.
+
+\textbf{Inductive step:} Assume the statement holds for some $j < n-1$. That is,
+\begin{equation}
+R^{(j)}[j+1:n, j+1:n] = R_{j+1} + R_{j+1}U_{j+1}\Omega_{j+1}U_{j+1}^\top + \Phi_{j+1}U_{j+1}^\top + R_{j+1}U_{j+1}\Psi_{j+1} + \Lambda_{j+1},
+\end{equation}
+with $\Omega_{j+1}, \Phi_{j+1}, \Psi_{j+1}, \Lambda_{j+1}$ having the required sparsity patterns.
+
+We now compute $R^{(j+1)} = R^{(j)}(I - \tau_{j+1}\mathbf{y}_{j+1}\mathbf{y}_{j+1}^\top)$. Applying Lemma \ref{lemma:structure_preserve_rq} with $\Gamma = R^{(j)}[j+1:n, j+1:n]$, $R = R_{j+1}$, $U = U_{j+1}$, and $\mathbf{y} = \mathbf{y}_{j+1}[j+1:n]$, we obtain:
+\begin{enumerate}
+    \item $\widetilde{\Gamma}[2:n-j, 2:n-j] = R^{(j+1)}[j+2:n, j+2:n]$ is an HMUTM of $R_{j+2}$ under $U_{j+2}$.
+    \item $\widetilde{\Gamma}[2:n-j, 1] = R^{(j+1)}[j+2:n, j+1]$ is an HMUTV of $R_{j+1}$ under $U_{j+1}$.
+\end{enumerate}
+The lemma also provides explicit update formulas for the parameters, showing they retain the correct sparsity patterns. This completes the inductive step.
+
+By induction, the structured form holds for all $j$. In particular, for each $j=0,\ldots,n-2$, we have an HMUTV representation:
+\begin{equation}
+R^{(j+1)}[j+2:n, j+1] = \boldsymbol{\eta}_{j+2} + (R_{j+1}U_{j+1}\boldsymbol{\mu}_{j+2})[2:n-j].
+\end{equation}
+Since $R_{j+1}U_{j+1}[2:n-j,:] = RU[j+2:n,:]$, this can be rewritten as:
+\begin{equation}
+\begin{aligned}
+&(RQ)[j+1, j+2:n] = (RQ)[j+2:n, j+1] \\&= R^{(j+1)}[j+2:n, j+1] =\boldsymbol{\eta}_{j+2} + (RU\boldsymbol{\mu}_{j+2})[j+2:n].
+\end{aligned}
+\end{equation}
+Let $\Delta \in \mathbb{R}^{n \times r}$ be defined by $\Delta[j,:] = \boldsymbol{\mu}_{j+1}^\top$ for $j=1,\ldots,n-1$ and $\Delta[n,:] = \mathbf{0}$. Let $\Theta = RU$. Then the semiseparable part of $RQ$ is exactly $\tril(\Theta\Delta^\top,-1) + \triu(\Delta\Theta^\top,1)$.
+
+The banded part $B_R$ is constructed from the diagonal entries of $R^{(j)}$ and the vectors $\boldsymbol{\eta}_{j+1}$, which are nonzero only in their first $\min(l, n-j)$ entries. By the update formulas in Lemma \ref{lemma:structure_preserve_rq}, these entries depend only on local information (within distance $l$ from the diagonal), ensuring $B_R$ is banded with bandwidth $l$. The symmetry of $B_R$ follows from the symmetry of $RQ$ and the symmetry of the semiseparable representation.
+
+Thus, $RQ$ admits the representation \eqref{express_RQ}, confirming it is a symmetric BPS matrix with the stated properties.
+\end{proof}
+
+\subsection{Fast RQ Algorithm}
+
+Theorem \ref{thm:structure_rq} is constructive and leads directly to a fast algorithm for computing the $RQ$ product without explicitly forming the dense orthogonal matrix $Q$.
+
+\begin{algorithm}\caption{Fast RQ for Symmetric BPS Matrices}\label{algo:fastrq}
+\begin{algorithmic}[1]
+\State \textbf{Input:} A symmetric BPS matrix $A$ given by its generators: symmetric banded $B$ (bandwidth $l$), and $U, V \in \mathbb{R}^{n \times r}$ satisfying $A = B + \tril(UV^\top, -1) + \triu(VU^\top, 1)$.
+\State \textbf{Output:} The $RQ$ product in structured form: symmetric banded matrix $B_R$, and low-rank generators $\Theta$ and $\Delta$.
+
+\Statex
+\State 1. \textbf{Compute fast QR factorization:}
+\State \quad Run Algorithm \ref{algo:fastqr} on $A$ to obtain the structured factor matrix $F$ and coefficients $\boldsymbol{\tau}$. Extract the structured representation of the $R$ factor and all Householder vectors $\mathbf{y}_k$ (with parameters $\bar{\mathbf{k}}_k$, $\mathbf{b}_k$).
+\State \quad Compute and store $\Theta = R U$ using the structured $R$.
+\Statex
+\State 2. \textbf{Initialize HMUTM parameters:}
+\State \quad Set $\Omega_1 \gets \mathbf{0}_{r \times r}$, $\Phi_1 \gets \mathbf{0}_{n \times r}$, $\Psi_1 \gets \mathbf{0}_{r \times n}$, $\Lambda_1 \gets \mathbf{0}_{n \times n}$.
+\State \quad Initialize $\Delta \gets \mathbf{0}_{n \times r}$.
+\Statex
+\State 3. \textbf{Forward recursion (apply $Q$ from the right):}
+\For{$k = 1$ to $n-1$}
+    \State a. Retrieve the Householder parameters $\bar{\mathbf{k}}_{k+1}$ and $\mathbf{b}_{k+1}$ for step $k$.
+    \State b. Using the update formulas from Lemma \ref{lemma:structure_preserve_rq} (as derived in its proof), compute the new HMUTM parameters $(\Omega_{k+1}, \Phi_{k+1}, \Psi_{k+1}, \Lambda_{k+1})$ from $(\Omega_k, \Phi_k, \Psi_k, \Lambda_k, \bar{\mathbf{k}}_{k+1}, \mathbf{b}_{k+1})$.
+    \State c. Compute the HMUTV parameter $\boldsymbol{\mu}_{k+1}$ and $\boldsymbol{\eta}_{k+1}$ from the relevant update formulas in the proof of Lemma \ref{lemma:structure_preserve_rq}.
+    \State d. Set $\Delta[k,:] \gets \boldsymbol{\mu}_{k+1}^\top$ and $B_R[k+1:\min(k+1,n),k] \gets \boldsymbol{\eta}_{k+1}[k+1:\min(k+1,n)]$.
+    \State e. Compute the diagonal element from the formula in the proof of Lemma \ref{lemma:structure_preserve_rq} and store it in $B_R[k,k]$. 
+\EndFor
+\Statex
+\State 4. \textbf{Final State}
+\State \quad Set $B_R[n,n] \gets R^{(n-1)}[n,n]$
+\Statex
+\State 5. \textbf{Return} $B_R$, $\Theta$, $\Delta$.
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Complexity analysis.} Step 1, the QR factorization, requires $O(n)$ operations by Theorem \ref{thm:structure_preserve}. The computation of $\Theta = RU$ can be performed in $O(nr)$ time due to the structure of $R$. The forward recursion in Step 3 performs a constant amount of work per iteration, as all matrix operations involve matrices whose dimensions (e.g., $r \times r$, $r \times l$, $l \times l$) are independent of $n$. Therefore, Algorithm \ref{algo:fastrq} runs in $O(n)$ time and uses $O(n)$ storage.
+
+\begin{remark}\label{rem:symmetric_tracking}
+A subtle but crucial point in Algorithm \ref{algo:fastrq} is that during the forward recursion, we track only the evolving structure of the submatrix $R^{(j)}[j+1:n, j+1:n]$, even though the entire matrix $R^{(j)}[:, j+1:n]$ is being modified. More precisely, after applying the first $j$ Householder transformations from the right, the first $j$ columns of $R^{(j)}$ have reached their final state and will not change in subsequent steps. 
+However, the first $j$ rows of $R^{(j)}$ (in columns $j+1:n$) are still subject to modification by later transformations. 
+Nevertheless, because the final product $RQ$ is known to be symmetric, these pending row entries are not independent: they must eventually equal the corresponding entries in the already-fixed columns. 
+Thus, while they appear to be "in flux" during intermediate steps, their ultimate values are implicitly determined by symmetry. 
+This allows the algorithm to safely disregard the explicit updating of these rows and focus solely on the lower-right submatrix, which is the only part whose future evolution is not predetermined. 
+Lemma \ref{lemma:structure_preserve_rq} guarantees that this submatrix maintains an HMUTM structure, enabling its efficient propagation. 
+This exploitation of symmetry is key to achieving $O(n)$ complexity, as it confines the work at each step to a submatrix with a structured representation of constant size independent of $n$.
+\end{remark}
 \section{Numerical results}
 \label{sec:experiments}
 
