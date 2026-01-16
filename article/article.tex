@@ -114,7 +114,7 @@
 \maketitle
 
 \begin{abstract}
-We show that each stage of the QR factorization of banded-plus-semiseparable matrices computed using Householder reflections has a specific structured perturbation. This theoretical result enables the design of linear-complexity algorithms for QR factorization and for solving the associated linear systems. Numerical experiments validate the optimal linear complexity  and demonstrate substantial speedups compared with existing hierarchical approaches. The algorithms have been implemented in an open-source Julia package, providing an efficient and accessible platform for practical use.
+We show that each stage of the QR factorization of banded-plus-semiseparable matrices computed using Householder reflections has a specific structured perturbation. This theoretical result enables the design of linear-complexity algorithms for QR factorization and for solving the associated linear systems. For symmetric BPS matrices, we further show that the $RQ$ product---central to eigenvalue computations via the QR algorithm---also preserves the BPS structure, leading to a linear-complexity algorithm for its formation. Numerical experiments validate the optimal linear complexity  and demonstrate substantial speedups compared with existing hierarchical approaches. The algorithms have been implemented in an open-source Julia package, providing an efficient and accessible platform for practical use.
 \end{abstract}
 
 \begin{keywords}
@@ -127,39 +127,34 @@ banded-plus-semiseparable matrices, QR factorization, linear complexity, structu
 
 \section{Introduction}
 
-\sotodoinline{Do we want to allow for complex numbers?}
-
-\sotodoinline{What to say about QR algorithm?}
-
-\sotodoinline{Add a nullspace problem coming from the ultraspherical spectral method?}
-
-\sotodoinline{Does it generalise to rectangular?}
-
-\sotodoinline{Say something about inverses of banded matrices being banded-plus-semiseparable?}
-
-\sotodoinline{Add stability plot}
-
-Banded-plus-semiseparable (BPS) matrices, expressible as \sotodo{Change all the ${}^T$ to ${}^\top$}
+Banded-plus-semiseparable (BPS) matrices, expressible as 
 \begin{equation*}
-A = \underbrace{B}_{\text{banded}} + \underbrace{\tril(UV^T, -1)}_{\text{lower semiseparable, rank } r} + \underbrace{\triu(WS^T, 1)}_{\text{upper semiseparable, rank } p} \in \bbR^{n \times n},
+A = \underbrace{B}_{\text{banded}} + \underbrace{\tril(UV^\top, -1)}_{\text{lower semiseparable, rank } r} + \underbrace{\triu(WS^\top, 1)}_{\text{upper semiseparable, rank } p} \in \bbR^{n \times n},
 \end{equation*}
- arise in numerous applications from PDEs with non-local interactions~\cite{knook2024quasi}\sotodo{This is a bizarre reference and description. Is it AI generated?} to signal processing, control theory, and eigenvalue problems~\cite{vandebril2005note}\sotodo{Add citations to Arieh Iserles W-systems papers}. Their structure requires only $O(n)$ storage which invites the development of \( O(n) \) algorithms, a goal successfully achieved for iterations of the QR algorithm for symmetric semiseparable systems~\cite{vandebril2005implicit}, and for solving linear systems with \emph{diagonal}-plus-semiseparable matrices~\cite{eidelman1997inversion}. 
+ arise in numerous applications from spectral methods for differential equations~\cite{knook2024quasi, iserles2025stable} to signal processing, control theory, and eigenvalue problems~\cite{vandebril2005note}. Importantly, the inverse of a banded matrix is itself a BPS matrix, making this structure fundamental for solving banded linear systems via their inverses \cite{rozsa1991band}. Their structure requires only $O(n)$ storage which invites the development of \( O(n) \) algorithms, a goal successfully achieved for iterations of the QR algorithm for symmetric semiseparable systems~\cite{vandebril2005implicit}, and for solving linear systems with \emph{diagonal}-plus-semiseparable matrices~\cite{eidelman1997inversion}. 
   However, generalizing these results to the case where the banded part $B$ is a genuine banded matrix, rather than merely a diagonal one, presents significant algorithmic challenges. 
 
 
 \sotodoinline{Clarify exact relationship between prior work and ours}
 
-Pioneering work established \( O(n) \) solvers for sequentially\sotodo{What's a sequentially semiseparable matrix?} semiseparable matrices~\cite{chandrasekaran2002fast} and later for the banded-plus-semiseparable case via ULV factorization~\cite{chandrasekaran2003fast}. Banded-plus-semiseparable matrices can be viewed as  hierarchically semiseparable (HSS) matrices, and solvers using HSS structure is a well-developed area~\cite{chandrasekaran2006fast, chandrasekaran2007fast, xia2010fast, massei2020hm}. A parallel line of research extensively developed the theory and algorithms for semiseparable and quasiseparable matrices, including implicit QR algorithms for \emph{symmetric} semiseparable matrices~\cite{vandebril2005implicit}, structure-preserving analyses~\cite{eidelman2005qr, delvaux2006structures, delvaux2006rank}, approaches leveraging rational Krylov techniques~\cite{fasino2005rational, vandebril2008rational}, and alternative representations~\cite{vandebril2005note, delvaux2008givens}. Despite these advances, a clear theoretical guarantee that the standard QR factorization preserves the BPS structure has been missing, with most existing solvers relying on more complex ULV or intricate Givens-based schemes~\cite{mastronardi2001fast, chandrasekaran2003fast, van2004two, delvaux2008qr}. A special case of BPS matrices are almost banded matrices which were used in \cite{olver2013fast} to represent discretisations of differential equations using the ultraspherical spectral method. An optimal complexity adaptive QR factorization was introduced, which also gives an optimal complexity QR factorization for BPS matrices with now lower semiseparable part ($r = 0$). It also introduced an optimal complexity back-substitution for upper-triangular BPS matrices, an algorithm we also use.
+Pioneering work established \( O(n) \) solvers for the BPS matrices via ULV factorization~\cite{chandrasekaran2003fast}. BPS matrices can also be viewed as  hierarchically semiseparable (HSS) matrices, and solvers using HSS structure is a well-developed area~\cite{chandrasekaran2006fast, chandrasekaran2007fast, xia2010fast, massei2020hm}. A parallel line of research extensively developed the theory and algorithms for semiseparable and quasiseparable matrices, including implicit QR algorithms for \emph{symmetric} semiseparable matrices~\cite{vandebril2005implicit}, structure-preserving analyses~\cite{eidelman2005qr, delvaux2006structures, delvaux2006rank}, approaches leveraging rational Krylov techniques~\cite{fasino2005rational, vandebril2008rational}, and alternative representations~\cite{vandebril2005note, delvaux2008givens}. Despite these advances, a clear theoretical guarantee that the standard QR factorization preserves the BPS structure has been missing, with most existing solvers relying on more complex ULV or intricate Givens-based schemes~\cite{mastronardi2001fast, chandrasekaran2003fast, van2004two, delvaux2008qr}. A special case of BPS matrices are almost banded matrices which were used in \cite{olver2013fast} to represent discretisations of differential equations using the ultraspherical spectral method. An optimal complexity adaptive QR factorization was introduced, which also gives an optimal complexity QR factorization for BPS matrices with now lower semiseparable part ($r = 0$). It also introduced an optimal complexity back-substitution for upper-triangular BPS matrices, an algorithm we also use.
 
-In this paper, we close this theoretical gap. We prove that the QR factorization of a BPS matrix yields a factor matrix \( F \), which is the matrix containing both $R$ and the Householder reflectors encoding $Q$,  that is itself BPS, with precisely characterized lower rank \( r \), upper rank \( r+p \), and bandwidths \( l \) and \( l+m \). This pivotal result, proven via an inductive framework involving a new class of Householder-Modified BPS Matrices (HMBPSM), which enables the design of an \( O(n) \) QR factorization. Furthermore, it facilitates a complete direct solver: applying \( Q^T \) and performing backward substitution on the structured factor \( R \) are also achieved in linear time. Our work thus provides a unified, QR-based, end-to-end \( O(n) \) solution for BPS systems, backed by a rigorous structure-preservation theorem.
+In this paper, we close this theoretical gap. We prove that the QR factorization of a BPS matrix yields a factor matrix \( F \), which is the matrix containing both $R$ and the Householder reflectors encoding $Q$,  that is itself BPS, with precisely characterized lower rank \( r \), upper rank \( r+p \), and bandwidths \( l \) and \( l+m \). This pivotal result, proven via an inductive framework involving a new class of Householder-Modified BPS Matrices (HMBPSM), which enables the design of an \( O(n) \) QR factorization. Furthermore, it facilitates a complete direct solver: applying \( Q^\top \) and performing backward substitution on the structured factor \( R \) are also achieved in linear time. Our work thus provides a unified, QR-based, end-to-end \( O(n) \) solution for BPS systems, backed by a rigorous structure-preservation theorem. Furthermore, we show that for symmetric BPS matrices, the $RQ$ product (central to the QR eigenvalue algorithm) also retains the BPS structure, enabling efficient eigenvalue computations.
 
-The rest of this paper is organized as follows. Section~2 presents our main theoretical contributions: the definitions, the core lemma on structure preservation under Householder transformations, and the main theorem with its proof. Section~3 details the resulting $O(n)$ algorithms for QR factorization, application of $Q^T$, and backward substitution. Section~4 presents numerical experiments that confirm the linear complexity and demonstrate performance advantages. We conclude in Section~5 with a discussion of future work.
+While this paper focuses on real square matrices, the techniques and results naturally extend to complex matrices by replacing transposes with conjugate transposes. The extension to rectangular matrices is also straightforward, as Householder QR factorization applies similarly to rectangular matrices, and the structural arguments carry over with minor adjustments. These extensions are omitted but represent immediate generalizations of the theory presented here.
+
+The rest of this paper is organized as follows. Section~\ref{sec:main} presents our main theoretical contributions: the definitions, the core lemma on structure preservation under Householder transformations, and the main theorem with its proof. Section~\ref{sec:algorithms} details the resulting $O(n)$ algorithms for QR factorization, application of $Q^\top$, and backward substitution. Building on these foundations, Section~\ref{sec:fastrq} addresses symmetric BPS matrices, proving that the $RQ$ product preserves the BPS structure and presenting a linear-complexity algorithm for its computation. Section~\ref{sec:experiments} presents numerical experiments that confirm the linear complexity and demonstrate performance advantages. We conclude in Section~\ref{sec:conclusions} with a discussion of future work.
 \section{Main results}
 \label{sec:main}
 
 \subsection{Problem Formulation and Notation}
 
-Before we start, an important notation will be: for a matrix $M$, let $M[i:j,m:n]$ represent the submatrix of $M$ from row $i$ to row $j$ and from column $m$ to column $n$. When $i=j$ or $m=n$, the notation will be simplified as $M[i,m:n]$\sotodo{Not actually defined. And I think it would be cleaner if its a column vector} or $M[i:j,m]$. We also adopt the convention that writing \textbf{end}\sotodo{I don't think we should use end here} in an index(such as $M[i:\text{end},:]$) to indicates the last valid index in that dimension.
+We begin by establishing notation for matrix subblocks. For a matrix $M \in \mathbb{R}^{n \times n}$, let $M[i:j, m:n]$ denote the submatrix consisting of rows $i$ through $j$ and columns $m$ through $n$ (inclusive). When extracting a single row or column, the result is a row or column vector, respectively:
+\begin{itemize}
+    \item $M[i:j, m] \in \mathbb{R}^{j-i+1}$: the $m$-th column from row $i$ to row $j$ (a column vector).
+    \item $M[i, m:n] \in \mathbb{R}^{n-m+1}$: the $i$-th row from column $m$ to column $n$ (also a column vector).
+\end{itemize}
+For brevity, we write $M[k,:]$ for the entire $k$-th row and $M[:,k]$ for the entire $k$-th column.
 
 \begin{definition}
     A {\it banded-plus-semseparable matrix} (BPS) with lower-semisepable rank $r$, upper-semiseparable rank $p$, lower-bandwidth $l$\sotodo{I prefer $\ell$} and upper-bandwidth $m$\sotodo{I usually use $u$ for upper-bandwidth}  is $A \in \BPS \subset \bbR^{n \times n}$ such that
@@ -170,7 +165,7 @@ where \( U, V \in \mathbb{R}^{n\times r} \), \( W, S \in \mathbb{R}^{n\times p} 
 \end{definition}
 
 
-Define vectors \( \bar{\mathbf{u}}_i = U[i,:]^T \in \mathbb{R}^r \), \( \bar{\mathbf{v}}_i = V[i,:]^T \in \mathbb{R}^r \)\sotodo{Shouldn't these be the columns of $V$? and why the bar?}, \( \bar{\mathbf{w}}_i = W[i,:]^T \in \mathbb{R}^p \), and \( \bar{\mathbf{s}}_i = S[i,:]^T \in \mathbb{R}^p \) for \( i=1,\ldots,n \). The matrix \( A \) can then be expressed element-wise as: \sotodo{Only number equations that are cited}
+Define vectors \( \bar{\mathbf{u}}_i = U[i,:]^T \in \mathbb{R}^r \), \( \bar{\mathbf{v}}_i = V[i,:]^T \in \mathbb{R}^r \), \( \bar{\mathbf{w}}_i = W[i,:]^T \in \mathbb{R}^p \), and \( \bar{\mathbf{s}}_i = S[i,:]^T \in \mathbb{R}^p \) for \( i=1,\ldots,n \). The matrix \( A \) can then be expressed element-wise as: \sotodo{Only number equations that are cited}
 \begin{equation}
 A =
 \begin{bmatrix}
@@ -183,7 +178,7 @@ b_{11} & \bar{\mathbf{w}}_1^T \bar{\mathbf{s}}_2 + b_{12} & \cdots & \bar{\mathb
 
 Applying the QR factorization to \( A \) yields a factor matrix \( F \), whose upper triangular part stores the matrix \( R \) and whose lower triangular part contains the Householder reflection vectors \( \mathbf{y} \) generated during the factorization. We will demonstrate that \( F \) itself retains a banded-plus-semiseparable structure. Specifically, its lower semiseparable part has rank \( r \), its upper semiseparable part has rank \( r+p \), its lower bandwidth is \( l \), and its upper bandwidth is \( l+m \).
 
-Before proceeding with the detailed proof, let us clarify the precise structure of the factor matrix \( F \) obtained from the QR factorization. In this work, following the convention of LAPack \sotodo{add citation}, we employ a compact representation that stores the complete information of the QR factorization in a single matrix:
+Before proceeding with the detailed proof, let us clarify the precise structure of the factor matrix \( F \) obtained from the QR factorization. In this work, following the convention of LAPACK~\cite{doi:10.1137/1.9780898719604}, we employ a compact representation that stores the complete information of the QR factorization in a single matrix:
 
 \begin{equation}
 F = \begin{bmatrix}
@@ -512,92 +507,108 @@ The representation in \eqref{express_F} explicitly shows that \( F \) is a bande
 
 Based on the structure-preserving theorem proven in Section~\ref{sec:main}, we now present the detailed $O(n)$ algorithm for computing the QR factorization of a banded-plus-semiseparable matrix. The algorithm exploits the proven fact that the factor matrix $F$ maintains a BPS structure.
 
-\sotodoinline{Make an algorithm environment. Possibly split into sub-algorithms}
+\begin{algorithm}[H]
+\caption{Fast QR Factorization for BPS Matrices}
+\label{algo:fastqr}
+\begin{algorithmic}[1]
+\State \textbf{Input} $B \in \mathbb{R}^{n \times n}$: banded matrix with lower bandwidth $\ell$ upper bandwidth $m$;
+ $U, V \in \mathbb{R}^{n \times r}$: generators for lower semiseparable part (rank $r$);
+ $W, S \in \mathbb{R}^{n \times p}$: generators for upper semiseparable part (rank $p$)
+\State \textbf{Output} $B_F$: banded part of factor matrix $F$ with bandwidths $\ell$ and $\ell+m$;
+$\bar{K} \in \mathbb{R}^{n \times r}$: generator for lower semiseparable part of $F$;
+$\bar{A} \in \mathbb{R}^{n \times p}, \bar{B} \in \mathbb{R}^{n \times r}$: generators for upper semiseparable part of $F$;
+$\boldsymbol{\tau} \in \mathbb{R}^{n}$: Householder scaling coefficients.
 
-\begin{my_algorithm}[Fast QR]\label{algo:fastqr}
+\State \textbf{Initialization:}
+\State Compute $\bar{S} \gets U^\top A$ (in $O(n)$ utilizing the semiseparable structure of $A$)
+\State Initialize $B_F \gets \mathbf{0}_{n \times n}$, $\bar{K} \gets \mathbf{0}_{n \times r}$, $\bar{A} \gets \mathbf{0}_{n \times p}$, $\bar{B} \gets \mathbf{0}_{n \times r}$
+\State Initialize HMBPSM modification matrices: $Q \gets \mathbf{0}_{r \times p}$, $K \gets \mathbf{0}_{r \times r}$, $E_s \gets \mathbf{0}_{r \times \min(\ell+m,n)}$, $X_s \gets \mathbf{0}_{\min(\ell,n) \times p}$, $Y_s \gets \mathbf{0}_{\min(\ell,n) \times r}$, $Z_s \gets \mathbf{0}_{\min(\ell,n) \times \min(\ell+m,n)}$
 
-This algorithm computes the QR factorization of a BPS matrix $A = B + \tril(UV^T, -1) + \triu(WS^T, 1)$, producing the structured factor matrix $F$ (which contains both $R$ and the Householder vectors) and the scalar coefficients $\boldsymbol{\tau}$, in $O(n)$ operations.
+\For{$k = 1$ to $n-1$}
+    \State \textbf{Step 1: Form Householder vector $\mathbf{y}_k$}
+    \State Run $ \text{FormHouseholderVector}(A^{(k-1)}[k:n, k:n], U[k:n, :], \ell)$ (Algorithm \ref{algo:form_householder}) to get:
+    \State $\bar{\mathbf{k}}_{k+1} \gets \text{low-rank part from } \mathbf{y}_k$
+    \State $\mathbf{b}_{k+1} \gets \text{banded part from } \mathbf{y}_k$
+    \State $\tau_k \gets \text{scaling coefficient}$
+    \State $o \gets \text{the diagonal element after the Householder transformation}$ 
+    \State $\boldsymbol{\tau}[k] \gets \tau_k$
+    
+    \State \textbf{Step 2: Store $k$-th column of $F$}
+    \State $B_F[k, k] \gets o$ (Diagonal entry)
+    \State $\bar{K}[k, :] \gets \bar{\mathbf{k}}_{k+1}^\top$ (Store low-rank generator)
+    \For{$j = k+1$ to $\min(k+\ell, n)$}
+        \State $B_F[j, k] \gets \mathbf{b}_{k+1}[j-k+1]$ (Store banded part)
+    \EndFor
+    
+    \State \textbf{Step 3: Compute and store $k$-th row of $F$}
+    \State $[\tilde{\boldsymbol{\alpha}}_{k+1}, \tilde{\boldsymbol{\beta}}_{k+1}, \tilde{\mathbf{d}}_{k+1}] \gets \text{ComputeRowUpdate}(A^{(k-1)}, U, S, \bar{S}, \mathbf{k}_{k+1}, \mathbf{b}_{k+1}, \tau_k)$ (Algorithm \ref{algo:compute_row})
+    \State $\bar{A}[k, :] \gets \tilde{\boldsymbol{\alpha}}_{k+1}^\top$
+    \State $\bar{B}[k, :] \gets \tilde{\boldsymbol{\beta}}_{k+1}^\top$
+    \For{$j = k+1$ to $\min(k+\ell+m, n)$}
+        \State $B_F[k, j] \gets \tilde{\mathbf{d}}_{k+1}[j-k]$ (Store upper banded part)
+    \EndFor
+    
+    \State \textbf{Step 4: Update HMBPSM matrices}
+    \State $[Q, K, E_s, X_s, Y_s, Z_s] \gets \text{UpdateHMBPSM}(Q, K, E_s, X_s, Y_s, Z_s, \bar{\mathbf{k}}_{k+1}, \mathbf{b}_{k+1}, \tau_k)$ (Algorithm \ref{algo:update_hmbpsm})
+\EndFor
 
-\textbf{Input:}
-\begin{itemize}
-    \item $B$: Banded matrix with lower bandwidth $l$, upper bandwidth $m$.
-    \item $U, V \in \mathbb{R}^{n \times r}$: Generators for the lower semiseparable part of rank $r$.
-    \item $W, S \in \mathbb{R}^{n \times p}$: Generators for the upper semiseparable part of rank $p$.
-\end{itemize}
+\State \textbf{Final step:}
+\State $B_F[n, n] \gets A^{(n-1)}[n, n]$
+\State \Return $B_F, \bar{K}, \bar{A}, \bar{B}, \boldsymbol{\tau}$
+\end{algorithmic}
+\end{algorithm}
 
-\textbf{Output:}
-\begin{itemize}
-    \item $F$: The structured factor matrix, maintained as a BPS matrix with lower rank $r$, upper rank $r+p$, lower bandwidth $l$, and upper bandwidth $l+m$. It is stored via its components:
-    \begin{itemize}
-        \item $B_F$: The updated banded part.
-        \item $\bar{K} \in \mathbb{R}^{n \times r}$: Generator for the lower semiseparable part of $F$.
-        \item $\bar{A} \in \mathbb{R}^{n \times p}, \bar{B} \in \mathbb{R}^{n \times r}$: Generators for the upper semiseparable part of $F$.
-    \end{itemize}
-    \item $\boldsymbol{\tau} \in \mathbb{R}^{n}$: The scalar coefficients for the Householder transformations.
-\end{itemize}
+\begin{algorithm}[H]
+\caption{FormHouseholderVector (Step 1 of Algorithm \ref{algo:fastqr})}
+\label{algo:form_householder}
+\begin{algorithmic}[1]
+\State \textbf{Input} $C \in \mathbb{R}^{(n-k+1) \times (n-k+1)}$: current HMBPSM submatrix;
+$U_k \in \mathbb{R}^{(n-k+1) \times r}$: $U[k:n, :]$;
+$\ell$: lower bandwidth.
+\State \textbf{Output} $\bar{\mathbf{k}} \in \mathbb{R}^r$, $\mathbf{b} \in \mathbb{R}^{n-k+1}$, $\tau\in \mathbb{R}$ s.t. $\mathbf{y}$: = $\mathbf{e}_1 + U_k^{(2)}\bar{\mathbf{k}} + \mathbf{b}$ is the Householder vector and $I-\tau \mathbf{y}\mathbf{y}^T$ is the Householder transformation; $o\in \mathbb{R}$ s.t. $\tilde{C}[1,1]=o$ where $\tilde{C}$ is the submatrix after the Householder transformation.
 
-\textbf{Procedure:}
+\State Extract first column: $\mathbf{a} \gets C[:, 1]$
+\State $\bar{\mathbf{k}} \gets U_k^{\top}$(the semiseparable part in $\mathbf{a}$)
+\State $\mathbf{b} \gets \mathbf{a} - U_k^{(2)}\bar{\mathbf{k}} - \mathbf{e}_1 \cdot \mathbf{a}[1]$
+\State $\mathbf{b}$ is only nonzero in entries $2$ to $\min(\ell+1, n-k+1)$.
+\State $\tau \gets 2/\mathbf{y}^T\mathbf{y}$
+\State $o \gets -\text{sign}(\textbf{a}[1])\mathbf{a}^T\mathbf{a}$
+\State \Return $\bar{\mathbf{k}}$, $\mathbf{b}$, $\tau$, $o$
+\end{algorithmic}
+\end{algorithm}
 
-1. \textbf{Initialization:}
-\begin{itemize}
-    \item Set $A^{(0)} = A$. The initial state is an Householder-Modified BPS Matrix with modification matrices $Q, K, E, X, Y, Z$ all set to zero. This corresponds to the original BPS matrix $A$.
-    \item Initialize the output components $B_F$, $\bar{K}$, $\bar{A}$, $\bar{B}$ to zero matrices of their respective sizes. Also compute $\bar{S} = U^T A$. \textit{Note: The matrix $\bar{S}$ can be computed initially in $O(n(r+p))$ time due to the structure of $A$.}
-\end{itemize}
+\begin{algorithm}[H]
+\caption{ComputeRowUpdate (Step 3 of Algorithm \ref{algo:fastqr})}
+\label{algo:compute_row}
+\begin{algorithmic}[1]
+\State \textbf{Input} $C$: current HMBPSM represented by modification matrices;
+ $U, S, \bar{S}$: generator matrices;
+$\mathbf{k}_{k+1}$, $\mathbf{b}_{k+1}$, $\tau_k$: Householder vector and coefficient.
+\State \textbf{Output} $\tilde{\boldsymbol{\alpha}} \in \mathbb{R}^p$, $\tilde{\boldsymbol{\beta}} \in \mathbb{R}^r$, $\tilde{\mathbf{d}} \in \mathbb{R}^{n-k}$
 
-2. \textbf{For $k = 1$ to $n-1$, eliminate the subdiagonal entries of the $k$th column:}
+\State Compute auxiliary vectors $\mathbf{c}_1, \dots, \mathbf{c}_6$ as in Lemma~\ref{lemma:structure_preserve} proof
+\State $\tilde{\boldsymbol{\alpha}} \gets \bar{\mathbf{w}}_k - \tau_k \bar{\mathbf{w}}_k - \tau_k \mathbf{f} + \bar{\mathbf{u}}_k^\top Q - \tau_k \mathbf{c}_1 + \cdots$, full expression from proof
+\State $\tilde{\boldsymbol{\beta}} \gets -\tau_k \bar{\mathbf{k}}_{k+1} + K^\top \bar{\mathbf{u}}_k - \tau_k \mathbf{c}_2 + \cdots$,
+\State $\tilde{\mathbf{d}} \gets \text{extract banded part from proof, length } \min(\ell+m, n-k)$
+\State \Return $\tilde{\boldsymbol{\alpha}}, \tilde{\boldsymbol{\beta}}, \tilde{\mathbf{d}}$
+\end{algorithmic}
+\end{algorithm}
 
-   \textit{We process the submatrix $A^{(k-1)}[k:n, k:n]$, which is an HMBPSM related to $A_{k} = A[k:n, k:n]$.}
+\begin{algorithm}[H]
+\caption{UpdateHMBPSM (Step 4 of Algorithm \ref{algo:fastqr})}
+\label{algo:update_hmbpsm}
+\begin{algorithmic}[1]
+\State \textbf{Input} $Q, K, E_s, X_s, Y_s, Z_s$: current HMBPSM modification matrices;
+$\bar{\mathbf{k}}_{k+1}$, $\mathbf{b}_{k+1}$, $\tau_k$.
+\Ensure Updated $Q, K, E_s, X_s, Y_s, Z_s$
 
-   \textbf{(a) Form the Householder vector $\mathbf{y}_{k+1}$:}
-   \begin{itemize}
-       \item Extract the first column of the current HMBPSM.
-       \item According to the inductive proof of Theorem \ref{thm:structure_preserve}, the vector $\mathbf{y}_{k}$ has the specific form:
-         \[
-         \mathbf{y}_{k} = \mathbf{e}_k + U^{(k+1)} \bar{\mathbf{k}}_{k+1} + \mathbf{b}_{k+1}
-         \]
-       \item Based on the definition of a Householder transformation and the structure of our current HMBPSM, we can obtain $\bar{\mathbf{k}}_{k+1}$, $\mathbf{b}_{k+1}$, $\tau_{k}$, and the diagonal entry generated in the current column(denoted as $A^{(k)}[k,k]$), in $O(1)$.
-       \item Set the $k$-th component to $\tau$ as $\tau_k$
-   \end{itemize}
-
-   \textbf{(b) Store the $k$-th column of $F$:}
-   \begin{itemize}
-       \item The subdiagonal part of this column is given by $\mathbf{y}_{k}[2:\text{end}]$. From its structure, we have:
-         \[
-         F[k+1:n, k] = (U \bar{\mathbf{k}}_{k+1})[k+1:n] + \mathbf{b}_{k+1}[2:n-k+1]
-         \]
-       \item Store $\bar{\mathbf{k}}_{k+1}^T$ as the $k$-th row of $\bar{K}$.
-       \item The vector $\mathbf{b}_{k+1}[2:\text{end}]$, which is non-zero only in its first $\min(l, n-k-1)$ entries, is stored in the corresponding subdiagonal positions of the banded part $B_F$.
-       \item Set the digonal part $B_F[k,k]$ to $A^{(k)}[k,k]$, which was obtained in the previous step.
-   \end{itemize}
-
-   \textbf{(c) Compute and store the $k$-th row of $F$:}
-   \begin{itemize}
-       \item This row, $F[k, k+1:n]$, is the first row of the transformed submatrix after the Householder reflection is applied. It is an Householder-Modified BPS Vector:
-         \[
-         F[k, k+1:n] = \tilde{\mathbf{d}}_{k+1}^T + (\tilde{\boldsymbol{\alpha}}_{k+1}^T S^T)[k+1:n] + (\tilde{\boldsymbol{\beta}}_{k+1}^T \bar{S})[k+1:n]
-         \]
-       \item The vectors $\tilde{\boldsymbol{\alpha}}_{k+1} \in \mathbb{R}^p$ and $\tilde{\boldsymbol{\beta}}_{k+1} \in \mathbb{R}^r$ are computed based on the proof in theorem \ref{thm:structure_preserve}. Store $\tilde{\boldsymbol{\alpha}}_{k+1}^T$ and $\tilde{\boldsymbol{\beta}}_{k+1}^T$ as the $k$-th rows of $\bar{A}$ and $\bar{B}$, respectively.
-       \item The vector $\tilde{\mathbf{d}}_{k+2}$, which is non-zero only in its first $\min(l+m, n-k)$ entries, is stored in the corresponding superdiagonal entries of the banded part $B_F$.
-   \end{itemize}
-
-   \textbf{(d) Update the remaining submatrix (Implicit HMBPSM update):}
-   \begin{itemize}
-       \item Update matrices $Q, K, E, X, Y, Z$ as derived in the proof of Lemma \ref{lemma:structure_preserve}.
-       \item Actually, we only need to store and update the nonzero parts of $E, X, Y, Z$, which are $E_s, X_s, Y_s, Z_s$, and they require $O(1)$ storage only.
-       \item These updates consist of low-rank operations and manipulations of matrices with limited non-zero rows/columns, which can be done in $O(1)$ time. 
-   \end{itemize}
-
-3. \textbf{Final step ($k = n$):}
-\begin{itemize}
-    \item The last diagonal element $F[n, n] = A^{(n-1)}[n, n]$ is simply the last remaining 1-by-1 submatrix after the $n-1$ Householder transformations. Store it in $B_F[n, n]$.
-\end{itemize}
-
-4. \textbf{Output:}
-\begin{itemize}
-    \item The complete QR factorization is represented by the structured factor matrix $F$, defined as $B_F + \tril(U \bar{K}^T, -1) + \triu([\bar{A},\bar{B}] [S,\bar{S}^T]^T, 1)$, and the vector $\boldsymbol{\tau}$.
-\end{itemize}
-
-\end{my_algorithm}
+\State Compute updates using formulas from Lemma~\ref{lemma:structure_preserve} proof:
+\State $Q_{\text{new}} \gets Q - \tau_k \bar{\mathbf{k}}_{k+1} \bar{\mathbf{w}}_k^\top - \tau_k \bar{\mathbf{k}}_{k+1} \mathbf{f}^\top - \tau_k \bar{\mathbf{k}}_{k+1} \mathbf{c}_1^\top + \cdots$
+\State $K_{\text{new}} \gets K - \tau_k \bar{\mathbf{k}}_{k+1} \bar{\mathbf{k}}_{k+1}^\top - \tau_k \bar{\mathbf{k}}_{k+1} \mathbf{c}_2^\top + \cdots$
+\State Update $E_s, X_s, Y_s, Z_s$ similarly with banded truncations
+\State \Return $Q_{\text{new}}, K_{\text{new}}, E_s^{\text{new}}, X_s^{\text{new}}, Y_s^{\text{new}}, Z_s^{\text{new}}$
+\end{algorithmic}
+\end{algorithm}
 
 \subsubsection*{Complexity Analysis}
 
@@ -812,7 +823,7 @@ The banded contributions \( B_R[j,k] \) are non-zero only for \( k = j+1, \ldots
 \mathbf{s} = \sum_{i=j+1}^n S_F[i,:]^T x_i.
 \]
 
-At step \( j \), the\sotodo{Inner product? I prefer ${}^\top$ to $\cdot$} product \( W_F[j,:] \cdot \mathbf{s} \) thus captures all semiseparable contributions from previously computed solution components. After computing \( x_j \), the accumulator is updated to include its contribution.
+At step \( j \), the product \( W_F[j,:] ^\top \mathbf{s} \) thus captures all semiseparable contributions from previously computed solution components. After computing \( x_j \), the accumulator is updated to include its contribution.
 
 Each iteration requires \( O(1) \) operations, yielding overall \( O(n) \) complexity. The correctness follows by induction from \( j = n \) down to \( 1 \).
 \end{proof}
@@ -1076,10 +1087,16 @@ This allows the algorithm to safely disregard the explicit updating of these row
 Lemma \ref{lemma:structure_preserve_rq} guarantees that this submatrix maintains an HMUTM structure, enabling its efficient propagation. 
 This exploitation of symmetry is key to achieving $O(n)$ complexity, as it confines the work at each step to a submatrix with a structured representation of constant size independent of $n$.
 \end{remark}
+
+
+\begin{remark}[Shifted QR Algorithm]
+The results extend directly to the shifted QR algorithm for eigenvalue computations. Given a shift $\mu \in \mathbb{R}$, the shifted matrix $A - \mu I = (B - \mu I) + \tril(UV^\top, -1) + \triu(VU^\top, 1)$ remains a symmetric BPS matrix, requiring only a diagonal adjustment to $B$. The resulting $RQ$ product can then be shifted back to obtain $RQ + \mu I$, which maintains the same BPS structure. Hence, each iteration of the shifted QR algorithm---factorization of $A^{(k)} - \mu I = QR$ followed by formation of $A^{(k+1)} = RQ + \mu I$---can both be performed in $O(n)$ time while preserving the BPS structure throughout.
+\end{remark}
+
 \section{Numerical results}
 \label{sec:experiments}
 
-To validate the theoretical complexity and demonstrate the practical efficiency of our proposed algorithms, we implemented the fast QR factorization and the complete linear solver in Julia. The implementation is publicly available in the SemiseparableMatrices.jl package\sotodo{Make this a citation}\footnote{\url{https://github.com/JuliaLinearAlgebra/SemiseparableMatrices.jl}}, providing an open-source resource for the scientific computing community. All numerical tests use banded-plus-semiseparable matrices with fixed structural parameters $l=4$, $m=5$, $r=2$, $p=3$ to isolate the scaling behavior with respect to the matrix size $n$. Computations were carried out on a MacBook Air equipped with an Apple M2 chip (8-core CPU, 8 GB RAM), without GPU acceleration or access to external computing resources.
+To validate the theoretical complexity and demonstrate the practical efficiency of our proposed algorithms, we implemented the fast QR factorization and the complete linear solver in Julia. The implementation is publicly available in the \texttt{BandedPlusSemiseparableMatrices.jl} package~\cite{BandedPlusSemiseparableMatrices2024}, providing an open-source resource for the scientific computing community. All numerical tests use banded-plus-semiseparable matrices with fixed structural parameters $l=4$, $m=5$, $r=2$, $p=3$ to isolate the scaling behavior with respect to the matrix size $n$. Computations were carried out on a MacBook Air equipped with an Apple M2 chip (8-core CPU, 8 GB RAM), without GPU acceleration or access to external computing resources.
 
 \subsection{Linear Complexity Verification}
 
@@ -1097,7 +1114,7 @@ Figure~\ref{fig:scaling} demonstrates the linear time complexity of our complete
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.8\textwidth]{plot_comparison.pdf}
-\caption{Comparison of QR factorization times between our fast BPS QR algorithm and the HODLR QR implementation from~\cite{massei2020hm}. Both algorithms operate on banded-plus-semiseparable matrices with parameters $l=4$, $m=5$, $r=2$, $p=3$. \sotodoinline{Use different markers so clearer when black-and-white.} \sotodoinline{Go to $n = 10^6$}}
+\caption{Comparison of QR factorization times between our fast BPS QR algorithm and the HODLR QR implementation from~\cite{massei2020hm}. Both algorithms operate on banded-plus-semiseparable matrices with parameters $l=4$, $m=5$, $r=2$, $p=3$. \sotodoinline{Use different markers so clearer when black-and-white.} \sotodoinline{Go to $n = 10^6$}} \sotodoinline{add a stability plot}
 \label{fig:comparison}
 \end{figure}
 
@@ -1123,14 +1140,14 @@ In this paper, we have established a fundamental theoretical result for BPS matr
 \item A fast backward substitution routine (Algorithm~\ref{algo_backsub})
 \end{itemize}
 
+Furthermore, for symmetric BPS matrices, we have shown that the $RQ$ product---a key operation in the QR algorithm for eigenvalues---also maintains the BPS structure. This led to the development of another $O(n)$ algorithm (Algorithm~\ref{algo:fastrq}) for computing $RQ$ without explicitly forming the dense orthogonal matrix $Q$, opening the door to efficient eigenvalue computations for symmetric BPS matrices.
+
 The numerical experiments confirm the linear scaling of our approach and demonstrate significant performance advantages over existing HODLR-based methods. Our implementation in the SemiseparableMatrices.jl package provides the scientific computing community with efficient, open-source tools for working with this important class of structured matrices.
 
 \subsection*{Future Work}
 
 
 A compelling extension involves applying our methodology to specific blocked banded matrices arising in $hp$-FEM~\cite{knook2024quasi}. These have optimal complexity so-called reverse Cholesky factorizations (Cholesky from the bottom right instead of the top left) for positive definite problems. One of our motativations for the present work is developing an optimal complexity QL factorization for these special block banded matrices.  The key challenge is generalizing our framework to \emph{block} banded-plus-semiseparable matrices while maintaining $O(N)$ complexity. The primary difficulty lies in applying Householder transformations from one block to subsequent blocks in $O(n)$ time(where $n$ is block size and $N$ the total size), rather than $O(n^3)$. While our current framework doesn't directly apply, the core insight of structure preservation provides a promising foundation for this challenging extension.
-
-\sotodoinline{Fix capitalization}
 
 \bibliographystyle{siamplain}
 \bibliography{references}
