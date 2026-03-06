@@ -1,8 +1,14 @@
 \begin{thebibliography}{10}
 
+\bibitem{doi:10.1137/1.9780898719604}
+{\sc E.~Anderson, Z.~Bai, C.~Bischof, L.~S. Blackford, J.~Demmel, J.~Dongarra,
+  J.~Du~Croz, A.~Greenbaum, S.~Hammarling, A.~McKenney, and D.~Sorensen}, {\em
+  LAPACK Users' Guide}, Society for Industrial and Applied Mathematics,
+  third~ed., 1999.
+
 \bibitem{chandrasekaran2007fast}
 {\sc S.~Chandrasekaran, P.~Dewilde, M.~Gu, W.~Lyons, and T.~Pals}, {\em A fast
-  solver for hss representations via sparse matrices}, SIAM Journal on Matrix
+  solver for {HSS} representations via sparse matrices}, SIAM Journal on Matrix
   Analysis and Applications, 29 (2007), pp.~67--81.
 
 \bibitem{chandrasekaran2002fast}
@@ -17,27 +23,31 @@
   Analysis and Applications, 25 (2003), pp.~373--384.
 
 \bibitem{chandrasekaran2006fast}
-{\sc S.~Chandrasekaran, M.~Gu, and T.~Pals}, {\em A fast ulv decomposition
+{\sc S.~Chandrasekaran, M.~Gu, and T.~Pals}, {\em A fast {ULV} decomposition
   solver for hierarchically semiseparable representations}, SIAM Journal on
   Matrix Analysis and Applications, 28 (2006), pp.~603--622.
 
+\bibitem{BandedPlusSemiseparableMatrices2024}
+{\sc T.~Chen and S.~Olver}, {\em {BandedPlusSemiseparableMatrices.jl}}, 2026,
+  \url{https://github.com/TaoChenImperial/BandedPlusSemiseparableMatrices.jl}.
+
 \bibitem{delvaux2006rank}
 {\sc S.~Delvaux and M.~Van~Barel}, {\em Rank structures preserved by the
-  qr-algorithm: the singular case}, Journal of Computational and Applied
+  {QR}-algorithm: the singular case}, Journal of Computational and Applied
   Mathematics, 189 (2006), pp.~157--178.
 
 \bibitem{delvaux2006structures}
 {\sc S.~Delvaux and M.~Van~Barel}, {\em Structures preserved by the
-  qr-algorithm}, Journal of Computational and Applied Mathematics, 187 (2006),
-  pp.~29--40.
+  {QR}-algorithm}, Journal of Computational and Applied Mathematics, 187
+  (2006), pp.~29--40.
 
 \bibitem{delvaux2008givens}
-{\sc S.~Delvaux and M.~Van~Barel}, {\em A givens-weight representation for rank
-  structured matrices}, SIAM Journal on Matrix Analysis and Applications, 29
-  (2008), pp.~1147--1170.
+{\sc S.~Delvaux and M.~Van~Barel}, {\em A {Givens-weight} representation for
+  rank structured matrices}, SIAM Journal on Matrix Analysis and Applications,
+  29 (2008), pp.~1147--1170.
 
 \bibitem{delvaux2008qr}
-{\sc S.~Delvaux and M.~Van~Barel}, {\em A qr-based solver for rank structured
+{\sc S.~Delvaux and M.~Van~Barel}, {\em A {QR}-based solver for rank structured
   matrices}, SIAM Journal on Matrix Analysis and Applications, 30 (2008),
   pp.~464--490.
 
@@ -47,24 +57,29 @@
   with Applications, 33 (1997), pp.~69--79.
 
 \bibitem{eidelman2005qr}
-{\sc Y.~Eidelman, I.~Gohberg, and V.~Olshevsky}, {\em The qr iteration method
-  for hermitian quasiseparable matrices of an arbitrary order}, Linear Algebra
-  and its Applications, 404 (2005), pp.~305--324.
+{\sc Y.~Eidelman, I.~Gohberg, and V.~Olshevsky}, {\em The {QR} iteration method
+  for {Hermitian} quasiseparable matrices of an arbitrary order}, Linear
+  Algebra and its Applications, 404 (2005), pp.~305--324.
 
 \bibitem{fasino2005rational}
-{\sc D.~Fasino}, {\em Rational krylov matrices and qr steps on hermitian
+{\sc D.~Fasino}, {\em Rational {Krylov} matrices and {QR} steps on {Hermitian}
   diagonal-plus-semiseparable matrices}, Numerical linear algebra with
   applications, 12 (2005), pp.~743--754.
 
+\bibitem{iserles2025stable}
+{\sc A.~Iserles}, {\em Stable spectral methods for time-dependent problems and
+  the preservation of structure}, Foundations of Computational Mathematics, 25
+  (2025), pp.~683--723.
+
 \bibitem{knook2024quasi}
 {\sc K.~Knook, S.~Olver, and I.~Papadopoulos}, {\em Quasi-optimal complexity $
-  hp $-fem for poisson on a rectangle}, arXiv preprint arXiv:2402.11299,
+  hp $-{FEM} for {Poisson} on a rectangle}, arXiv preprint arXiv:2402.11299,
   (2024).
 
 \bibitem{massei2020hm}
-{\sc S.~Massei, L.~Robol, and D.~Kressner}, {\em hm-toolbox: Matlab software
-  for hodlr and hss matrices}, SIAM Journal on Scientific Computing, 42 (2020),
-  pp.~C43--C68.
+{\sc S.~Massei, L.~Robol, and D.~Kressner}, {\em hm-toolbox: {MATLAB} software
+  for {HODLR} and {HSS} matrices}, SIAM Journal on Scientific Computing, 42
+  (2020), pp.~C43--C68.
 
 \bibitem{mastronardi2001fast}
 {\sc N.~Mastronardi, S.~Chandrasekaran, and S.~Van~Huffel}, {\em Fast and
@@ -74,6 +89,11 @@
 \bibitem{olver2013fast}
 {\sc S.~Olver and A.~Townsend}, {\em A fast and well-conditioned spectral
   method}, siam REVIEW, 55 (2013), pp.~462--489.
+
+\bibitem{rozsa1991band}
+{\sc P.~R{\'o}zsa, R.~Bevilacqua, F.~Romani, and P.~Favati}, {\em On band
+  matrices and their inverses}, Linear Algebra and Its Applications, 150
+  (1991), pp.~287--295.
 
 \bibitem{van2004two}
 {\sc E.~Van~Camp, N.~Mastronardi, and M.~Van~Barel}, {\em Two fast algorithms
@@ -92,7 +112,7 @@
 
 \bibitem{vandebril2008rational}
 {\sc R.~Vandebril, M.~Van~Barel, and N.~Mastronardi}, {\em Rational
-  qr-iteration without inversion}, Numerische Mathematik, 110 (2008),
+  {QR}-iteration without inversion}, Numerische Mathematik, 110 (2008),
   pp.~561--575.
 
 \bibitem{xia2010fast}

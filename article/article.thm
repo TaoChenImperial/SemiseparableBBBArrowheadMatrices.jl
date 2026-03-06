@@ -1,22 +1,22 @@
-\contentsline {definition}{{Definition}{2.1}{}}{2}{theorem.17}%
-\contentsline {definition}{{Definition}{2.2}{}}{4}{theorem.28}%
-\contentsline {definition}{{Definition}{2.3}{}}{4}{theorem.29}%
-\contentsline {lemma}{{Lemma}{2.4}{}}{4}{theorem.30}%
-\contentsline {proof}{{Proof}{1}{}}{5}{proof.34}%
-\contentsline {theorem}{{Theorem}{2.5}{}}{8}{theorem.53}%
-\contentsline {proof}{{Proof}{2}{}}{8}{proof.54}%
-\contentsline {my_algorithm}{{Algorithm}{3.{1}}{Fast QR}}{10}{my_algorithm.68}%
-\contentsline {remark}{{Remark}{3.{1}}{}}{12}{remark.70}%
-\contentsline {theorem}{{Theorem}{3.1}{}}{13}{theorem.76}%
-\contentsline {proof}{{Proof}{3}{}}{13}{proof.77}%
-\contentsline {theorem}{{Theorem}{3.2}{}}{14}{theorem.80}%
-\contentsline {proof}{{Proof}{4}{}}{14}{proof.81}%
-\contentsline {corollary}{{Corollary}{3.3}{}}{15}{theorem.84}%
-\contentsline {proof}{{Proof}{5}{}}{15}{proof.85}%
-\contentsline {definition}{{Definition}{4.1}{Householder-modified upper-triangular matrix (HMUTM)}}{16}{theorem.89}%
-\contentsline {definition}{{Definition}{4.2}{Householder-modified upper-triangular vector (HMUTV)}}{16}{theorem.91}%
-\contentsline {lemma}{{Lemma}{4.3}{Structure preservation under right-multiplication by a Householder reflector}}{16}{theorem.93}%
-\contentsline {proof}{{Proof}{6}{}}{16}{proof.96}%
-\contentsline {theorem}{{Theorem}{4.4}{Structure of $RQ$ for symmetric BPS matrices}}{18}{theorem.106}%
-\contentsline {proof}{{Proof}{7}{}}{18}{proof.108}%
-\contentsline {remark}{{Remark}{4.{1}}{}}{19}{remark.119}%
+\contentsline {definition}{{Definition}{2.1}{}}{2}{theorem.5}%
+\contentsline {definition}{{Definition}{2.2}{}}{4}{theorem.8}%
+\contentsline {definition}{{Definition}{2.3}{}}{4}{theorem.9}%
+\contentsline {lemma}{{Lemma}{2.4}{}}{4}{theorem.10}%
+\contentsline {proof}{{Proof}{1}{}}{5}{proof.13}%
+\contentsline {theorem}{{Theorem}{2.5}{}}{8}{theorem.24}%
+\contentsline {proof}{{Proof}{2}{}}{9}{proof.25}%
+\contentsline {remark}{{Remark}{3.{1}}{}}{12}{remark.42}%
+\contentsline {theorem}{{Theorem}{3.1}{}}{14}{theorem.47}%
+\contentsline {proof}{{Proof}{3}{}}{14}{proof.48}%
+\contentsline {theorem}{{Theorem}{3.2}{}}{15}{theorem.51}%
+\contentsline {proof}{{Proof}{4}{}}{15}{proof.52}%
+\contentsline {corollary}{{Corollary}{3.3}{}}{16}{theorem.54}%
+\contentsline {definition}{{Definition}{4.1}{}}{16}{theorem.58}%
+\contentsline {definition}{{Definition}{4.2}{}}{17}{theorem.59}%
+\contentsline {lemma}{{Lemma}{4.3}{}}{17}{theorem.60}%
+\contentsline {proof}{{Proof}{5}{}}{17}{proof.63}%
+\contentsline {theorem}{{Theorem}{4.4}{}}{20}{theorem.73}%
+\contentsline {proof}{{Proof}{6}{}}{20}{proof.74}%
+\contentsline {remark}{{Remark}{4.{1}}{}}{21}{remark.82}%
+\contentsline {remark}{{Remark}{4.{2}}{Shifted QR Algorithm}}{21}{remark.83}%
+\contentsline {remark}{{Remark}{5.{1}}{}}{24}{remark.93}%
