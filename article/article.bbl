@@ -27,9 +27,9 @@
   solver for hierarchically semiseparable representations}, SIAM Journal on
   Matrix Analysis and Applications, 28 (2006), pp.~603--622.
 
-\bibitem{BandedPlusSemiseparableMatrices2024}
-{\sc T.~Chen and S.~Olver}, {\em {BandedPlusSemiseparableMatrices.jl}}, 2026,
-  \url{https://github.com/TaoChenImperial/BandedPlusSemiseparableMatrices.jl}.
+\bibitem{SemiseparableMatrices2024}
+{\sc T.~Chen, S.~Olver, et~al.}, {\em {SemiseparableMatrices.jl}}, 2026,
+  \url{https://github.com/JuliaLinearAlgebra/SemiseparableMatrices.jl}.
 
 \bibitem{delvaux2006rank}
 {\sc S.~Delvaux and M.~Van~Barel}, {\em Rank structures preserved by the
@@ -73,8 +73,8 @@
 
 \bibitem{knook2024quasi}
 {\sc K.~Knook, S.~Olver, and I.~Papadopoulos}, {\em Quasi-optimal complexity $
-  hp $-{FEM} for {Poisson} on a rectangle}, arXiv preprint arXiv:2402.11299,
-  (2024).
+  hp $-{FEM} for {Poisson} on a rectangle}, IMA Journal of Numerical Analysis,
+  (2025), p.~draf102.
 
 \bibitem{massei2020hm}
 {\sc S.~Massei, L.~Robol, and D.~Kressner}, {\em hm-toolbox: {MATLAB} software

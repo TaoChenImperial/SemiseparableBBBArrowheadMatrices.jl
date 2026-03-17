@@ -1,14 +1,14 @@
 # Fdb version 4
-["bibtex article"] 1765232650 "article.aux" "article.bbl" "article" 1765232652 0
-  "./references.bib" 1765101700 6226 9453ede17002c93d53c3e3248165551e ""
+["bibtex article"] 1773779012 "article.aux" "article.bbl" "article" 1773779253 0
+  "./references.bib" 1773778158 7488 01c486f54116353937a4b5aa671e456b ""
   "./siamplain.bst" 1765101700 20530 3b70bf0c2e3ff2b6ef486581c42b8ff9 ""
-  "article.aux" 1765232652 17824 0ad726cb77f6a7dc306c7760230cd0b8 "pdflatex"
+  "article.aux" 1773779253 21604 e39af497e04bc133fd8a92c404bc34ec "pdflatex"
   (generated)
   "article.bbl"
   "article.blg"
   (rewritten before read)
-["pdflatex"] 1765232650 "/Users/solver/Projects/SemiseparableBBBArrowheadMatrices.jl/article/article.tex" "article.pdf" "article" 1765232652 0
-  "/Users/solver/Projects/SemiseparableBBBArrowheadMatrices.jl/article/article.tex" 1765232648 66114 fa53c92e17f41b87158dd53467c3df18 ""
+["pdflatex"] 1773779252 "/Users/solver/Projects/SemiseparableBBBArrowheadMatrices.jl/article/article.tex" "article.pdf" "article" 1773779253 0
+  "/Users/solver/Projects/SemiseparableBBBArrowheadMatrices.jl/article/article.tex" 1773779252 97380 d3c0ca2d057f45b8aac841003b4031d8 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy5.tfm" 1246382020 1120 1e8878807317373affa7f7bba4cf2f6a ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy7.tfm" 1246382020 1120 7f9f170e8aa57527ad6c49feafd45d54 ""
@@ -28,7 +28,6 @@
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmbx6.tfm" 1136768653 1344 8a0be4fe4d376203000810ad4dc81558 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmbx7.tfm" 1136768653 1336 3125ccb448c1a09074e3aa4a9832f130 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmbx8.tfm" 1136768653 1332 1fde11373e221473104d6cc5993f046e ""
-  "/usr/local/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmbxti10.tfm" 1136768653 1532 9162035f4e7176612125649e348e2195 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmcsc10.tfm" 1136768653 1300 63a6111ee6274895728663cf4b4e7e81 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmmi6.tfm" 1136768653 1512 f21f83efb36853c0b70002322c1ab3ad ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmmi8.tfm" 1136768653 1520 eccf95517727cb11801f4f1aee3a21b4 ""
@@ -43,7 +42,6 @@
   "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb" 1248133631 34811 78b52f49e893bcba91bd7581cdc144c0 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx7.pfb" 1248133631 32007 e8fa0078355f39467039935974716569 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb" 1248133631 32166 b0c356b15f19587482a9217ce1d8fa67 ""
-  "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pfb" 1248133631 36554 b67dc2cfa451409e100b3fcf5f506509 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb" 1248133631 32001 6aeea3afe875097b1eb0da29acd61e28 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb" 1248133631 30251 6afa5cb1d0204815a708a080681d4674 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb" 1248133631 36299 5f9df58c2139e7edcf37c8fca4bd384d ""
@@ -61,7 +59,9 @@
   "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb" 1248133631 32915 7bf7720c61a5b3a7ff25b0964421c9b6 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb" 1248133631 32587 1788b0c1c5b39540c96f5e42ccd6dae8 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb" 1248133631 32716 08e384dc442464e7285e891af9f45947 ""
+  "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb" 1248133631 32626 4f5c1b83753b1dd3a97d1b399a005b4b ""
   "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb" 1248133631 37944 359e864bd06cde3b1cf57bb20757fb06 ""
+  "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmti7.pfb" 1248133631 36607 d654cb3f2bc54f57509240071db3bffa ""
   "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmti8.pfb" 1248133631 35660 fb24af7afbadb71801619f1415838111 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb" 1248133631 34694 ad62b13721ee8eda1dcc8993c8bd7041 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm7.pfb" 1248133631 35309 940e81a5b9e04201a07e8b33a3ae6e64 ""
@@ -206,14 +206,14 @@
   "/usr/local/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1699047580 4623355 b8cad38412faebe1ce5b780a45db67bd ""
   "/usr/local/texlive/2023/texmf-var/web2c/pdftex/pdflatex.fmt" 1699047529 7883460 018c8100e583f89cddb33cb29214a9c9 ""
   "/usr/local/texlive/2023/texmf.cnf" 1678822455 577 1b2b1af17af2508fb20dd85783af4050 ""
-  "article.aux" 1765232652 17824 0ad726cb77f6a7dc306c7760230cd0b8 "pdflatex"
-  "article.bbl" 1765232650 4387 720fe74aa9294191a226d415b0316719 "bibtex article"
-  "article.out" 1765232652 2754 90557237df75c56319d74c891ad8cb07 "pdflatex"
-  "article.tex" 1765232648 66114 fa53c92e17f41b87158dd53467c3df18 ""
-  "ex_supplement.aux" 0 -1 0 ""
-  "ex_supplement.tex" 0 -1 0 ""
-  "plot_comparison.pdf" 1765101700 41303 0c0ddf1f1ab74362827ded4b70b97a92 ""
-  "plot_linearity.pdf" 1765101700 49173 263ba7eb0f354fe50986792f0109e728 ""
+  "article.aux" 1773779253 21604 e39af497e04bc133fd8a92c404bc34ec "pdflatex"
+  "article.bbl" 1773779012 5393 35990c6277093f48df5ae623948e8ffc "bibtex article"
+  "article.out" 1773779253 4119 60e6936f7c966807d2dded8cd41e5302 "pdflatex"
+  "article.tex" 1773779252 97380 d3c0ca2d057f45b8aac841003b4031d8 ""
+  "qr_comparison.pdf" 1770901859 59280 9d8ee4b29282b561c8a438b2085e07c9 ""
+  "qr_linear.pdf" 1770901859 192689 cb430c962bae40cd37388ced94a1618c ""
+  "qr_stability.pdf" 1770901859 263360 8539baef34c09d9347b28e90662c6a8f ""
+  "rq_linear.pdf" 1770901859 165851 7bafe5c68d3d78b88423511eae8a0829 ""
   "siamart171218.cls" 1765101700 52399 c5dd28231f892a4eb7f50de27fa71160 ""
   (generated)
   "article.aux"

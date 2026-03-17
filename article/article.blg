@@ -3,28 +3,28 @@ Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: article.aux
 The style file: siamplain.bst
 Database file #1: references.bib
-Warning--entry type for "BandedPlusSemiseparableMatrices2024" isn't style-file defined
---line 243 of file references.bib
+Warning--entry type for "SemiseparableMatrices2024" isn't style-file defined
+--line 244 of file references.bib
 You've used 24 entries,
             2244 wiz_defined-function locations,
-            687 strings with 8019 characters,
-and the built_in function-call counts, 10321 in all, are:
-= -- 967
-> -- 440
+            687 strings with 7998 characters,
+and the built_in function-call counts, 10503 in all, are:
+= -- 991
+> -- 445
 < -- 0
-+ -- 180
-- -- 148
-* -- 776
-:= -- 1451
++ -- 182
+- -- 150
+* -- 782
+:= -- 1467
 add.period$ -- 24
 call.type$ -- 24
 change.case$ -- 146
 chr.to.int$ -- 0
 cite$ -- 24
-duplicate$ -- 521
-empty$ -- 858
-format.name$ -- 148
-if$ -- 2275
+duplicate$ -- 535
+empty$ -- 866
+format.name$ -- 150
+if$ -- 2327
 int.to.chr$ -- 0
 int.to.str$ -- 24
 missing$ -- 24
@@ -34,16 +34,16 @@ pop$ -- 207
 preamble$ -- 1
 purify$ -- 122
 quote$ -- 0
-skip$ -- 411
+skip$ -- 432
 stack$ -- 0
-substring$ -- 771
-swap$ -- 208
+substring$ -- 785
+swap$ -- 222
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 94
 warning$ -- 0
-while$ -- 111
+while$ -- 112
 width$ -- 26
-write$ -- 217
+write$ -- 218
 (There was 1 warning)
