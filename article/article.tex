@@ -33,6 +33,7 @@
 \def\calS{{\mathcal S}}
 \def\bfy{{\mathbf y}}
 \def\bftau{{\bm\tau}}
+\def\bfzero{{\bm0}}
 
 \makeatletter
 \@addtoreset{algorithm}{subsection}
@@ -214,12 +215,76 @@ y_{k+1,1} & \cdots  & y_{k+1,k-1}  &  y_{k+1,k}   & a_{k+1,k+1}^k & \cdots & a_{
 y_{n1} & \cdots & y_{n,k-1}  &  y_{nk}   & a_{n,k+1}^k & \cdots & a_{nn}^k 
 \end{bmatrix},
 \]
-alongside $\bftau_k = [\tau_1,\ldots,\tau_k,0,\ldots,0]^\top$.
-This intermediate factors matrix {\it does not} have BPS structure, however, we shall so that it is a structured perturbation of BPS.
+alongside $\bftau_k = [\tau_1,\ldots,\tau_k,0,\ldots,0]^\top$. We can view applying the $k$-th Householder transformation as a map
+\[
+{\cal H}_k(F_k, \bftau_k)  := (F_{k+1}, \bftau_{k+1}).
+\]
 
 
-\section{Structure Preservation of the QR Factors for BPS Matrices}
+The intermediate factors matrices {\it does not} have BPS structure, however, we shall so that it is a structured perturbation of BPS.
+
+
+\section{Structure Preservation of the factors matrix for BPS matrices}
 \label{sec:main}
+
+We now turn our attention to understanding the structure that $F_k$ exhibits.  In particular, we claim it is a structured perturbation of a BPS matrix. To be precise, we first introduce a notation for BPS matrices:
+
+\begin{definition}
+Denote the set of {\it banded-plus-semseparable matrices} (BPS) with lower-semisepable rank $r$, upper-semiseparable rank $p$, lower-bandwidth $\ell$, and upper-band-width $m$  as $\BPS \subset \bbR^{n \times n}$. In particular, $A \in \BPS \subset \bbR^{n \times n}$ if
+\[
+A = B + \tril(UV^\top, -1) + \triu(WS^\top, 1)\label{express_A}
+\]
+for \( U, V \in \mathbb{R}^{n\times r} \), \( W, S \in \mathbb{R}^{n\times p} \), and \( B = (b_{kj})_{k,j=1}^n \in \mathbb{R}^{n \times n} \) is a banded matrix satisfying \( b_{kj}=0 \) for \( k-j>l \) or \( j-k>m \).
+\end{definition}
+
+We note that the BPS structure is not uniquely defined, so we assume if we know $A \in BPS$ we have access to $U,V,W,S$. Note this structure is preserved under principle subsection:
+\begin{align*}
+A[k\!:\!n, k\!:\!n] &= B[k\!:\!n, k\!:\!n] 
++ 
+\tril(U[k\!:\!n, :]V[k\!:\!n, :]^\top,-1) \\
+&\qquad +
+\triu(W[k\!:\!n, :]S[k\!:\!n, :]^\top,-1) \in {\mathrm{BPS}}_{(r,p),(\ell,m)}^{n-k+1 \times n-k+1}.
+\end{align*}
+
+
+The first $k$-th rows/columns of $F_k$ will maintain the BPS structure, however, the bottom right will be a structured perturbation of a BPS matrix. In particular, 
+the factors matrices will be of the form
+$$
+F_k = A_k + \begin{bmatrix} \bfzero & \bfzero\\
+    \bfzero & P_k
+\end{bmatrix}
+$$
+where $A_k \in \BPS$ and $P_k \in \calP(A_k[k\!+\!1\!:\!n,k\!+\!1\!:\!n])$ for the following perturbation space:
+
+\begin{definition}\label{def:hmbpsm}
+Given
+\[
+A = B + \tril(UV^\top, -1) + \triu(WS^\top, 1)  \in \BPS
+\]
+define the vector space:
+\begin{align*}
+\calP(A) &:= \bigg\{
+UJS^\top + UKU^\top A + UE + XS^\top + YU^\top A + Z :\\
+&\qquad\quad  J \in \mathbb{R}^{r\times p}, K \in \mathbb{R}^{r\times r}, \\
+&\qquad\quad E = [E_s \in \mathbb{R}^{r\times \min(\ell+m,n)}, \mathbf{0}] \in \mathbb{R}^{r \times n} ,\\
+ &\qquad\quad  X = \begin{bmatrix} X_s \in \mathbb{R}^{\min(\ell,n)\times p}  \\ \mathbf{0} \end{bmatrix}  \in \mathbb{R}^{n \times p}, \\
+ &\qquad\quad  Y = \begin{bmatrix} Y_s \in \mathbb{R}^{\min(\ell,n)\times r}  \\ \mathbf{0} \end{bmatrix}   \in \mathbb{R}^{n \times r},\\
+&\qquad\quad Z = \begin{bmatrix} Z_s  \in \mathbb{R}^{\min(\ell,n)\times \min(\ell+m,n)} & \mathbf{0} \\ \mathbf{0} & \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n \times n}
+\bigg\} \subset \bbR^{n \times n}.
+\end{align*}
+\end{definition}
+
+We claim this structure is preserved: if $F_k$ has this form then so does $F_{k+1}$. The basis case $F_0 := A$ is trivial: we can take the perturbation to be zero.
+
+
+The first step is to understand the structure of the Householder reflector, which corresponds to the $k+1$-th column of $F_{k+1}$:
+
+\begin{lemma}
+    Suppose $F_k$ has the prescribed form. Then
+\[
+F_{k+1} \bfe_{k+1} = 
+\]
+\end{lemma}
 
 \subsection{Problem Formulation and Notation}
 
@@ -231,13 +296,7 @@ We begin by establishing notation for matrix subblocks. For a matrix $M \in \mat
 
 For brevity, we write $M[k,:]$ for the entire $k$-th row and $M[:,k]$ for the entire $k$-th column.
 
-\begin{definition}
-We denote the set of {\it banded-plus-semseparable matrices} (BPS) with lower-semisepable rank $r$, upper-semiseparable rank $p$, lower-bandwidth $\ell$ and upper-bandwidth $m$  by $\BPS \subset \bbR^{n \times n}$, where $A \in \BPS \subset \bbR^{n \times n}$ if
-\[
-A = B + \tril(UV^\top, -1) + \triu(WS^\top, 1)\label{express_A}
-\]
-where \( U, V \in \mathbb{R}^{n\times r} \), \( W, S \in \mathbb{R}^{n\times p} \), and \( B = (b_{kj})_{k,j=1}^n \in \mathbb{R}^{n \times n} \) is a banded matrix satisfying \( b_{kj}=0 \) for \( k-j>l \) or \( j-k>m \).
-\end{definition}
+
 
 
 Define vectors \( \bar{\mathbf{u}}_k = U[k,:] \in \mathbb{R}^r \), \( \bar{\mathbf{v}}_k = V[k,:] \in \mathbb{R}^r \), \( \bar{\mathbf{w}}_k = W[k,:] \in \mathbb{R}^p \), and \( \bar{\mathbf{s}}_k = S[k,:] \in \mathbb{R}^p \) for \( k=1,\ldots,n \). The matrix \( A \) can then be expressed element-wise as:
@@ -258,23 +317,7 @@ Next, we introduce two key definitions and a pivotal lemma.
 
 While the final factor matrix of a QR factorization is a BPS matrix, at  intermediate  stages it has a specific structured perturbation. Here we describe this structure in terms of a linear space that, at each stage, the perturbation to the principle submatrix lies in:
 
-\begin{definition}\label{def:hmbpsm}
-Given
-\[
-A = B + \tril(UV^\top, -1) + \triu(WS^\top, 1)  \in \BPS
-\]
-define the vector space:
-\begin{align*}
-\calP(A) &:= \bigg\{
-UJS^\top + UKU^\top A + UE + XS^\top + YU^\top A + Z :\\
-&\qquad\quad  J \in \mathbb{R}^{r\times p}, K \in \mathbb{R}^{r\times r}, \\
-&\qquad\quad E = [E_s \in \mathbb{R}^{r\times \min(\ell+m,n)}, \mathbf{0}] \in \mathbb{R}^{r \times n} ,\\
- &\qquad\quad  X = \begin{bmatrix} X_s \in \mathbb{R}^{\min(\ell,n)\times p}  \\ \mathbf{0} \end{bmatrix}  \in \mathbb{R}^{n \times p}, \\
- &\qquad\quad  Y = \begin{bmatrix} Y_s \in \mathbb{R}^{\min(\ell,n)\times r}  \\ \mathbf{0} \end{bmatrix}   \in \mathbb{R}^{n \times r},\\
-&\qquad\quad Z = \begin{bmatrix} Z_s  \in \mathbb{R}^{\min(\ell,n)\times \min(\ell+m,n)} & \mathbf{0} \\ \mathbf{0} & \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n \times n}
-\bigg\} \subset \bbR^{n \times n}.
-\end{align*}
-\end{definition}
+
 
 In addition, we need to describe the structure of the upper-triangular part in terms of a structured vector:
 

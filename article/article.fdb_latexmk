@@ -1,14 +1,14 @@
 # Fdb version 4
-["bibtex article"] 1774448004 "article.aux" "article.bbl" "article" 1774448368 0
+["bibtex article"] 1774460707 "article.aux" "article.bbl" "article" 1774460707 2
   "./references.bib" 1773780968 7488 01c486f54116353937a4b5aa671e456b ""
   "./siamplain.bst" 1765101700 20530 3b70bf0c2e3ff2b6ef486581c42b8ff9 ""
-  "article.aux" 1774448368 18876 c5958e5e8a1bb6b1bccbcf578c500f53 "pdflatex"
+  "article.aux" 1774460707 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
   (generated)
   "article.bbl"
   "article.blg"
   (rewritten before read)
-["pdflatex"] 1774448366 "/Users/solver/Projects/SemiseparableBBBArrowheadMatrices.jl/article/article.tex" "article.pdf" "article" 1774448368 0
-  "/Users/solver/Projects/SemiseparableBBBArrowheadMatrices.jl/article/article.tex" 1774448366 95951 bebe67b1089062ae63e655200216abc5 ""
+["pdflatex"] 1774460703 "/Users/solver/Projects/SemiseparableBBBArrowheadMatrices.jl/article/article.tex" "article.pdf" "article" 1774460707 2
+  "/Users/solver/Projects/SemiseparableBBBArrowheadMatrices.jl/article/article.tex" 1774460703 97554 06e2e28feb46ece6839f08c5d2e00889 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy5.tfm" 1246382020 1120 1e8878807317373affa7f7bba4cf2f6a ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy6.tfm" 1246382020 1124 14ccf5552bc7f77ca02a8a402bea8bfb ""
@@ -210,10 +210,10 @@
   "/usr/local/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1699047580 4623355 b8cad38412faebe1ce5b780a45db67bd ""
   "/usr/local/texlive/2023/texmf-var/web2c/pdftex/pdflatex.fmt" 1699047529 7883460 018c8100e583f89cddb33cb29214a9c9 ""
   "/usr/local/texlive/2023/texmf.cnf" 1678822455 577 1b2b1af17af2508fb20dd85783af4050 ""
-  "article.aux" 1774448368 18876 c5958e5e8a1bb6b1bccbcf578c500f53 "pdflatex"
-  "article.bbl" 1774448004 5298 31fd368ca9c1ce4eaab18ed02e189d89 "bibtex article"
-  "article.out" 1774448368 4942 09093893f815a54430f2d034e523a70f "pdflatex"
-  "article.tex" 1774448366 95951 bebe67b1089062ae63e655200216abc5 ""
+  "article.aux" 1774460707 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
+  "article.bbl" 1774460707 0 d41d8cd98f00b204e9800998ecf8427e "bibtex article"
+  "article.out" 0 -1 0 "pdflatex"
+  "article.tex" 1774460703 97554 06e2e28feb46ece6839f08c5d2e00889 ""
   "qr_comparison.pdf" 1770901859 59280 9d8ee4b29282b561c8a438b2085e07c9 ""
   "qr_linear.pdf" 1770901859 192689 cb430c962bae40cd37388ced94a1618c ""
   "qr_stability.pdf" 1774441370 175196 706fa5fc00a507338da8b70cdffe5781 ""
