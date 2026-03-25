@@ -13,6 +13,7 @@
 \usepackage{epstopdf}
 %\usepackage{algorithmic}
 \usepackage{algorithm}
+\usepackage{bm}
 
 \usepackage{todonotes}
 \newcommand{\sotodo}{\todo[color=green]}
@@ -30,6 +31,8 @@
 \def\calH{{\mathcal H}}
 \def\calW{{\mathcal W}}
 \def\calS{{\mathcal S}}
+\def\bfy{{\mathbf y}}
+\def\bftau{{\bm\tau}}
 
 \makeatletter
 \@addtoreset{algorithm}{subsection}
@@ -116,7 +119,7 @@
 \maketitle
 
 \begin{abstract}
-We show that each stage of the QR factorization of banded-plus-semiseparable (BPS) matrices computed using Householder reflections has a specific structured perturbation. This theoretical result enables the design of linear-complexity algorithms for QR factorization and for solving the associated linear systems. For symmetric BPS matrices, we further show that the $RQ$ product---central to eigenvalue computations via the QR algorithm---also preserves the BPS structure, leading to a linear-complexity algorithm for its formation. Numerical experiments validate the optimal linear complexity, confirm high numerical accuracy,  and demonstrate substantial speedups compared with existing hierarchical approaches. The algorithms have been implemented in an open-source Julia package, providing an efficient and accessible platform for practical use.
+We show that the QR factorization of a banded-plus-semiseparable (BPS) matrix is computable in optimal linear complexity by showing that the intermediate stages of a QR factorisation as computed using Householder reflection maintain a specific structure. This theoretical result enables the design of stable, linear-complexity algorithms for solving the associated linear systems. For symmetric BPS matrices, we further show that the $RQ$ product---central to eigenvalue computations via the QR algorithm---also preserves the BPS structure, leading to a linear-complexity algorithm for each iteration. Numerical experiments validate the optimal linear complexity, confirm high numerical accuracy,  and demonstrate substantial speedups compared with existing hierarchical approaches. The algorithms have been implemented in an open-source Julia package, providing an efficient and accessible platform for practical use.
 \end{abstract}
 
 \begin{keywords}
@@ -135,48 +138,85 @@ A = \underbrace{B}_{\text{banded}} + \underbrace{\tril(UV^\top, -1)}_{\text{lowe
 \end{equation*}
 where $U ,V \in \bbR^{n \times r}$ and $W,S \in \bbR^{n,p}$
  arise in numerous applications from spectral methods for differential equations~\cite{iserles2025stable} to signal processing, control theory, and eigenvalue problems~\cite{vandebril2005note}. Importantly, the inverse of a banded matrix is itself a BPS matrix, making this structure fundamental for representing inverses of banded matrices~\cite{rozsa1991band}. Their structure requires only $O(n)$ storage which invites the development of \( O(n) \) algorithms, a goal successfully achieved for iterations of the QR algorithm for symmetric semiseparable systems~\cite{vandebril2005implicit}, and for solving linear systems with diagonal-plus-semiseparable matrices~\cite{eidelman1997inversion}.
-  However, generalizing these results to the case where the matrix is nonsymmetric, or the banded part $B$ is a genuine banded matrix, rather than merely a diagonal one, presents significant algorithmic challenges.
+  However, generalizing these results to the case where the matrix is nonsymmetric, or the banded part $B$ is a genuine banded matrix, rather than merely a diagonal one, and representing the QR factorization in its entirety  presents significant algorithmic challenges.
 
 
-Pioneering work has established \( O(n) \) solvers for the BPS matrices via ULV factorization~\cite{chandrasekaran2003fast}. BPS matrices can also be viewed as  hierarchically semiseparable (HSS) matrices, and solvers using HSS structure is a well-developed area~\cite{chandrasekaran2007fast, chandrasekaran2006fast, massei2020hm, xia2010fast}. A parallel line of research extensively developed the theory and algorithms for semiseparable matrices, including approaches leveraging rational Krylov techniques~\cite{fasino2005rational, vandebril2008rational}, structure-preserving analyses~\cite{delvaux2006rank, delvaux2006structures, eidelman2005qr}, and alternative representations~\cite{delvaux2008givens, vandebril2005note}. Despite these advances, a clear theoretical guarantee that the standard QR factorization preserves the BPS structure has been missing, with most existing solvers relying on more complex ULV~\cite{chandrasekaran2003fast} or intricate Givens-based schemes~\cite{delvaux2008qr, mastronardi2001fast, van2004two}. A special case of BPS matrices are almost banded matrices which were used in~\cite{olver2013fast} to represent discretisations of differential equations using the ultraspherical spectral method. An optimal complexity adaptive QR factorization was introduced, which also gives an optimal complexity QR factorization for BPS matrices with no lower semiseparable part ($r = 0$). It introduced an optimal complexity back-substitution for upper-triangular BPS matrices, an algorithm we also use.
+Pioneering work has established \( O(n) \) solvers for the BPS matrices via ULV factorization~\cite{chandrasekaran2003fast}. BPS matrices can also be viewed as  hierarchically semiseparable (HSS) matrices, and solvers using HSS structure is a well-developed area~\cite{chandrasekaran2007fast, chandrasekaran2006fast, massei2020hm, xia2010fast}. A parallel line of research extensively developed the theory and algorithms for semiseparable matrices, including approaches leveraging rational Krylov techniques~\cite{fasino2005rational, vandebril2008rational}, structure-preserving analyses~\cite{delvaux2006rank, delvaux2006structures, eidelman2005qr}, and alternative representations~\cite{delvaux2008givens, vandebril2005note}. Despite these advances, a clear theoretical guarantee that the standard QR factorization preserves the BPS structure has been missing, with most existing solvers relying on more complex ULV~\cite{chandrasekaran2003fast} or intricate Givens-based schemes~\cite{delvaux2008qr, mastronardi2001fast, van2004two}. A special case of BPS matrices with no lower semiseparable part ($r = 0$) are almost banded matrices which were used in~\cite{olver2013fast} to represent discretisations of differential equations using the ultraspherical spectral method. An optimal complexity adaptive QR factorization was introduced, which also gives an optimal complexity QR factorization for this special case. This work also introduced an optimal complexity back-substitution for upper-triangular BPS matrices, an algorithm we also use.
 
-In this paper, we close this theoretical gap. We prove that the QR factorization of a BPS matrix yields a factor matrix \( F \), which is the matrix whose upper triangular part contains $R$ and lower triangular part contains the Householder reflectors encoding $Q$,  that is itself BPS. This discovery enables the design of a suite of $ O(n) $ algorithms, including a robust QR factorization and a complete direct solver that performs $ Q^\top $ application and backward substitution in linear time. Furthermore, we extend this structural analysis to symmetric BPS matrices, proving that the $RQ$ product also retains the BPS structure, which is central to efficient eigenvalue computations.
+In this paper, we close this theoretical gap and prove that the QR factorization of a BPS matrix yields a factor matrix \( F \), which is the matrix whose upper triangular part contains $R$ and lower triangular part contains the Householder reflectors encoding $Q$,  that is itself BPS. This discovery enables the design of a suite of $ O(n) $ algorithms, including a robust QR factorization and a complete direct solver that performs $ Q^\top $ application and backward substitution in linear time. Furthermore, we extend this structural analysis to symmetric BPS matrices, proving that the $RQ$ product also retains the BPS structure, which is central to efficient eigenvalue computations.
 
+
+The core of our idea lies in characterizing the precise structural evolution during the QR factorization process. Although the BPS structure is not strictly invariant under individual Householder transformations, we demonstrate that the intermediate matrices remain within a well-defined space of structured perturbations, denoted as $\mathcal{P}(A)$ (Definition \ref{def:hmbpsm}). The fundamental insight is that each Householder reflection preserves this extended structure (Lemma \ref{lemma:structure_preserve}), ensuring that the final factor matrix $F$ maintains a compact representation (Theorem \ref{thm:structure_preserve}). By leveraging this structural inheritance, we transition from theoretical preservation to the development of $O(n)$ algorithms, bridging the gap between algebraic properties and efficient numerical implementation.
+
+The rest of this paper is organized as follows. 
+Section~\ref{sec:factors} discusses the factor matrix representation for the QR factorization as computed with Householder reflections, which proves a convenient language to discuss the perturbations of the intermediate stages of the factorization.
+Section~\ref{sec:main} presents our main theoretical contributions on the preservation of a specific perturbation structure and the resulting BPS structure of the final QR factorization. Section~\ref{sec:algorithms} details the practical implementation of $O(n)$ algorithms for QR factorization, application of $Q^\top$, and backward substitution. Building on these foundations, Section~\ref{sec:fastrq} addresses symmetric BPS matrices, proving that the $RQ$ product preserves the BPS structure and presenting a linear-complexity algorithm for its computation. Section~\ref{sec:experiments} presents numerical experiments that confirm the linear complexity, verify the numerical stability, and demonstrate performance advantages of our algorithms. We conclude in Section~\ref{sec:conclusions} with a discussion of future work.
+
+\begin{remark}
 While this paper focuses on real square matrices, the techniques and results naturally extend to complex matrices by replacing transposes with conjugate transposes. The extension to rectangular matrices is also straightforward, as Householder QR factorization applies similarly to rectangular matrices, and the structural arguments carry over with minor adjustments. These extensions are omitted but represent immediate generalizations of the ideas presented here.
-
-The core of our ideas lies in characterizing the precise structural evolution during the QR factorization process. Although the BPS structure is not strictly invariant under individual Householder transformations, we demonstrate that the intermediate matrices remain within a well-defined space of structured perturbations, denoted as $\mathcal{P}(A)$ (Definition \ref{def:hmbpsm}). The fundamental insight is that each Householder reflection preserves this extended structure (Lemma \ref{lemma:structure_preserve}), ensuring that the final factor matrix $F$ maintains a compact representation (Theorem \ref{thm:structure_preserve}). By leveraging this structural inheritance, we transition from theoretical preservation to the development of $O(n)$ algorithms, bridging the gap between algebraic properties and efficient numerical implementation.
-
-The rest of this paper is organized as follows. Section~\ref{sec:main} presents our main theoretical contributions: the definitions, the core lemma on structure preservation under Householder transformations, and the main theorem with its proof. Section~\ref{sec:algorithms} details the resulting $O(n)$ algorithms for QR factorization, application of $Q^\top$, and backward substitution. Building on these foundations, Section~\ref{sec:fastrq} addresses symmetric BPS matrices, proving that the $RQ$ product preserves the BPS structure and presenting a linear-complexity algorithm for its computation. Section~\ref{sec:experiments} presents numerical experiments that confirm the linear complexity, verify the numerical stability, and demonstrate performance advantages of our algorithms. We conclude in Section~\ref{sec:conclusions} with a discussion of future work.
+\end{remark}
 
 \section{The Representation of the QR Factor Matrix}
 \label{sec:factors}
 
-Applying the QR factorization to \( A \) yields a factor matrix \( F \), whose upper triangular part stores the matrix \( R \) and whose lower triangular part contains the Householder reflection vectors \( \mathbf{y} \) generated during the factorization. We will demonstrate that \( F \) itself retains a BPS structure. Specifically, its lower semiseparable part has rank \( r \), its upper semiseparable part has rank \( r+p \), its lower bandwidth is \( \ell \), and its upper bandwidth is \( \ell+m \).
-
-Before proceeding with the detailed proof, let us clarify the precise structure of the factor matrix \( F \) obtained from the QR factorization. In this work, following the convention of LAPACK~\cite{doi:10.1137/1.9780898719604}, we employ a compact representation that stores the complete information of the QR factorization in a single matrix:
-
-\begin{equation*}
-F = \begin{bmatrix}
+Consider the computation of the QR factorization using Householder reflections which we can write as:
+\[
+A =\underbrace{ (I - \tau_1 \bfy_1 \bfy_1^\top)\cdots (I - \tau_{n-1} \bfy_{n-1} \bfy_{n-1}^\top)}_Q \underbrace{\begin{bmatrix}
 r_{11} & r_{12} & r_{13} & \cdots & r_{1n} \\
-y_{2,1} & r_{22} & r_{23} & \cdots & r_{2n} \\
-y_{3,1} & y_{3,2} & r_{33} & \cdots & r_{3n} \\
-\vdots & \vdots & \vdots & \ddots & \vdots \\
-y_{n,1} & y_{n,2} & y_{n,3} & \cdots & r_{nn}
-\end{bmatrix}
-\end{equation*}
-where: the upper triangular part (including the main diagonal) of \( F \) stores the elements of the upper triangular matrix \( R \), i.e.: $R = \triu(F)$, and the strictly lower triangular part (excluding the main diagonal) of \( F \) stores the last \( n-k \) elements of (rescaled) Householder reflection vectors \( \mathbf{y}_k \) generated at each step.
-
-More specifically, at the \( k \)-th Householder transformation step (\( k = 1, 2, \ldots, n-1 \)), we construct a reflection vector \( \mathbf{y}_k \) to eliminate the subdiagonal entries of the \( k \)-th column in $A$. This vector takes the form:
+ & r_{22} & r_{23} & \cdots & r_{2n} \\
+ &  & r_{33} & \cdots & r_{3n} \\
+ &  &  & \ddots & \vdots \\
+ &  &  &  & r_{nn}
+\end{bmatrix}}_R
+\]
+where
 \begin{equation}\label{y_k}
-\mathbf{y}_k = \begin{bmatrix} 0 \\ \vdots \\ 0 \\ 1 \\ y_{k+1,k} \\ \vdots \\ y_{n,k} \end{bmatrix}
+\bfy_k = \begin{bmatrix} 0 \\ \vdots \\ 0 \\ 1 \\ y_{k+1,k} \\ \vdots \\ y_{n,k} \end{bmatrix}
 \begin{array}{l} \left.\vphantom{\begin{bmatrix} 0 \\ 0 \\ 1 \end{bmatrix}}\right\} k-1 \text{ zeros} \\ \\ \left.\vphantom{\begin{bmatrix} y_{k+1,k} \\ \vdots \\ y_{n,k} \end{bmatrix}}\right\} n-k \text{ elements}
 \end{array}
 \end{equation}
-Following the LAPACK format, we normalize \( \mathbf{y}_k \) such that its first nonzero element (the \( k \)-th element) equals 1. Consequently, we only need to store the elements from position \( k+1 \) to \( n \) of this vector, which are placed in the \( k \)-th column of \( F \), from row \( k+1 \) to \( n \).
+and $\tau_k = 2\|\bfy_k\|^{-2}$ so that $\sqrt{\tau_k/2} \bfy_k$ has unit norm.
+Following the LAPACK format \cite{doi:10.1137/1.9780898719604}, the QR factorisation can be represented by a {\it factors matrix} containing the entries of $\bfy_k$ and $R$:
+\begin{equation*}
+F = \begin{bmatrix}
+r_{11} & r_{12} & r_{13} & \cdots & r_{1n} \\
+y_{21} & r_{22} & r_{23} & \cdots & r_{2n} \\
+y_{31} & y_{32} & r_{33} & \cdots & r_{3n} \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+y_{n1} & y_{n2} & y_{n3} & \cdots & r_{nn}
+\end{bmatrix}
+\end{equation*}
+alongside a vector $\bftau = [\tau_1,\ldots,\tau_{n-1},0]^\top$. 
 
-It is important to note that with this normalization convention (where the first nonzero element of each Householder vector \( \mathbf{y}_k \) is 1), the full Householder transformation at the \( k \)-th step is given by \( I - \tau_k \mathbf{y}_k \mathbf{y}_k^T \), where \( \tau_k \) is a scalar coefficient. Therefore, in addition to the factor matrix \( F \), a vector \( \boldsymbol{\tau} = (\tau_1, \tau_2, \ldots, \tau_{n-1})^\top \) is required to completely represent the QR factorization. The orthogonal matrix \( Q \) can be reconstructed as the product \( Q = (I - \tau_1 \mathbf{y}_1 \mathbf{y}_1^\top)(I - \tau_2 \mathbf{y}_2 \mathbf{y}_2^\top) \cdots (I - \tau_{n-1} \mathbf{y}_{n-1} \mathbf{y}_{n-1}^\top) \).
+We will demonstrate that \( F \) itself retains a BPS structure, which implies structure in $R$ and the Householder reflections. Specifically, $F$ has lower semiseparable part  rank \( r \), upper semiseparable part rank \( r+p \), lower bandwidth is \( \ell \), and upper bandwidth is \( \ell+m \).
 
-Throughout our analysis, we will focus on the structure of the factor matrix \( F \), while acknowledging that the complete QR representation consists of the pair \( (F, \boldsymbol{\tau}) \). Our main theorem establishes that \( F \) maintains the BPS structure; the scaling coefficients \( \tau_k \) can be stored separately without affecting the structural properties of the algorithm.
+Intermediate stages of the Householder reflection correspond to a partial factors matrix. In particular, if we apply $k$ Householder reflections to partially upper triangularize $A$ as
+\[
+(I - \tau_k \bfy_k \bfy_k^\top) \cdots (I - \tau_1 \bfy_1 \bfy_1^\top) A = \begin{bmatrix}
+r_{11} & r_{12} & r_{13} & \cdots & r_{1,n-2} & r_{1,n-1} & r_{1n} \\
+ & r_{22} & r_{23} & r_{24} & \cdots & r_{2,n-1}  & r_{2n} \\
+&  & \ddots & \ddots & \ddots & \ddots & \vdots \\
+&   &  & r_{kk} & r_{k,k+1}& \cdots & r_{kn} \\
+& &  &    & a_{k+1,k+1}^k & \cdots & a_{k+1,n}^k \\
+& &&& \vdots & \ddots & \vdots \\
+& &  &    & a_{n,k+1}^k & \cdots & a_{nn}^k 
+\end{bmatrix}.
+\]
+We can represent this partial factorisation using the intermediate factor matrix
+\[
+F_k = \begin{bmatrix}
+r_{11} & r_{12} & r_{13} & \cdots & r_{1,n-2} & r_{1,n-1} & r_{1n} \\
+y_{21} & r_{22} & r_{23} & r_{24} & \cdots & r_{2,n-1}  & r_{2n} \\
+\vdots & \ddots  & \ddots & \ddots & \ddots & \ddots & \vdots \\
+y_{k1} &  \cdots  & y_{k,k-1}  & r_{kk} & r_{k,k+1}& \cdots & r_{kn} \\
+y_{k+1,1} & \cdots  & y_{k+1,k-1}  &  y_{k+1,k}   & a_{k+1,k+1}^k & \cdots & a_{k+1,n}^k \\
+\vdots & \ddots  & \vdots & \vdots & \vdots & \ddots & \vdots \\
+y_{n1} & \cdots & y_{n,k-1}  &  y_{nk}   & a_{n,k+1}^k & \cdots & a_{nn}^k 
+\end{bmatrix},
+\]
+alongside $\bftau_k = [\tau_1,\ldots,\tau_k,0,\ldots,0]^\top$.
+This intermediate factors matrix {\it does not} have BPS structure, however, we shall so that it is a structured perturbation of BPS.
+
 
 \section{Structure Preservation of the QR Factors for BPS Matrices}
 \label{sec:main}
@@ -221,7 +261,7 @@ While the final factor matrix of a QR factorization is a BPS matrix, at  interme
 \begin{definition}\label{def:hmbpsm}
 Given
 \[
-A = B + \text{tril}(UV^\top, -1) + \text{triu}(WS^\top, 1)  \in \BPS
+A = B + \tril(UV^\top, -1) + \triu(WS^\top, 1)  \in \BPS
 \]
 define the vector space:
 \begin{align*}
@@ -249,7 +289,7 @@ Given \( A \in  \BPS \) and $j=1, 2, ..., n$, define the vector space
 
 
 \begin{lemma}\label{lemma:structure_preserve}
-Given \( A \in \BPS \) and  \( P \in \calP(A) \), let \( \tilde{C} = (I - \tau \mathbf{y} \mathbf{y}^T) (A+P) \) where $\tau$ is a coefficient, $\mathbf{y} = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$ with $\mathbf{e}_1$ being the first standard basis vector, $U^{(2)}\in\mathbb{R}^{n\times r}$ satisfying $U^{(2)}[1,:]=\mathbf{0}$ and $U^{(2)}[2:n,:]=U[2:n,:]$, $\bar{\mathbf{k}}\in\mathbb{R}^r$, and $\mathbf{b}\in\mathbb{R}^{n}$ nonzero only in entries $2$ through $\min(\ell+1, n)$. Then the following hold:
+Given \( A \in \BPS \) and  \( P \in \calP(A) \), let \( \tilde{C} = (I - \tau \bfy \bfy^\top) (A+P) \) where $\tau$ is a coefficient, $\bfy = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$ with $\mathbf{e}_1$ being the first standard basis vector, $U^{(2)}\in\mathbb{R}^{n\times r}$ satisfying $U^{(2)}[1,:]=\mathbf{0}$ and $U^{(2)}[2:n,:]=U[2:n,:]$, $\bar{\mathbf{k}}\in\mathbb{R}^r$, and $\mathbf{b}\in\mathbb{R}^{n}$ nonzero only in entries $2$ through $\min(\ell+1, n)$. Then the following hold:
 \begin{enumerate}
     \item The principal submatrix satisfies \( \tilde{C}[2:n, 2:n] = A[2:n, 2:n] + \tilde P\) for \(\tilde P  \in \calP(A[2:n, 2:n]) \).
     \item The first row satisfies \( \tilde{C}[1, 2:n] \in \calV_2(A) \).
@@ -261,7 +301,7 @@ Let us introduce some supplementary notations first:
 
     \( C = A + UJS^\top + UKU^\top A + UE + XS^\top + YU^\top A + Z \), where \( J, K, E, X, Y, Z \) are as in Definition \ref{def:hmbpsm};
 
-    \( \tilde{C} = (I - \tau \mathbf{y} \mathbf{y}^\top)C \), where the vector \( \mathbf{y} \) can be expressed as \( \mathbf{y} = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b} \). Here, \(\mathbf{e}_1=(1,0,...,0)^\top \in \mathbb{R}^n\), \( U^{(2)} \in \mathbb{R}^{n\times r} \) satisfies \( U^{(2)}[1,:] = \mathbf{0} \) and \( U^{(2)}[2:n,:] = U[2:n,:] \), \( \bar{\mathbf{k}} \in \mathbb{R}^r \), \( \mathbf{b} = (0, b_2, \ldots, b_{\min(\ell+1,n)}, 0, \ldots, 0)^\top \in \mathbb{R}^n \), and \(\tau\) is a coefficient.
+    \( \tilde{C} = (I - \tau \bfy \bfy^\top)C \), where the vector \( \bfy \) can be expressed as \( \bfy = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b} \). Here, \(\mathbf{e}_1=(1,0,...,0)^\top \in \mathbb{R}^n\), \( U^{(2)} \in \mathbb{R}^{n\times r} \) satisfies \( U^{(2)}[1,:] = \mathbf{0} \) and \( U^{(2)}[2:n,:] = U[2:n,:] \), \( \bar{\mathbf{k}} \in \mathbb{R}^r \), \( \mathbf{b} = (0, b_2, \ldots, b_{\min(\ell+1,n)}, 0, \ldots, 0)^\top \in \mathbb{R}^n \), and \(\tau\) is a coefficient.
 
 
 We can also write:
@@ -275,17 +315,17 @@ and
 
 
 
-Next define the auxiliary vectors: \(\mathbf{c}_1 = J^\top U^\top \mathbf{y} \in \mathbb{R}^p\), \(\mathbf{c}_2 = K^\top U^\top \mathbf{y} \in \mathbb{R}^r\), \(\mathbf{c}_3 = U^\top \mathbf{y} \in \mathbb{R}^r\), \(\mathbf{c}_4 = X^\top \mathbf{y} \in \mathbb{R}^p\), \(\mathbf{c}_5 = Y^\top \mathbf{y} \in \mathbb{R}^r\), \(\mathbf{c}_6 = Z^\top \mathbf{y} \in \mathbb{R}^{n}, \quad \text{which has the form } \mathbf{c}_6 = \begin{bmatrix} \mathbf{c}_{6s} \\ \mathbf{0} \end{bmatrix} \text{ with } \mathbf{c}_{6s} \in \mathbb{R}^{\min(\ell+m,n)}\).
+Next define the auxiliary vectors: \(\mathbf{c}_1 = J^\top U^\top \bfy \in \mathbb{R}^p\), \(\mathbf{c}_2 = K^\top U^\top \bfy \in \mathbb{R}^r\), \(\mathbf{c}_3 = U^\top \bfy \in \mathbb{R}^r\), \(\mathbf{c}_4 = X^\top \bfy \in \mathbb{R}^p\), \(\mathbf{c}_5 = Y^\top \bfy \in \mathbb{R}^r\), \(\mathbf{c}_6 = Z^\top \bfy \in \mathbb{R}^{n}, \quad \text{which has the form } \mathbf{c}_6 = \begin{bmatrix} \mathbf{c}_{6s} \\ \mathbf{0} \end{bmatrix} \text{ with } \mathbf{c}_{6s} \in \mathbb{R}^{\min(\ell+m,n)}\).
 
-Also, let \( \mathbf{x}^{(1)} = X[1,:] \in \mathbb{R}^p \), \( \mathbf{y}^{(1)} = Y[1,:] \in \mathbb{R}^r \), and \( \mathbf{z}^{(1)} = Z[1,:] \in \mathbb{R}^n \).
+Also, let \( \mathbf{x}^{(1)} = X[1,:] \in \mathbb{R}^p \), \( \bfy^{(1)} = Y[1,:] \in \mathbb{R}^r \), and \( \mathbf{z}^{(1)} = Z[1,:] \in \mathbb{R}^n \).
 
-We now compute \( (I - \tau \mathbf{y} \mathbf{y}^\top) C \) by distributing the transformation over each term in the definition of \( C \).To maintain clarity in the following derivations, we use the label "nonzero entries" to specifically denote dense subblocks or vectors whose support is confined to the leading indices (determined by $\ell$ and $m$). These terms are systematically tracked to ensure they map directly onto the structured generators $\{J, K, E, X, Y, Z\}$ defined in the space $\calP(A)$.
+We now compute \( (I - \tau \bfy \bfy^\top) C \) by distributing the transformation over each term in the definition of \( C \).To maintain clarity in the following derivations, we use the label "nonzero entries" to specifically denote dense subblocks or vectors whose support is confined to the leading indices (determined by $\ell$ and $m$). These terms are systematically tracked to ensure they map directly onto the structured generators $\{J, K, E, X, Y, Z\}$ defined in the space $\calP(A)$.
 
 (i) Transformation of \( A \):
-Substituting the expressions \( \mathbf{y}=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), \( \mathbf{e}_1^\top A=\mathbf{d}_1^\top+\bar{\mathbf{w}}_1^\top S^\top \), and \( \mathbf{b}^\top A=\bar{\mathbf{d}}^\top+\mathbf{f}^\top S^\top \), we obtain:
+Substituting the expressions \( \bfy=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), \( \mathbf{e}_1^\top A=\mathbf{d}_1^\top+\bar{\mathbf{w}}_1^\top S^\top \), and \( \mathbf{b}^\top A=\bar{\mathbf{d}}^\top+\mathbf{f}^\top S^\top \), we obtain:
 \begin{equation}\label{proof_first}
 \begin{aligned}
-(I - \tau \mathbf{y} \mathbf{y}^\top)A = & A + \mathbf{e}_1 \big[ \underbrace{(-\tau \mathbf{d}_1^\top - \tau \bar{\mathbf{d}}^\top)}_{\min(\ell+m+1,n)\hbox{ nonzero entries}} + \underbrace{(-\tau \bar{\mathbf{w}}_1^\top - \tau \mathbf{f}^\top)}_{\in \bbR^{1 \times p}}S^\top \\
+(I - \tau \bfy \bfy^\top)A = & A + \mathbf{e}_1 \big[ \underbrace{(-\tau \mathbf{d}_1^\top - \tau \bar{\mathbf{d}}^\top)}_{\min(\ell+m+1,n)\hbox{ nonzero entries}} + \underbrace{(-\tau \bar{\mathbf{w}}_1^\top - \tau \mathbf{f}^\top)}_{\in \bbR^{1 \times p}}S^\top \\
 & + \underbrace{(-\tau \bar{\mathbf{k}}^\top)}_{\in \bbR^{1 \times r}}U^{(2)\top}A\big] + U^{(2)}\underbrace{(-\tau \bar{\mathbf{k}} \bar{\mathbf{w}}_1^\top - \tau \bar{\mathbf{k}} \mathbf{f}^\top)}_{\in \bbR^{r \times p}} S^\top \\
 & + U^{(2)}\underbrace{(-\tau \bar{\mathbf{k}} \bar{\mathbf{k}}^\top)}_{\in \bbR^{r \times r}}U^{(2)\top}A + U^{(2)}\underbrace{(-\tau \bar{\mathbf{k}} \mathbf{d}_1^\top - \tau \bar{\mathbf{k}} \bar{\mathbf{d}}^\top)}_{\bbR^{r\times \min(\ell+m+1.n)} \hbox{ nonzero entries}} \\
 & + \underbrace{(-\tau \mathbf{b} \bar{\mathbf{w}}_1^\top - \tau \mathbf{b} \mathbf{f}^\top)}_{\bbR^{\min(\ell+1,n)\times p} \hbox{ nonzero entries}}S^\top + \underbrace{(-\tau \mathbf{b} \bar{\mathbf{k}}^\top)}_{\bbR^{\min(\ell+1,n)\times r} \hbox{ nonzero entries}}U^{(2)\top}A \\& + \underbrace{(-\tau \mathbf{b} \mathbf{d}_1^\top - \tau \mathbf{b} \bar{\mathbf{d}}^\top)}_{\bbR^{\min(\ell+1,n) \times \min(\ell+m+1,n)} \hbox{ nonzero entries}}.
@@ -295,17 +335,17 @@ Dropping the first column, we  see that the first row of the term in brackets is
 
 The transformations of $UJS^\top$, $UKU^\top A$, $UE$, $XS^\top$, $YU^\top A$, and $Z$ yield expressions that follow this same pattern—terms involving $\mathbf{e}_1$ (after dropping the first column) belong to $\calV_2(A)$, while the remaining terms (after dropping first row and column) belong to $\calP(A[2:n,2:n])$:
 
-(ii) Transformation of \( UJS^\top \): Substituting the expressions \( \mathbf{y}^\top UJ=\mathbf{c}_1^\top \), \( \mathbf{y}=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), and \( U=\mathbf{e}_1\bar{\mathbf{u}}_1^\top+U^{(2)}\), we obtain
+(ii) Transformation of \( UJS^\top \): Substituting the expressions \( \bfy^\top UJ=\mathbf{c}_1^\top \), \( \bfy=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), and \( U=\mathbf{e}_1\bar{\mathbf{u}}_1^\top+U^{(2)}\), we obtain
 \begin{equation}
 \begin{aligned}
-(I - \tau \mathbf{y} \mathbf{y}^\top)UJS^\top = & \mathbf{e}_1\underbrace{(\bar{\mathbf{u}}_1^\top J - \tau \mathbf{c}_1^\top)}_{\in \bbR^{1 \times p}}S^\top + U^{(2)}\underbrace{(J - \tau \bar{\mathbf{k}} \mathbf{c}_1^\top)}_{\in \bbR^{r \times p}}S^\top + \underbrace{(-\tau \mathbf{b} \mathbf{c}_1^\top)}_{\bbR^{\min(\ell+1,n)\times p} \hbox{ nonzero entries}}S^\top.
+(I - \tau \bfy \bfy^\top)UJS^\top = & \mathbf{e}_1\underbrace{(\bar{\mathbf{u}}_1^\top J - \tau \mathbf{c}_1^\top)}_{\in \bbR^{1 \times p}}S^\top + U^{(2)}\underbrace{(J - \tau \bar{\mathbf{k}} \mathbf{c}_1^\top)}_{\in \bbR^{r \times p}}S^\top + \underbrace{(-\tau \mathbf{b} \mathbf{c}_1^\top)}_{\bbR^{\min(\ell+1,n)\times p} \hbox{ nonzero entries}}S^\top.
 \end{aligned}
 \end{equation}
 
-(iii) Transformation of \( UKU^\top A \): Substituting the expressions \( \mathbf{y}^\top UK=\mathbf{c}_2^\top\), \( \mathbf{y}=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), \( U=\mathbf{e}_1\bar{\mathbf{u}}_1^\top+U^{(2)}\), and \( \mathbf{e}_1^\top A=\mathbf{d}_1^\top+\bar{\mathbf{w}}_1^\top S^\top\), we obtain
+(iii) Transformation of \( UKU^\top A \): Substituting the expressions \( \bfy^\top UK=\mathbf{c}_2^\top\), \( \bfy=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), \( U=\mathbf{e}_1\bar{\mathbf{u}}_1^\top+U^{(2)}\), and \( \mathbf{e}_1^\top A=\mathbf{d}_1^\top+\bar{\mathbf{w}}_1^\top S^\top\), we obtain
 \begin{equation}
 \begin{aligned}
-& (I - \tau \mathbf{y} \mathbf{y}^\top)UKU^\top A \\
+& (I - \tau \bfy \bfy^\top)UKU^\top A \\
 = & \mathbf{e}_1\big[\underbrace{(\bar{\mathbf{u}}_1^\top K \bar{\mathbf{u}}_1 \mathbf{d}_1^\top - \tau \mathbf{c}_2^\top \bar{\mathbf{u}}_1 \mathbf{d}_1^\top)}_{\min(\ell+m+1,n)\hbox{ nonzero entries}} + \underbrace{(\bar{\mathbf{u}}_1^\top K \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top - \tau \mathbf{c}_2^\top \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top)}_{\in \bbR^{1 \times p}}S^\top + \underbrace{(\bar{\mathbf{u}}_1^\top K - \tau \mathbf{c}_2^\top)}_{\in \bbR^{1 \times r}}U^{(2\top}A\big] \\
 & + U^{(2)}\underbrace{(K \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top - \tau \bar{\mathbf{k}} \mathbf{c}_2^\top \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top)}_{\in \bbR^{r \times p}}S^\top + U^{(2)}\underbrace{(K - \tau \bar{\mathbf{k}} \mathbf{c}_2^\top)}_{\in \bbR^{r \times r}}U^{(2)\top}A \\&+ U^{(2)}\underbrace{(K \bar{\mathbf{u}}_1 \mathbf{d}_1^\top - \tau \bar{\mathbf{k}} \mathbf{c}_2^\top \bar{\mathbf{u}}_1 \mathbf{d}_1^\top)}_{\bbR^{r\times \min(\ell+m+1,n)} \hbox{ nonzero entries}} + \underbrace{(-\tau \mathbf{b} \mathbf{c}_2^\top \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top)}_{\bbR^{\min(\ell+1,n)\times p} \hbox{ nonzero entries}}S^\top \\&+ \underbrace{(-\tau \mathbf{b} \mathbf{c}_2^\top)}_{\bbR^{\min(\ell+1,n)\times r} \hbox{ nonzero entries}}U^{(2)\top}A + \underbrace{(-\tau \mathbf{b} \mathbf{c}_2^\top \bar{\mathbf{u}}_1 \mathbf{d}_1^\top)}_{\bbR^{\min(\ell+1,n) \times \min(\ell+m+1,n)} \hbox{ nonzero entries}}.
 \end{aligned}
@@ -315,36 +355,36 @@ The transformations of $UJS^\top$, $UKU^\top A$, $UE$, $XS^\top$, $YU^\top A$, a
 
 
 
-(iv) Transformation of \( UE \): Substituting the expressions \( \mathbf{y}^\top U=\mathbf{c}_3^\top \), \( \mathbf{y}=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), and \( U=\mathbf{e}_1\bar{\mathbf{u}}_1^\top+U^{(2)}\), we obtain
+(iv) Transformation of \( UE \): Substituting the expressions \( \bfy^\top U=\mathbf{c}_3^\top \), \( \bfy=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), and \( U=\mathbf{e}_1\bar{\mathbf{u}}_1^\top+U^{(2)}\), we obtain
 \begin{equation}
 \begin{aligned}
-(I - \tau \mathbf{y} \mathbf{y}^\top)UE = & \mathbf{e}_1\underbrace{(\bar{\mathbf{u}}_1^\top E - \tau \mathbf{c}_3^\top E)}_{\min(\ell+m+1,n)\hbox{ nonzero entries}
+(I - \tau \bfy \bfy^\top)UE = & \mathbf{e}_1\underbrace{(\bar{\mathbf{u}}_1^\top E - \tau \mathbf{c}_3^\top E)}_{\min(\ell+m+1,n)\hbox{ nonzero entries}
 } + U^{(2)}\underbrace{(E - \tau \bar{\mathbf{k}} \mathbf{c}_3^\top E)}_{\bbR^{r\times \min(\ell+m+1,n)} \hbox{ nonzero entries}} + \\& \underbrace{(-\tau \mathbf{b} \mathbf{c}_3^\top E)}_{\bbR^{\min(\ell+1,n) \times \min(\ell+m+1,n)} \hbox{ nonzero entries}}.
 \end{aligned}
 \end{equation}
 
-(v) Transformation of \( XS^\top \): Substituting the expressions \(\mathbf{y}^\top X=\mathbf{c}_4^\top \) and \(\mathbf{y}=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), we obtain
+(v) Transformation of \( XS^\top \): Substituting the expressions \(\bfy^\top X=\mathbf{c}_4^\top \) and \(\bfy=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), we obtain
 \begin{equation}
 \begin{aligned}
-(I - \tau \mathbf{y} \mathbf{y}^\top)XS^\top = \mathbf{e}_1\underbrace{(-\tau \mathbf{c}_4^\top)}_{\in \bbR^{1 \times p}}S^\top + U^{(2)}\underbrace{(-\tau \bar{\mathbf{k}} \mathbf{c}_4^\top)}_{\in \bbR^{r \times p}}S^\top + \underbrace{(X - \tau \mathbf{b} \mathbf{c}_4^\top)}_{\bbR^{\min(\ell+1,n)\times p} \hbox{ nonzero entries}}S^\top.
+(I - \tau \bfy \bfy^\top)XS^\top = \mathbf{e}_1\underbrace{(-\tau \mathbf{c}_4^\top)}_{\in \bbR^{1 \times p}}S^\top + U^{(2)}\underbrace{(-\tau \bar{\mathbf{k}} \mathbf{c}_4^\top)}_{\in \bbR^{r \times p}}S^\top + \underbrace{(X - \tau \mathbf{b} \mathbf{c}_4^\top)}_{\bbR^{\min(\ell+1,n)\times p} \hbox{ nonzero entries}}S^\top.
 \end{aligned}
 \end{equation}
 
-(vi) Transformation of \( YU^\top A \): Substituting the expressions \(\mathbf{y}^\top Y=\mathbf{c}_5^\top \), \(\mathbf{y}=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), \(U=\mathbf{e}_1\bar{\mathbf{u}}_1^\top+U^{(2)}\), and \(\mathbf{e}_1^\top A=\mathbf{d}_1^\top+\bar{\mathbf{w}}_1^\top S^\top \), we obtain
+(vi) Transformation of \( YU^\top A \): Substituting the expressions \(\bfy^\top Y=\mathbf{c}_5^\top \), \(\bfy=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), \(U=\mathbf{e}_1\bar{\mathbf{u}}_1^\top+U^{(2)}\), and \(\mathbf{e}_1^\top A=\mathbf{d}_1^\top+\bar{\mathbf{w}}_1^\top S^\top \), we obtain
 \begin{equation}
 \begin{aligned}
-& (I - \tau \mathbf{y} \mathbf{y}^\top)YU^\top A \\
+& (I - \tau \bfy \bfy^\top)YU^\top A \\
 = & \mathbf{e}_1\big[\underbrace{(-\tau \mathbf{c}_5^\top \bar{\mathbf{u}}_1 \mathbf{d}_1^\top)}_{\min(\ell+m+1,n)\hbox{ nonzero entries}} + \underbrace{(-\tau \mathbf{c}_5^\top \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top)}_{\in \bbR^{1 \times p}}S^\top + \underbrace{(-\tau \mathbf{c}_5^\top)}_{\in \bbR^{1 \times r}}U^{(2)\top}A\big] \\
 & + U^{(2)}\underbrace{(-\tau \bar{\mathbf{k}} \mathbf{c}_5^\top \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top)}_{\in \bbR^{r \times p}}S^\top + U^{(2)}\underbrace{(-\tau \bar{\mathbf{k}} \mathbf{c}_5^\top)}_{\in \bbR^{r \times r}}U^{(2)\top}A + U^{(2)}\underbrace{(-\tau \bar{\mathbf{k}} \mathbf{c}_5^\top \bar{\mathbf{u}}_1 \mathbf{d}_1^\top)}_{\bbR^{r\times \min(\ell+m+1,n)} \hbox{ nonzero entries}} \\
 & + \underbrace{(Y \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top - \tau \mathbf{b} \mathbf{c}_5^\top \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top)}_{\bbR^{\min(\ell+1,n)\times p} \hbox{ nonzero entries}}S^\top + \underbrace{(Y - \tau \mathbf{b} \mathbf{c}_5^\top)}_{\bbR^{\min(\ell+1,n)\times r} \hbox{ nonzero entries}}U^{(2)\top}A \\& + \underbrace{(Y \bar{\mathbf{u}}_1 \mathbf{d}_1^\top - \tau \mathbf{b} \mathbf{c}_5^\top \bar{\mathbf{u}}_1 \mathbf{d}_1^\top)}_{\bbR^{\min(\ell+1,n) \times \min(\ell+m+1,n)} \hbox{ nonzero entries}}.
 \end{aligned}
 \end{equation}
 
-\textbf{(vii) Transformation of \( Z \):} Substituting the expressions \(\mathbf{y}^\top Z=\mathbf{c}_6^\top \) and \(\mathbf{y}=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), we obtain
+\textbf{(vii) Transformation of \( Z \):} Substituting the expressions \(\bfy^\top Z=\mathbf{c}_6^\top \) and \(\bfy=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), we obtain
 
 \begin{equation}\label{proof_last}
 \begin{aligned}
-(I - \tau \mathbf{y} \mathbf{y}^\top)Z = &\mathbf{e}_1\underbrace{(-\tau \mathbf{c}_6^\top)}_{\min(\ell+m+1,n)\hbox{ nonzero entries}
+(I - \tau \bfy \bfy^\top)Z = &\mathbf{e}_1\underbrace{(-\tau \mathbf{c}_6^\top)}_{\min(\ell+m+1,n)\hbox{ nonzero entries}
 } + U^{(2)}\underbrace{(-\tau \bar{\mathbf{k}} \mathbf{c}_6^\top)}_{\bbR^{r\times \min(\ell+m+1,n)} \hbox{ nonzero entries}
 } \\&+ \underbrace{(Z - \tau \mathbf{b} \mathbf{c}_6^\top)}_{\bbR^{\min(\ell+1,n) \times \min(\ell+m+1,n)} \hbox{ nonzero entries}}.
 \end{aligned}
@@ -354,7 +394,7 @@ Since $\calP(A[2:n,2:n])$ and $\calV_2(A)$ are both vector spaces, their element
 
 Firstly, the submatrix \( \tilde{C}[2:n, 2:n] \) satisfies:
 \begin{equation}\label{submatrix_structure}
-\tilde{C}[2:n, 2:n] = \tilde{A} + \tilde{U} \tilde{J} \tilde{S}^T + \tilde{U} \tilde{K} \tilde{U}^T \tilde{A} + \tilde{U} \tilde{E} + \tilde{X} \tilde{S}^T + \tilde{Y} \tilde{U}^T \tilde{A} + \tilde{Z},
+\tilde{C}[2:n, 2:n] = \tilde{A} + \tilde{U} \tilde{J} \tilde{S}^\top + \tilde{U} \tilde{K} \tilde{U}^\top \tilde{A} + \tilde{U} \tilde{E} + \tilde{X} \tilde{S}^\top + \tilde{Y} \tilde{U}^\top \tilde{A} + \tilde{Z},
 \end{equation}
 where
 \begin{align*}
@@ -389,10 +429,10 @@ where
 \begin{align*}
     \hat{\mathbf{d}} &= \begin{bmatrix} \hat{\mathbf{d}}_s \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n-1}, \quad \text{with} \\
     \hat{\mathbf{d}}_s &= (\mathbf{d}_1 - \tau \mathbf{d}_1 - \tau \bar{\mathbf{d}} + \mathbf{d}_1 \bar{\mathbf{u}}_1^\top K^\top \bar{\mathbf{u}}_1   - \tau \mathbf{d}_1 \bar{\mathbf{u}}_1^\top \mathbf{c}_2 + E^\top \bar{\mathbf{u}} - \tau E^\top \mathbf{c}_3 \\
-    &\quad + \mathbf{d}_1 \bar{\mathbf{u}}_1^\top \mathbf{y}^{(1)} - \tau \mathbf{d}_1 \bar{\mathbf{u}}_1^\top \mathbf{c}_5 + \mathbf{z}^{(1)} - \tau \mathbf{c}_6)[2:\min(\ell+m+1, n)], \\
+    &\quad + \mathbf{d}_1 \bar{\mathbf{u}}_1^\top \bfy^{(1)} - \tau \mathbf{d}_1 \bar{\mathbf{u}}_1^\top \mathbf{c}_5 + \mathbf{z}^{(1)} - \tau \mathbf{c}_6)[2:\min(\ell+m+1, n)], \\
     \hat{\boldsymbol{\alpha}} &= (\bar{\mathbf{w}}_1 - \tau \bar{\mathbf{w}}_1 - \tau \mathbf{f} + J^\top \bar{\mathbf{u}}_1 - \tau \mathbf{c}_1 + \bar{\mathbf{w}}_1 \bar{\mathbf{u}}_1^\top K^\top \bar{\mathbf{u}}_1  - \tau \bar{\mathbf{w}}_1\bar{\mathbf{u}}_1^\top \mathbf{c}_2 \\
-    &\quad + \mathbf{x}^{(1)} - \tau \mathbf{c}_4 + \bar{\mathbf{w}}_1 \bar{\mathbf{u}}_1^\top \mathbf{y}^{(1)}  - \tau \bar{\mathbf{w}}_1 \bar{\mathbf{u}}_1^\top \mathbf{c}_5) \in \mathbb{R}^p, \\
-    \hat{\boldsymbol{\beta}} &= (-\tau \bar{\mathbf{k}} + K^\top \bar{\mathbf{u}}_1 - \tau \mathbf{c}_2 + \mathbf{y}^{(1)} - \tau \mathbf{c}_5) \in \mathbb{R}^r.
+    &\quad + \mathbf{x}^{(1)} - \tau \mathbf{c}_4 + \bar{\mathbf{w}}_1 \bar{\mathbf{u}}_1^\top \bfy^{(1)}  - \tau \bar{\mathbf{w}}_1 \bar{\mathbf{u}}_1^\top \mathbf{c}_5) \in \mathbb{R}^p, \\
+    \hat{\boldsymbol{\beta}} &= (-\tau \bar{\mathbf{k}} + K^\top \bar{\mathbf{u}}_1 - \tau \mathbf{c}_2 + \bfy^{(1)} - \tau \mathbf{c}_5) \in \mathbb{R}^r.
 \end{align*}
 
 Noting that \( U^{(2)} = U - \mathbf{e}_1 \bar{\mathbf{u}}_1^\top \) and \( \mathbf{e}_1^\top A = \mathbf{d}_1^\top + \bar{\mathbf{w}}_1^\top S^\top \), we have \( U^{(2)\top} A = U^\top A - \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top S^\top - \bar{\mathbf{u}}_1 \mathbf{d}_1^\top \). Substituting this yields an alternative expression:
@@ -404,7 +444,7 @@ where
     \tilde{\mathbf{d}} &= \begin{bmatrix} \tilde{\mathbf{d}}_s \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n-1}, \quad \text{with} \\
     \tilde{\mathbf{d}}_s &= (\mathbf{d}_1 - \tau \mathbf{d}_1 - \tau \bar{\mathbf{d}} + E^\top \bar{\mathbf{u}}_1 - \tau E^\top \mathbf{c}_3 + \mathbf{z}^{(1)} - \tau \mathbf{c}_6 + \tau \mathbf{d}_1\bar{\mathbf{u}}_1^\top \bar{\mathbf{k}})[2:\min(\ell+m+1, n)], \\
     \tilde{\boldsymbol{\alpha}} &= (\bar{\mathbf{w}}_1 - \tau \bar{\mathbf{w}}_1 - \tau \mathbf{f} + J^\top \bar{\mathbf{u}}_1 - \tau \mathbf{c}_1 + \mathbf{x}^{(1)} - \tau \mathbf{c}_4 + \tau \bar{\mathbf{w}}_1 \bar{\mathbf{u}}_1^\top \bar{\mathbf{k}}) \in \mathbb{R}^p, \\
-    \tilde{\boldsymbol{\beta}} &= (-\tau \bar{\mathbf{k}} + K^\top \bar{\mathbf{u}}_1 - \tau \mathbf{c}_2 + \mathbf{y}^{(1)} - \tau \mathbf{c}_5) \in \mathbb{R}^r.
+    \tilde{\boldsymbol{\beta}} &= (-\tau \bar{\mathbf{k}} + K^\top \bar{\mathbf{u}}_1 - \tau \mathbf{c}_2 + \bfy^{(1)} - \tau \mathbf{c}_5) \in \mathbb{R}^r.
 \end{align*}
 
 This confirms that \( \tilde{C}[1, 2:n] \in \calV_2(A) \), completing the proof of the lemma.
@@ -422,7 +462,7 @@ After applying the QR factorization to a BPS matrix \( A \) (as expressed in Eq.
 \begin{proof}
 The QR factorization is computed by performing a sequence of \( n-1 \) Householder transformations, eliminating the subdiagonal entries of \( A \) column by column.
 
-Let \( A^{(i)} \) denote the matrix after the \( i \)-th Householder transformation, with \( A^{(0)} = A \). Define \( A_i = A[i:n, i:n] \), \( U_i = U[i:n, :] \), \( V_i = V[i:n, :] \), \( S_i = S[i:n, :] \), and \( W_i = W[i:n, :] \). Let \( \bar{\mathbf{u}}_i = (u_i^{(1)}, \ldots, u_i^{(r)})^\top \) and \( \bar{\mathbf{w}}_i = (w_i^{(1)}, \ldots, w_i^{(p)})^\top \). Let \( \bar{S} = U^T A \in \mathbb{R}^{r \times n} \).
+Let \( A^{(i)} \) denote the matrix after the \( i \)-th Householder transformation, with \( A^{(0)} = A \). Define \( A_i = A[i:n, i:n] \), \( U_i = U[i:n, :] \), \( V_i = V[i:n, :] \), \( S_i = S[i:n, :] \), and \( W_i = W[i:n, :] \). Let \( \bar{\mathbf{u}}_i = (u_i^{(1)}, \ldots, u_i^{(r)})^\top \) and \( \bar{\mathbf{w}}_i = (w_i^{(1)}, \ldots, w_i^{(p)})^\top \). Let \( \bar{S} = U^\top A \in \mathbb{R}^{r \times n} \).
 
 We prove by induction that after the \( j \)-th transformation (\( 0 \le j < n \)):
 \begin{enumerate}
@@ -445,18 +485,18 @@ with \( \tilde{\boldsymbol{\alpha}}_{k+1} \in \mathbb{R}^p \), \( \tilde{\boldsy
 Furthermore, assume:
 \begin{equation*}
 \begin{aligned}
-A^{(j)}[j+1:n, j+1:n] = & A_{j+1} + U_{j+1} J_{j+1} S_{j+1}^T + U_{j+1} K_{j+1} U_{j+1}^T A_{j+1} \\
-& + U_{j+1} E_{j+1} + X_{j+1} S_{j+1}^T + Y_{j+1} U_{j+1}^T A_{j+1} + Z_{j+1}, \label{After_HT}
+A^{(j)}[j+1:n, j+1:n] = & A_{j+1} + U_{j+1} J_{j+1} S_{j+1}^\top + U_{j+1} K_{j+1} U_{j+1}^\top A_{j+1} \\
+& + U_{j+1} E_{j+1} + X_{j+1} S_{j+1}^\top + Y_{j+1} U_{j+1}^\top A_{j+1} + Z_{j+1}, \label{After_HT}
 \end{aligned}
 \end{equation*}
 where the modification matrices \( J_{j+1}, K_{j+1}, E_{j+1}, X_{j+1}, Y_{j+1}, Z_{j+1} \) possess the sparsity patterns specified in Definition \ref{def:hmbpsm}.
 
-If \( j < n-1 \), we now perform the \( (j+1) \)-th Householder transformation on $A_{j+1}+P_{j+1}$. Let \( \mathbf{y}_{j+1} \) be the corresponding Householder vector. It can be expressed as  \(\mathbf{y}_{j+1}[1:j] = \mathbf{0}\) and \( \mathbf{y}_{j+1}[j+1:n] = \mathbf{e}_{j+1} + U^{(j+2)} \bar{\mathbf{k}}_{j+2} + \mathbf{b}_{j+2} \), where \( \mathbf{e}_{j+1} \in \mathbb{R}^{n-j} \) is the first standard basis vector, \( U^{(j+2)} \in \mathbb{R}^{(n-j) \times r} \) satisfies \( U^{(j+2)}[1,:] = \mathbf{0} \) and \( U^{(j+2)}[2:n-j, :] = U[j+2:n, :] \), \( \bar{\mathbf{k}}_{j+2} \in \mathbb{R}^r \), and \( \mathbf{b}_{j+2} \in \mathbb{R}^{n-j} \) is non-zero only in entries $2$ through \( \min(\ell+1, n-j) \). This vector defines the \( (j+1) \)-th column of \( F \):
+If \( j < n-1 \), we now perform the \( (j+1) \)-th Householder transformation on $A_{j+1}+P_{j+1}$. Let \( \bfy_{j+1} \) be the corresponding Householder vector. It can be expressed as  \(\bfy_{j+1}[1:j] = \mathbf{0}\) and \( \bfy_{j+1}[j+1:n] = \mathbf{e}_{j+1} + U^{(j+2)} \bar{\mathbf{k}}_{j+2} + \mathbf{b}_{j+2} \), where \( \mathbf{e}_{j+1} \in \mathbb{R}^{n-j} \) is the first standard basis vector, \( U^{(j+2)} \in \mathbb{R}^{(n-j) \times r} \) satisfies \( U^{(j+2)}[1,:] = \mathbf{0} \) and \( U^{(j+2)}[2:n-j, :] = U[j+2:n, :] \), \( \bar{\mathbf{k}}_{j+2} \in \mathbb{R}^r \), and \( \mathbf{b}_{j+2} \in \mathbb{R}^{n-j} \) is non-zero only in entries $2$ through \( \min(\ell+1, n-j) \). This vector defines the \( (j+1) \)-th column of \( F \):
 \begin{equation}
 F[j+2:n, j+1] = (U \bar{\mathbf{k}}_{j+2})[j+2:n] + \mathbf{b}_{j+2}[2:n-j]. \label{F_tril_2}
 \end{equation}
 
-We now apply Lemma \ref{lemma:structure_preserve} to \( A^{(j)}[j+1:n, j+1:n] \), which is \( A_{j+1} + P_{j+1}\). The Householder transformation \( (I - \tau_{j+1} \mathbf{y}_{j+1}[j+1:n] \mathbf{y}_{j+1}[j+1:n]^\top) \) is applied to \( A_{j+1}+P_{j+1} \), here \(\tau_{j+1}\) is a coefficient found to satisfy the definition of a Householder transformation.
+We now apply Lemma \ref{lemma:structure_preserve} to \( A^{(j)}[j+1:n, j+1:n] \), which is \( A_{j+1} + P_{j+1}\). The Householder transformation \( (I - \tau_{j+1} \bfy_{j+1}[j+1:n] \bfy_{j+1}[j+1:n]^\top) \) is applied to \( A_{j+1}+P_{j+1} \), here \(\tau_{j+1}\) is a coefficient found to satisfy the definition of a Householder transformation.
 
 From the lemma, the resulting submatrix \( A^{(j+1)}[j+2:n, j+2:n] \) can be expressed as \(A_{j+2}+P_{j+2}\) for \(P_{j+2}\in \calP(A_{j+2})\). Its structure is given by equations analogous to \eqref{submatrix_structure}, with updated modification matrices \( J_{j+2}, K_{j+2}, E_{j+2}, X_{j+2}, Y_{j+2}, Z_{j+2} \), which retain the required sparsity patterns.
 
@@ -529,10 +569,10 @@ $\boldsymbol{\tau} \in \mathbb{R}^{n}$: Householder scaling coefficients.
 \State Initialize HMBPSM modification matrices: $J \gets \mathbf{0}_{r \times p}$, $K \gets \mathbf{0}_{r \times r}$, $E_s \gets \mathbf{0}_{r \times \min(\ell+m,n)}$, $X_s \gets \mathbf{0}_{\min(\ell,n) \times p}$, $Y_s \gets \mathbf{0}_{\min(\ell,n) \times r}$, $Z_s \gets \mathbf{0}_{\min(\ell,n) \times \min(\ell+m,n)}$
 
 \For{$k = 1$ to $n-1$}
-    \State \textbf{Step 1: Form Householder vector $\mathbf{y}_k$}
+    \State \textbf{Step 1: Form Householder vector $\bfy_k$}
     \State Run $ \text{FormHouseholderVector}(A^{(k-1)}[k:n, k:n], U[k:n, :], \ell)$ (Algorithm \ref{algo:form_householder}) to get:
-    \State $\bar{\mathbf{k}}_{k+1} \gets \text{low-rank part from } \mathbf{y}_k$
-    \State $\mathbf{b}_{k+1} \gets \text{banded part from } \mathbf{y}_k$
+    \State $\bar{\mathbf{k}}_{k+1} \gets \text{low-rank part from } \bfy_k$
+    \State $\mathbf{b}_{k+1} \gets \text{banded part from } \bfy_k$
     \State $\tau_k \gets \text{scaling coefficient}$
     \State $o \gets \text{the diagonal element after the Householder transformation}$
     \State $\boldsymbol{\tau}[k] \gets \tau_k$
@@ -558,7 +598,7 @@ $\boldsymbol{\tau} \in \mathbb{R}^{n}$: Householder scaling coefficients.
 
 \State \textbf{Final step:}
 \State $B_F[n, n] \gets A^{(n-1)}[n, n]$
-\State \Return $B_F, \bar{K}, \bar{A}, \bar{B}, \bar{S}, \boldsymbol{\tau}$. Now $F$ is expressed as $B_F + \text{tril}(U \bar{K}^\top, -1) + \text{triu}([\bar{A},\bar{B}] [S,\bar{S}^\top]^\top, 1)$
+\State \Return $B_F, \bar{K}, \bar{A}, \bar{B}, \bar{S}, \boldsymbol{\tau}$. Now $F$ is expressed as $B_F + \tril(U \bar{K}^\top, -1) + \triu([\bar{A},\bar{B}] [S,\bar{S}^\top]^\top, 1)$
 \end{algorithmic}
 \end{algorithm}
 
@@ -571,13 +611,13 @@ $\boldsymbol{\tau} \in \mathbb{R}^{n}$: Householder scaling coefficients.
 \State \textbf{Input} $C \in \mathbb{R}^{(n-k+1) \times (n-k+1)}$: current submatrix;
 $U_k \in \mathbb{R}^{(n-k+1) \times r}$: $U[k:n, :]$;
 $\ell$: lower bandwidth.
-\State \textbf{Output} $\bar{\mathbf{k}} \in \mathbb{R}^r$, $\mathbf{b} \in \mathbb{R}^{n-k+1}$, $\tau\in \mathbb{R}$ s.t. $\mathbf{y}$: = $\mathbf{e}_1 + U_k^{(2)}\bar{\mathbf{k}} + \mathbf{b}$ is the Householder vector and $I-\tau \mathbf{y}\mathbf{y}^\top$ is the Householder transformation; $o\in \mathbb{R}$ s.t. $\tilde{C}[1,1]=o$ where $\tilde{C}$ is the submatrix after the Householder transformation.
+\State \textbf{Output} $\bar{\mathbf{k}} \in \mathbb{R}^r$, $\mathbf{b} \in \mathbb{R}^{n-k+1}$, $\tau\in \mathbb{R}$ s.t. $\bfy$: = $\mathbf{e}_1 + U_k^{(2)}\bar{\mathbf{k}} + \mathbf{b}$ is the Householder vector and $I-\tau \bfy\bfy^\top$ is the Householder transformation; $o\in \mathbb{R}$ s.t. $\tilde{C}[1,1]=o$ where $\tilde{C}$ is the submatrix after the Householder transformation.
 
 \State Extract first column: $\mathbf{a} \gets C[:, 1]$
 \State $\bar{\mathbf{k}} \gets U_k^{\top}\cdot$(the semiseparable part in $\mathbf{a}$)
 \State $\mathbf{b} \gets \mathbf{a} - U_k^{(2)}\bar{\mathbf{k}} - \mathbf{e}_1 \cdot \mathbf{a}[1]$
 \State $\mathbf{b}$ is only nonzero in entries $2$ through $\min(\ell+1, n-k+1)$.
-\State $\tau \gets 2/\mathbf{y}^\top\mathbf{y}$
+\State $\tau \gets 2/\bfy^\top\bfy$
 \State $o \gets -\text{sign}(\textbf{a}[1])\mathbf{a}^\top\mathbf{a}$
 \State \Return $\bar{\mathbf{k}}$, $\mathbf{b}$, $\tau$, $o$
 \end{algorithmic}
@@ -625,7 +665,7 @@ The algorithm runs for $n-1$ steps. The cost per step can be expressed as a poly
 To maintain the $O(1)$ per-step complexity in Algorithm \ref{algo:fastqr}, two key quantities must be computed efficiently during the Householder updates:
 
 
-    Inner product matrix $U_k^\top U_k$: The computation of intermediate vectors $\mathbf{c}_1, \dots, \mathbf{c}_6$ requires evaluating expressions like $U_k^\top \mathbf{y}_k = U_k^\top(\mathbf{e}_k + U^{(k+1)}\bar{\mathbf{k}}_{k+1} + \mathbf{b}_{k+1})$, which involves $U_k^\top U^{(k+1)}$ that is equal to $U_{k+1}^\top U_{k+1}$. we precompute a lookup table:
+    Inner product matrix $U_k^\top U_k$: The computation of intermediate vectors $\mathbf{c}_1, \dots, \mathbf{c}_6$ requires evaluating expressions like $U_k^\top \bfy_k = U_k^\top(\mathbf{e}_k + U^{(k+1)}\bar{\mathbf{k}}_{k+1} + \mathbf{b}_{k+1})$, which involves $U_k^\top U^{(k+1)}$ that is equal to $U_{k+1}^\top U_{k+1}$. we precompute a lookup table:
     \[
     \text{UU\_lookup}[k] = U[k:n,:]^\top U[k:n,:] \quad \text{for } k = 1,\dots,n
     \]
@@ -653,16 +693,16 @@ We now present \( O(n) \) algorithms for both phases, leveraging the structured 
 
 The orthogonal matrix \( Q \) is represented as a product of Householder transformations:
 \[
-Q = (I - \tau_1 \mathbf{y}_1 \mathbf{y}_1^\top)(I - \tau_2 \mathbf{y}_2 \mathbf{y}_2^\top) \cdots (I - \tau_{n-1} \mathbf{y}_{n-1} \mathbf{y}_{n-1}^\top).
+Q = (I - \tau_1 \bfy_1 \bfy_1^\top)(I - \tau_2 \bfy_2 \bfy_2^\top) \cdots (I - \tau_{n-1} \bfy_{n-1} \bfy_{n-1}^\top).
 \]
 Applying \( Q^\top \) to a vector \( \mathbf{b} \) thus requires computing:
 \[
-Q^\top\mathbf{b} = (I - \tau_{n-1} \mathbf{y}_{n-1} \mathbf{y}_{n-1}^\top) \cdots (I - \tau_2 \mathbf{y}_2 \mathbf{y}_2^\top)(I - \tau_1 \mathbf{y}_1 \mathbf{y}_1^\top)\mathbf{b}.
+Q^\top\mathbf{b} = (I - \tau_{n-1} \bfy_{n-1} \bfy_{n-1}^\top) \cdots (I - \tau_2 \bfy_2 \bfy_2^\top)(I - \tau_1 \bfy_1 \bfy_1^\top)\mathbf{b}.
 \]
 
-The Householder vectors \( \mathbf{y}_k \) are stored in the factor matrix \( F \) according to the normalization convention established in Section~\ref{sec:main}:
+The Householder vectors \( \bfy_k \) are stored in the factor matrix \( F \) according to the normalization convention established in Section~\ref{sec:main}:
 \[
-\mathbf{y}_k[j] =
+\bfy_k[j] =
 \begin{cases}
 0, & j < k \\
 1, & j = k \\
@@ -673,13 +713,13 @@ F[j,k], & j > k
 
 From Theorem \ref{thm:structure_preserve}, the factor matrix \( F \) admits the BPS representation:
 \begin{equation*}
-F = B_F + \text{tril}(U_F V_F^\top, -1) + \text{triu}(W_F S_F^\top, 1),
+F = B_F + \tril(U_F V_F^\top, -1) + \triu(W_F S_F^\top, 1),
 \end{equation*}
 where \( U_F, V_F \in \mathbb{R}^{n \times r} \), \( W_F, S_F \in \mathbb{R}^{n \times (r+p)} \), and \( B_F \) is banded with lower bandwidth \( \ell \) and upper bandwidth \( \ell+m \).
 
-This structure implies that each Householder vector \( \mathbf{y}_k \) can be expressed as:
+This structure implies that each Householder vector \( \bfy_k \) can be expressed as:
 \begin{equation}
-\mathbf{y}_k = \bar{\mathbf{e}}_k + U_F^{(k+1)} \bar{\mathbf{v}}_k + \mathbf{d}_k,
+\bfy_k = \bar{\mathbf{e}}_k + U_F^{(k+1)} \bar{\mathbf{v}}_k + \mathbf{d}_k,
 \label{eq:y_structure}
 \end{equation}
 where:
@@ -718,7 +758,7 @@ Let \( \mathbf{g}_i \) denote the \( i \)-th column of \( G \)
 \State Express initial vector: \( \mathbf{b}^{(0)} = \mathbf{b} + U_F^{(1)} \mathbf{h} + \sum_{j=1}^r \mathbf{o}_j + \sum_{j=1}^{l+1} \mathbf{g}_j \)
 
 \For{\( k = 1 \) to \( n-1 \)}
-    \State Compute inner product: \( c \gets \mathbf{y}_k^\top \mathbf{b}^{(k-1)} \) (exploit BPS structure of \( \mathbf{y}_k \) and precompute some lookup tables for for \( O(1) \) computation)
+    \State Compute inner product: \( c \gets \bfy_k^\top \mathbf{b}^{(k-1)} \) (exploit BPS structure of \( \bfy_k \) and precompute some lookup tables for for \( O(1) \) computation)
 
     \State Update low-rank storage: \( O[k,:] \gets U_F[k,:] \odot \mathbf{h} \) (element-wise multiplication)
 
@@ -740,7 +780,7 @@ Let \( \mathbf{g}_i \) denote the \( i \)-th column of \( G \)
 \end{algorithm}
 
 \begin{theorem}
-Algorithm~\ref{algo_applyQ}  computes \( \mathbf{c} = Q^T\mathbf{b} \) in \( O(n) \) operations.
+Algorithm~\ref{algo_applyQ}  computes \( \mathbf{c} = Q^\top\mathbf{b} \) in \( O(n) \) operations.
 \end{theorem}
 
 \begin{proof}
@@ -752,10 +792,10 @@ where the superscripts on $\mathbf{h}$, $\mathbf{o}$, and $\mathbf{g}$ denote th
 
 The \( k \)-th Householder transformation gives:
 \[
-\mathbf{b}^{(k)} = (I - \tau_k \mathbf{y}_k \mathbf{y}_k^\top) \mathbf{b}^{(k-1)} = \mathbf{b}^{(k-1)} - \tau_k (\mathbf{y}_k^\top \mathbf{b}^{(k-1)}) \mathbf{y}_k.
+\mathbf{b}^{(k)} = (I - \tau_k \bfy_k \bfy_k^\top) \mathbf{b}^{(k-1)} = \mathbf{b}^{(k-1)} - \tau_k (\bfy_k^\top \mathbf{b}^{(k-1)}) \bfy_k.
 \]
 
-Substituting the structured form of \( \mathbf{y}_k \) from \eqref{eq:y_structure} and the inductive representation:
+Substituting the structured form of \( \bfy_k \) from \eqref{eq:y_structure} and the inductive representation:
 \begin{align*}
 \mathbf{b}^{(k)} &= \mathbf{b} + U_F^{(k)} \mathbf{h}^{(k-1)} + \sum_{j=1}^r \mathbf{o}_j^{(k-1)} + \sum_{j=1}^{\ell+1} \mathbf{g}_j^{(k-1)} \\
 &\quad - \tau_k c (\bar{\mathbf{e}}_k + U_F^{(k+1)} \bar{\mathbf{v}}_k + \mathbf{d}_k) \\
@@ -894,7 +934,7 @@ Given an $n\times n$ upper triangular matrix $R$, an $n\times r$ matrix $U$, and
 These definitions characterize the structured perturbations that appear in the $R$ factor when it is right-multiplied by a sequence of Householder reflectors (i.e., by $Q$). The following lemma is the symmetric counterpart to Lemma \ref{lemma:structure_preserve} and is the engine of the inductive proof.
 
 \begin{lemma}\label{lemma:structure_preserve_rq}
-Given an $n\times n$ upper triangular matrix $R$, an $n\times r$ matrix $U$, and $H\in \calH(R;U)$, let $\Gamma:=R+H$ and consider its right-multiplication by a vector: $\widetilde{\Gamma} = \Gamma (I - \tau \mathbf{y} \mathbf{y}^\top)$. Assume $\mathbf{y}$ has the form $\mathbf{y} = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$, where $\mathbf{e}_1$ is the first standard basis vector, $U^{(2)}\in\mathbb{R}^{n\times r}$ satisfies $U^{(2)}[1,:]=\mathbf{0}$ and $U^{(2)}[2:n,:]=U[2:n,:]$, $\bar{\mathbf{k}}\in\mathbb{R}^r$, and $\mathbf{b}\in\mathbb{R}^{n}$ is nonzero only in its entries $2$ through $\min(\ell+1, n)$. Then the following hold:
+Given an $n\times n$ upper triangular matrix $R$, an $n\times r$ matrix $U$, and $H\in \calH(R;U)$, let $\Gamma:=R+H$ and consider its right-multiplication by a vector: $\widetilde{\Gamma} = \Gamma (I - \tau \bfy \bfy^\top)$. Assume $\bfy$ has the form $\bfy = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$, where $\mathbf{e}_1$ is the first standard basis vector, $U^{(2)}\in\mathbb{R}^{n\times r}$ satisfies $U^{(2)}[1,:]=\mathbf{0}$ and $U^{(2)}[2:n,:]=U[2:n,:]$, $\bar{\mathbf{k}}\in\mathbb{R}^r$, and $\mathbf{b}\in\mathbb{R}^{n}$ is nonzero only in its entries $2$ through $\min(\ell+1, n)$. Then the following hold:
 \begin{enumerate}
     \item The principal submatrix satisfies $\widetilde{\Gamma}[2:n, 2:n]=R[2:n,2:n]+\tilde{H}$ for $\tilde{H}\in \calH(R[2:n,2:n];U[2:n,:])$.
     \item The first column satisfies $\widetilde{\Gamma}[2:n, 1]\in \calW_2(R;U)$.
@@ -906,21 +946,21 @@ Let $U = (\mathbf{u}_1,\ldots,\mathbf{u}_r)$ where $\mathbf{u}_i = (u_1^{(i)},\l
 
 Write $ \boldsymbol{\gamma}:=R\mathbf{b}$ where $\boldsymbol{\gamma}$ is nonzero only in its first $\min(\ell+1,n)$ entries, and define the auxiliary vectors:
 \begin{align*}
-    \boldsymbol{\delta}_1 &= \Omega U^\top \mathbf{y} \in \mathbb{R}^r, &
-    \boldsymbol{\delta}_2 &= U^\top \mathbf{y} \in \mathbb{R}^r, \\
-    \boldsymbol{\delta}_3 &= \Psi \mathbf{y} \in \mathbb{R}^r, &
-    \boldsymbol{\delta}_4 &= \Lambda \mathbf{y} \in \mathbb{R}^n.
+    \boldsymbol{\delta}_1 &= \Omega U^\top \bfy \in \mathbb{R}^r, &
+    \boldsymbol{\delta}_2 &= U^\top \bfy \in \mathbb{R}^r, \\
+    \boldsymbol{\delta}_3 &= \Psi \bfy \in \mathbb{R}^r, &
+    \boldsymbol{\delta}_4 &= \Lambda \bfy \in \mathbb{R}^n.
 \end{align*}
 Note that $\boldsymbol{\delta}_4$ has the form $\boldsymbol{\delta}_4 = \begin{bmatrix} \boldsymbol{\delta}_{4s} \\ \mathbf{0} \end{bmatrix}$ with $\boldsymbol{\delta}_{4s} \in \mathbb{R}^{\min(\ell,n)}$ due to the structure of $\Lambda$.
 
 Also let $\mathbf{r}^{(1)} = R[1,:]$, $\boldsymbol{\phi}^{(1)} = \Phi[1,:]$, $\boldsymbol{\psi}^{(1)} = \Psi[:,1]$, and $\boldsymbol{\lambda}^{(1)} = \Lambda[:,1]$.
 
-We compute $\widetilde{\Gamma} = \Gamma - \tau \Gamma \mathbf{y} \mathbf{y}^\top$ by distributing the operation over each term in $\Gamma$.
+We compute $\widetilde{\Gamma} = \Gamma - \tau \Gamma \bfy \bfy^\top$ by distributing the operation over each term in $\Gamma$.
 
-(i) Transformation of $R$: Using $\mathbf{y} = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$ and $R\mathbf{b} = \boldsymbol{\gamma}$, we get:
+(i) Transformation of $R$: Using $\bfy = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$ and $R\mathbf{b} = \boldsymbol{\gamma}$, we get:
 \begin{equation}\label{eq:r_transform}
 \begin{aligned}
-R(I - \tau \mathbf{y}\mathbf{y}^\top) = &R + \underbrace{R(-\tau\mathbf{e}_1)\mathbf{e}_1^\top}_{\hbox{the (1,1) entry}} + \big[RU^{(2)}\underbrace{(-\tau\bar{\mathbf{k}})}_{\mathbb{R}^r} + \underbrace{(-\tau\boldsymbol{\gamma})}_{\min(\ell+1,n)\hbox{ nonzero entries}}\big]\mathbf{e}_1^\top \\
+R(I - \tau \bfy\bfy^\top) = &R + \underbrace{R(-\tau\mathbf{e}_1)\mathbf{e}_1^\top}_{\hbox{the (1,1) entry}} + \big[RU^{(2)}\underbrace{(-\tau\bar{\mathbf{k}})}_{\mathbb{R}^r} + \underbrace{(-\tau\boldsymbol{\gamma})}_{\min(\ell+1,n)\hbox{ nonzero entries}}\big]\mathbf{e}_1^\top \\
 &\underbrace{-\tau R\mathbf{e}_1\bar{\mathbf{k}}^\top U^{(2)\top} -\tau R\mathbf{e}_1\mathbf{b}^\top}_{\hbox{only affect the first row}} + \big [RU^{(2)}\underbrace{(-\tau\bar{\mathbf{k}}\bar{\mathbf{k}}^\top)}_{\mathbb{R}^{r\times r}}U^{(2)\top} \\
 &+ \underbrace{(-\tau\boldsymbol{\gamma}\bar{\mathbf{k}}^\top)}_{\mathbb{R}^{\min(\ell+1,n)\times r}\hbox{ nonzero entries}}U^{(2)\top} + RU^{(2)}\underbrace{(-\tau\bar{\mathbf{k}}\mathbf{b}^\top)}_{\mathbb{R}^{r\times \min(\ell+1,n)}\hbox{ nonzero entries}} + \\&\underbrace{(-\tau\boldsymbol{\gamma}\mathbf{b}^\top)}_{\mathbb{R}^{\min(\ell+1,n)\times\min(\ell+1,n)}\hbox{ nonzero entries}}\big ].
 \end{aligned}
@@ -931,34 +971,34 @@ We  see that the terms in the first bracket after dropping the first row, are in
 Similarly, the following transformations follow the same pattern:
 
 
-(ii) Transformation of $RU\Omega U^\top$: Using $\mathbf{y} = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$, $\Omega U^\top\mathbf{y} = \boldsymbol{\delta}_1$, and $U = \mathbf{e}_1\bar{\mathbf{u}}_1^\top + U^{(2)}$, we get:
+(ii) Transformation of $RU\Omega U^\top$: Using $\bfy = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$, $\Omega U^\top\bfy = \boldsymbol{\delta}_1$, and $U = \mathbf{e}_1\bar{\mathbf{u}}_1^\top + U^{(2)}$, we get:
 \begin{equation}
 \begin{aligned}
-RU\Omega U^\top(I &- \tau\mathbf{y}\mathbf{y}^\top) = \underbrace{R\mathbf{e}_1(\bar{\mathbf{u}}_1^\top\Omega\bar{\mathbf{u}}_1 - \tau\bar{\mathbf{u}}_1^\top\boldsymbol{\delta}_1)\mathbf{e}_1^\top}_{\hbox{the (1,1) entry}} + \big[RU^{(2)}\underbrace{(\Omega\bar{\mathbf{u}}_1 - \tau\boldsymbol{\delta}_1)}_{\mathbb{R}^r}\big]\mathbf{e}_1^\top \\
+RU\Omega U^\top(I &- \tau\bfy\bfy^\top) = \underbrace{R\mathbf{e}_1(\bar{\mathbf{u}}_1^\top\Omega\bar{\mathbf{u}}_1 - \tau\bar{\mathbf{u}}_1^\top\boldsymbol{\delta}_1)\mathbf{e}_1^\top}_{\hbox{the (1,1) entry}} + \big[RU^{(2)}\underbrace{(\Omega\bar{\mathbf{u}}_1 - \tau\boldsymbol{\delta}_1)}_{\mathbb{R}^r}\big]\mathbf{e}_1^\top \\
 &\underbrace{+ R\mathbf{e}_1\bar{\mathbf{u}}_1^\top\Omega U^{(2)\top} -\tau R\mathbf{e}_1\bar{\mathbf{u}}_1^\top\boldsymbol{\delta}_1\bar{\mathbf{k}}^\top U^{(2)\top} -\tau R\mathbf{e}_1\bar{\mathbf{u}}_1^\top\boldsymbol{\delta}_1\mathbf{b}^\top }_{\hbox{only affect the first row}}\\
 &+ \big[RU^{(2)}\underbrace{(\Omega - \tau \boldsymbol{\delta}_1\bar{\mathbf{k}}^\top)}_{\mathbb{R}^{r\times r}}U^{(2)\top} + RU^{(2)}\underbrace{(-\tau\boldsymbol{\delta}_1\mathbf{b}^\top)}_{\mathbb{R}^{r\times \min(\ell+1,n)} \hbox{ nonzero entries}}\big].
 \end{aligned}
 \end{equation}
 
-(iii) Transformation of $\Phi U^\top$: Using $\mathbf{y} = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$, $U^\top\mathbf{y} = \boldsymbol{\delta}_2$, and $U = \mathbf{e}_1\bar{\mathbf{u}}_1^\top + U^{(2)}$, we get:
+(iii) Transformation of $\Phi U^\top$: Using $\bfy = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$, $U^\top\bfy = \boldsymbol{\delta}_2$, and $U = \mathbf{e}_1\bar{\mathbf{u}}_1^\top + U^{(2)}$, we get:
 \begin{equation}
 \begin{aligned}
-\Phi U^\top(I - \tau\mathbf{y}\mathbf{y}^\top) = &\big[\underbrace{(\Phi\bar{\mathbf{u}}_1 - \tau\Phi\boldsymbol{\delta}_2)}_{\min(\ell+1,n) \hbox{ nonzero entries}}\big]\mathbf{e}_1^\top \\&+ \big[\underbrace{(\Phi - \tau\Phi\boldsymbol{\delta}_2\bar{\mathbf{k}}^\top)}_{\mathbb{R}^{\min(\ell+1,n)\times r}\hbox{ nonzero entries}}U^{(2)\top} + \underbrace{(-\tau\Phi\boldsymbol{\delta}_2\mathbf{b}^\top)}_{\mathbb{R}^{\min(\ell+1,n)\times\min(\ell+1,n)}\hbox{ nonzero entries}}\big].
+\Phi U^\top(I - \tau\bfy\bfy^\top) = &\big[\underbrace{(\Phi\bar{\mathbf{u}}_1 - \tau\Phi\boldsymbol{\delta}_2)}_{\min(\ell+1,n) \hbox{ nonzero entries}}\big]\mathbf{e}_1^\top \\&+ \big[\underbrace{(\Phi - \tau\Phi\boldsymbol{\delta}_2\bar{\mathbf{k}}^\top)}_{\mathbb{R}^{\min(\ell+1,n)\times r}\hbox{ nonzero entries}}U^{(2)\top} + \underbrace{(-\tau\Phi\boldsymbol{\delta}_2\mathbf{b}^\top)}_{\mathbb{R}^{\min(\ell+1,n)\times\min(\ell+1,n)}\hbox{ nonzero entries}}\big].
 \end{aligned}
 \end{equation}
 
-(iv) Transformation of $RU\Psi$: Using $\mathbf{y} = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$, $\Psi\mathbf{y} = \boldsymbol{\delta}_3$, and $U = \mathbf{e}_1\bar{\mathbf{u}}_1^\top + U^{(2)}$,  we get:
+(iv) Transformation of $RU\Psi$: Using $\bfy = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$, $\Psi\bfy = \boldsymbol{\delta}_3$, and $U = \mathbf{e}_1\bar{\mathbf{u}}_1^\top + U^{(2)}$,  we get:
 \begin{equation}
 \begin{aligned}
-RU\Psi(I &- \tau\mathbf{y}\mathbf{y}^\top) = \underbrace{(-\tau R\mathbf{e}_1\bar{\mathbf{u}}_1^\top\boldsymbol{\delta}_3)\mathbf{e}_1^\top}_{\hbox{the (1,1) entry}} + \big[RU^{(2)}\underbrace{(-\tau\boldsymbol{\delta}_3)}_{\mathbb{R}^r}\big]\mathbf{e}_1^\top \\& \underbrace{+R\mathbf{e}_1\bar{\mathbf{u}}_1^\top\Psi-\tau R\mathbf{e}_1\bar{\mathbf{u}}_1^\top\boldsymbol{\delta}_3\bar{\mathbf{k}}^\top U^{(2)\top} -\tau R\mathbf{e}_1\bar{\mathbf{u}}_1^\top\boldsymbol{\delta}_3\mathbf{b}^\top}_{\hbox{only affect the first row}} \\
+RU\Psi(I &- \tau\bfy\bfy^\top) = \underbrace{(-\tau R\mathbf{e}_1\bar{\mathbf{u}}_1^\top\boldsymbol{\delta}_3)\mathbf{e}_1^\top}_{\hbox{the (1,1) entry}} + \big[RU^{(2)}\underbrace{(-\tau\boldsymbol{\delta}_3)}_{\mathbb{R}^r}\big]\mathbf{e}_1^\top \\& \underbrace{+R\mathbf{e}_1\bar{\mathbf{u}}_1^\top\Psi-\tau R\mathbf{e}_1\bar{\mathbf{u}}_1^\top\boldsymbol{\delta}_3\bar{\mathbf{k}}^\top U^{(2)\top} -\tau R\mathbf{e}_1\bar{\mathbf{u}}_1^\top\boldsymbol{\delta}_3\mathbf{b}^\top}_{\hbox{only affect the first row}} \\
 &+ \big[RU^{(2)}\underbrace{(-\tau\boldsymbol{\delta}_3\bar{\mathbf{k}}^\top)}_{\mathbb{R}^{r\times r}}U^{(2)\top} + RU^{(2)}\underbrace{(\Psi - \tau\boldsymbol{\delta}_3\mathbf{b}^\top)}_{\mathbb{R}^{r\times\min(\ell+1,n)}\hbox{ nonzero entries}}\big].
 \end{aligned}
 \end{equation}
 
-(v) Transformation of $\Lambda$: Using $\mathbf{y} = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$ and $\Lambda \mathbf{y} = \boldsymbol{\delta}_4$, we get:
+(v) Transformation of $\Lambda$: Using $\bfy = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$ and $\Lambda \bfy = \boldsymbol{\delta}_4$, we get:
 \begin{equation}\label{eq:lambda_transform}
 \begin{aligned}
-\Lambda(I - \tau\mathbf{y}\mathbf{y}^\top) = &\big[\underbrace{(-\tau\boldsymbol{\delta}_4)}_{\min(\ell+1,n)\hbox{ nonzero entries}}\big]\mathbf{e}_1^\top + \\&\big[\underbrace{(-\tau\boldsymbol{\delta}_4\bar{\mathbf{k}}^\top)}_{\mathbb{R}^{\min(\ell+1,n)\times r}\hbox{ nonzero entries}}U^{(2)\top} + \underbrace{(\Lambda - \tau \boldsymbol{\delta}_4\mathbf{b}^\top)}_{\mathbb{R}^{\min(\ell+1,n)\times\min(\ell+1,n)} \hbox{ nonzero entries}}\big].
+\Lambda(I - \tau\bfy\bfy^\top) = &\big[\underbrace{(-\tau\boldsymbol{\delta}_4)}_{\min(\ell+1,n)\hbox{ nonzero entries}}\big]\mathbf{e}_1^\top + \\&\big[\underbrace{(-\tau\boldsymbol{\delta}_4\bar{\mathbf{k}}^\top)}_{\mathbb{R}^{\min(\ell+1,n)\times r}\hbox{ nonzero entries}}U^{(2)\top} + \underbrace{(\Lambda - \tau \boldsymbol{\delta}_4\mathbf{b}^\top)}_{\mathbb{R}^{\min(\ell+1,n)\times\min(\ell+1,n)} \hbox{ nonzero entries}}\big].
 \end{aligned}
 \end{equation}
 
@@ -1025,11 +1065,11 @@ $\Delta \in \mathbb{R}^{n \times r}$ is a low-rank generator matrix,
 
 $B_R$ is a symmetric banded matrix with lower and upper bandwidth $\ell$.
 
-The proof proceeds by induction on the steps of applying $Q$ (as a product of Householder reflectors) to $R$ from the right. Define $R^{(0)} = R$ and $R^{(j)} = R (I - \tau_1 \mathbf{y}_1 \mathbf{y}_1^\top) \cdots (I - \tau_j \mathbf{y}_j \mathbf{y}_j^\top)$ for $j=1,\ldots,n-1$, so that $R^{(n-1)} = RQ$.
+The proof proceeds by induction on the steps of applying $Q$ (as a product of Householder reflectors) to $R$ from the right. Define $R^{(0)} = R$ and $R^{(j)} = R (I - \tau_1 \bfy_1 \bfy_1^\top) \cdots (I - \tau_j \bfy_j \bfy_j^\top)$ for $j=1,\ldots,n-1$, so that $R^{(n-1)} = RQ$.
 
 From the proof of Theorem \ref{thm:structure_preserve}, the Householder vectors have the form:
 \begin{equation*}
-\mathbf{y}_k[1:k-1]=\mathbf{0} \text{ and }\mathbf{y}_k[k:n] = \mathbf{e}_k + U^{(k+1)}\bar{\mathbf{k}}_{k+1} + \mathbf{b}_{k+1}, \quad k=1,\ldots,n-1,
+\bfy_k[1:k-1]=\mathbf{0} \text{ and }\bfy_k[k:n] = \mathbf{e}_k + U^{(k+1)}\bar{\mathbf{k}}_{k+1} + \mathbf{b}_{k+1}, \quad k=1,\ldots,n-1,
 \end{equation*}
 where $\mathbf{e}_k$ is the first standard basis in $\mathbb{R}^{n-k+1}$, $U^{(k+1)}\in\mathbb{R}^{(n-k+1)\times r}$ satisfies $U^{(k+1)}[1,:]=\mathbf{0}$ and $U^{(k+1)}[2:n-k+1,:]=U[k+1:n,:]$, $\bar{\mathbf{k}}_{k+1}\in\mathbb{R}^r$, and $\mathbf{b}_{k+1}\in\mathbb{R}^{n-k+1}$ is nonzero only in its entries $2$ through $\min(\ell+1, n-k+1)$.
 
@@ -1047,7 +1087,7 @@ R^{(j)}[j+1:n, j+1:n] = R_{j+1} + R_{j+1}U_{j+1}\Omega_{j+1}U_{j+1}^\top + \Phi_
 \end{equation*}
 with $\Omega_{j+1}, \Phi_{j+1}, \Psi_{j+1}, \Lambda_{j+1}$ having the required sparsity patterns.
 
-We now compute $R^{(j+1)} = R^{(j)}(I - \tau_{j+1}\mathbf{y}_{j+1}\mathbf{y}_{j+1}^\top)$. Applying Lemma \ref{lemma:structure_preserve_rq} with $\Gamma = R^{(j)}[j+1:n, j+1:n]$, $R = R_{j+1}$, $U = U_{j+1}$, and $\mathbf{y} = \mathbf{y}_{j+1}[j+1:n]$, we obtain:
+We now compute $R^{(j+1)} = R^{(j)}(I - \tau_{j+1}\bfy_{j+1}\bfy_{j+1}^\top)$. Applying Lemma \ref{lemma:structure_preserve_rq} with $\Gamma = R^{(j)}[j+1:n, j+1:n]$, $R = R_{j+1}$, $U = U_{j+1}$, and $\bfy = \bfy_{j+1}[j+1:n]$, we obtain:
 \begin{enumerate}
     \item $\widetilde{\Gamma}[2:n-j, 2:n-j] = R^{(j+1)}[j+2:n, j+2:n]=R_{j+2}+H_{j+2}$ for $H_{j+2}\in \calS(R_{j+2};U_{j+2})$.
     \item $\widetilde{\Gamma}[2:n-j, 1] = R^{(j+1)}[j+2:n, j+1]\in \calW_{j+2}(R;U)$.
@@ -1082,7 +1122,7 @@ Theorem \ref{thm:structure_rq} is constructive and leads directly to a fast algo
 
 \Statex
 \State 1. \textbf{Compute fast QR factorization:}
-\State \quad Run Algorithm \ref{algo:fastqr} on $A$ to obtain the structured factor matrix $F$ and coefficients $\boldsymbol{\tau}$. Extract the structured representation of the $R$ factor and all Householder vectors $\mathbf{y}_k$ (with parameters $\bar{\mathbf{k}}_k$, $\mathbf{b}_k$).
+\State \quad Run Algorithm \ref{algo:fastqr} on $A$ to obtain the structured factor matrix $F$ and coefficients $\boldsymbol{\tau}$. Extract the structured representation of the $R$ factor and all Householder vectors $\bfy_k$ (with parameters $\bar{\mathbf{k}}_k$, $\mathbf{b}_k$).
 \State \quad Compute and store $\Theta = R U$ using the structured $R$ in $O(n)$.
 \Statex
 \State 2. \textbf{Initialize HMUTM parameters:}
@@ -1133,7 +1173,7 @@ To verify that the theoretical $O(n)$ complexity holds for matrices with differe
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.8\textwidth]{qr_linear.pdf}
-\caption{Log-log plot of the total solver time (QR factorization + application of $Q^T$ + backward substitution) versus matrix size $n$ for four parameter sets $(\ell, m, r, p)$. The dashed line has slope 1, indicating linear scaling.}
+\caption{Log-log plot of the total solver time (QR factorization + application of $Q^\top$ + backward substitution) versus matrix size $n$ for four parameter sets $(\ell, m, r, p)$. The dashed line has slope 1, indicating linear scaling.}
 \label{fig:qr_scaling}
 \end{figure}
 
