@@ -32,6 +32,7 @@
 \def\calW{{\mathcal W}}
 \def\calS{{\mathcal S}}
 \def\bfy{{\mathbf y}}
+\def\bfe{{\mathbf e}}
 \def\bftau{{\bm\tau}}
 \def\bfzero{{\bm0}}
 
@@ -193,22 +194,25 @@ We will demonstrate that \( F \) itself retains a BPS structure, which implies s
 
 Intermediate stages of the Householder reflection correspond to a partial factors matrix. In particular, if we apply $k$ Householder reflections to partially upper triangularize $A$ as
 \[
-(I - \tau_k \bfy_k \bfy_k^\top) \cdots (I - \tau_1 \bfy_1 \bfy_1^\top) A = \begin{bmatrix}
-r_{11} & r_{12} & r_{13} & \cdots & r_{1,n-2} & r_{1,n-1} & r_{1n} \\
- & r_{22} & r_{23} & r_{24} & \cdots & r_{2,n-1}  & r_{2n} \\
-&  & \ddots & \ddots & \ddots & \ddots & \vdots \\
-&   &  & r_{kk} & r_{k,k+1}& \cdots & r_{kn} \\
-& &  &    & a_{k+1,k+1}^k & \cdots & a_{k+1,n}^k \\
-& &&& \vdots & \ddots & \vdots \\
-& &  &    & a_{n,k+1}^k & \cdots & a_{nn}^k 
-\end{bmatrix}.
+(I - \tau_k \bfy_k \bfy_k^\top) \cdots (I - \tau_1 \bfy_1 \bfy_1^\top) A =\left[
+\begin{array}{cccc|ccc}
+r_{11} & r_{12} & \cdots & r_{1k} & r_{1,k+1} & \cdots & r_{1n} \\
+       & r_{22} & \cdots & r_{2k} & r_{2,k+1} & \cdots & r_{2n} \\
+       &        & \ddots & \vdots & \vdots    & \ddots & \vdots \\
+       &        &        & r_{kk} & r_{k,k+1} & \cdots & r_{kn} \\
+\hline %& \hline \\
+       &        &        &        & a_{k+1,k+1}^k & \cdots & a_{k+1,n}^k \\
+       &        &        &        & \vdots        & \ddots & \vdots \\
+       &        &        &        & a_{n,k+1}^k   & \cdots & a_{nn}^k
+\end{array}
+\right].
 \]
 We can represent this partial factorisation using the intermediate factor matrix
 \[
 F_k = \begin{bmatrix}
-r_{11} & r_{12} & r_{13} & \cdots & r_{1,n-2} & r_{1,n-1} & r_{1n} \\
-y_{21} & r_{22} & r_{23} & r_{24} & \cdots & r_{2,n-1}  & r_{2n} \\
-\vdots & \ddots  & \ddots & \ddots & \ddots & \ddots & \vdots \\
+r_{11} & r_{12} &  \cdots & r_{1k}  & r_{1,k+1} & \cdots & r_{1n} \\
+y_{21} & r_{22} & \cdots & r_{2k} & \cdots & r_{2,n-1}  & r_{2n} \\
+\vdots & \ddots  & \vdots & \vdots & \ddots & \ddots & \vdots \\
 y_{k1} &  \cdots  & y_{k,k-1}  & r_{kk} & r_{k,k+1}& \cdots & r_{kn} \\
 y_{k+1,1} & \cdots  & y_{k+1,k-1}  &  y_{k+1,k}   & a_{k+1,k+1}^k & \cdots & a_{k+1,n}^k \\
 \vdots & \ddots  & \vdots & \vdots & \vdots & \ddots & \vdots \\
@@ -258,6 +262,7 @@ where $A_k \in \BPS$ and $P_k \in \calP(A_k[k\!+\!1\!:\!n,k\!+\!1\!:\!n])$ for t
 
 \begin{definition}\label{def:hmbpsm}
 Given
+
 \[
 A = B + \tril(UV^\top, -1) + \triu(WS^\top, 1)  \in \BPS
 \]
@@ -277,14 +282,28 @@ UJS^\top + UKU^\top A + UE + XS^\top + YU^\top A + Z :\\
 We claim this structure is preserved: if $F_k$ has this form then so does $F_{k+1}$. The basis case $F_0 := A$ is trivial: we can take the perturbation to be zero.
 
 
-The first step is to understand the structure of the Householder reflector, which corresponds to the $k+1$-th column of $F_{k+1}$:
+The first step is to understand the structure of the Householder reflector, which corresponds to the $k$-th column of $F_k$:
 
 \begin{lemma}
-    Suppose $F_k$ has the prescribed form. Then
+    Suppose $F_{k-1}$ has the prescribed form. Then the first $k$ columns of $F_k$ also have the prescribed form.
+\end{lemma}
+\begin{proof}
+The $(k+1)$-th Householder reflection is defined as
+\[
+\bfy_k = 
+\]
+
+
+
 \[
 F_{k+1} \bfe_{k+1} = 
 \]
+\end{proof}
+
+\begin{lemma}
+    Suppose $F_k$ has the prescribed form. Then the first $(k+1)$-th columns of $F_{k+1}$ also have the pescribed form.
 \end{lemma}
+
 
 \subsection{Problem Formulation and Notation}
 
