@@ -15,6 +15,10 @@
 \usepackage{algorithm}
 \usepackage{bm}
 
+\usepackage{tikz}
+\usetikzlibrary{matrix}
+\usepackage{nicematrix, tikz}
+
 \usepackage{todonotes}
 \newcommand{\sotodo}{\todo[color=green]}
 \newcommand{\sotodoinline}{\todo[color=green,inline=true]}
@@ -194,30 +198,39 @@ We will demonstrate that \( F \) itself retains a BPS structure, which implies s
 
 Intermediate stages of the Householder reflection correspond to a partial factors matrix. In particular, if we apply $k$ Householder reflections to partially upper triangularize $A$ as
 \[
-(I - \tau_k \bfy_k \bfy_k^\top) \cdots (I - \tau_1 \bfy_1 \bfy_1^\top) A =\left[
-\begin{array}{cccc|ccc}
+(I - \tau_k \bfy_k \bfy_k^\top) \cdots (I - \tau_1 \bfy_1 \bfy_1^\top) A =
+\begin{pNiceMatrix}[cell-space-limits=5pt]
 r_{11} & r_{12} & \cdots & r_{1k} & r_{1,k+1} & \cdots & r_{1n} \\
        & r_{22} & \cdots & r_{2k} & r_{2,k+1} & \cdots & r_{2n} \\
        &        & \ddots & \vdots & \vdots    & \ddots & \vdots \\
        &        &        & r_{kk} & r_{k,k+1} & \cdots & r_{kn} \\
-\hline %& \hline \\
        &        &        &        & a_{k+1,k+1}^k & \cdots & a_{k+1,n}^k \\
        &        &        &        & \vdots        & \ddots & \vdots \\
-       &        &        &        & a_{n,k+1}^k   & \cdots & a_{nn}^k
-\end{array}
-\right].
+       &        &        &        & a_{n,k+1}^k   & \cdots & a_{nn}^k       
+\CodeAfter
+  \tikz \draw (1.5-|1) -- (5-|4.5);
+    \tikz \draw (5-|4.5) -- (5-|8);
+        \tikz \draw (5-|5) -- (8-|5);
+\end{pNiceMatrix}.
 \]
+
+
+
 We can represent this partial factorisation using the intermediate factor matrix
 \[
-F_k = \begin{bmatrix}
-r_{11} & r_{12} &  \cdots & r_{1k}  & r_{1,k+1} & \cdots & r_{1n} \\
-y_{21} & r_{22} & \cdots & r_{2k} & \cdots & r_{2,n-1}  & r_{2n} \\
-\vdots & \ddots  & \vdots & \vdots & \ddots & \ddots & \vdots \\
-y_{k1} &  \cdots  & y_{k,k-1}  & r_{kk} & r_{k,k+1}& \cdots & r_{kn} \\
-y_{k+1,1} & \cdots  & y_{k+1,k-1}  &  y_{k+1,k}   & a_{k+1,k+1}^k & \cdots & a_{k+1,n}^k \\
-\vdots & \ddots  & \vdots & \vdots & \vdots & \ddots & \vdots \\
-y_{n1} & \cdots & y_{n,k-1}  &  y_{nk}   & a_{n,k+1}^k & \cdots & a_{nn}^k 
-\end{bmatrix},
+F_k = \begin{pNiceMatrix}[cell-space-limits=10pt,columns-width=20pt]
+r_{11}      & r_{12} & \cdots       & r_{1k} & r_{1,k+1} & \cdots & r_{1n} \\
+y_{21}      & r_{22} & \cdots       & r_{2k} & r_{2,k+1} & \cdots & r_{2n} \\
+\vdots      & \ddots & \ddots       & \vdots & \vdots    & \ddots & \vdots \\
+y_{k1}      & \cdots & y_{k,k-1}    & r_{kk} & r_{k,k+1} & \cdots & r_{kn} \\
+y_{k+1,1}   & \cdots &  y_{k+1,k-1} &   y_{k+1,k}     & a_{k+1,k+1}^k & \cdots & a_{k+1,n}^k \\
+\vdots      & \ddots &    \vdots    &  \vdots      & \vdots        & \ddots & \vdots \\
+y_{n1}      & \cdots &    y_{n,k-1} &  y_{nk}      & a_{n,k+1}^k   & \cdots & a_{nn}^k       
+\CodeAfter
+  \tikz \draw ([xshift=0pt,yshift=2pt]1.5-|1) -- ([xshift=8pt,yshift=0pt]5-|4.5);
+    \tikz \draw ([xshift=8pt,yshift=0pt]5-|4.5) -- ([xshift=8pt,yshift=0pt]5-|8.5);
+        \tikz \draw ([xshift=6pt,yshift=0pt]5-|5) -- ([xshift=6pt,yshift=0pt]8-|5);
+\end{pNiceMatrix},
 \]
 alongside $\bftau_k = [\tau_1,\ldots,\tau_k,0,\ldots,0]^\top$. We can view applying the $k$-th Householder transformation as a map
 \[

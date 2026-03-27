@@ -1,48 +1,49 @@
 This is BibTeX, Version 0.99d (TeX Live 2023)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: article.aux
-I found no \citation commands---while reading file article.aux
-I found no \bibdata command---while reading file article.aux
-I found no \bibstyle command---while reading file article.aux
-You've used 0 entries,
-            0 wiz_defined-function locations,
-            83 strings with 488 characters,
-and the built_in function-call counts, 0 in all, are:
-= -- 0
-> -- 0
+The style file: siamplain.bst
+Database file #1: references.bib
+Warning--entry type for "SemiseparableMatrices2024" isn't style-file defined
+--line 244 of file references.bib
+You've used 24 entries,
+            2244 wiz_defined-function locations,
+            687 strings with 7998 characters,
+and the built_in function-call counts, 10503 in all, are:
+= -- 991
+> -- 445
 < -- 0
-+ -- 0
-- -- 0
-* -- 0
-:= -- 0
-add.period$ -- 0
-call.type$ -- 0
-change.case$ -- 0
++ -- 182
+- -- 150
+* -- 782
+:= -- 1467
+add.period$ -- 24
+call.type$ -- 24
+change.case$ -- 146
 chr.to.int$ -- 0
-cite$ -- 0
-duplicate$ -- 0
-empty$ -- 0
-format.name$ -- 0
-if$ -- 0
+cite$ -- 24
+duplicate$ -- 535
+empty$ -- 866
+format.name$ -- 150
+if$ -- 2327
 int.to.chr$ -- 0
-int.to.str$ -- 0
-missing$ -- 0
-newline$ -- 0
-num.names$ -- 0
-pop$ -- 0
-preamble$ -- 0
-purify$ -- 0
+int.to.str$ -- 24
+missing$ -- 24
+newline$ -- 75
+num.names$ -- 48
+pop$ -- 207
+preamble$ -- 1
+purify$ -- 122
 quote$ -- 0
-skip$ -- 0
+skip$ -- 432
 stack$ -- 0
-substring$ -- 0
-swap$ -- 0
+substring$ -- 785
+swap$ -- 222
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 0
+type$ -- 94
 warning$ -- 0
-while$ -- 0
-width$ -- 0
-write$ -- 0
-(There were 3 error messages)
+while$ -- 112
+width$ -- 26
+write$ -- 218
+(There was 1 warning)
