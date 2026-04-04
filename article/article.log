@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.11.3)  27 MAR 2026 09:33
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.11.3)  31 MAR 2026 18:16
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -705,25 +705,25 @@ Document Style - pseudocode environments for use with the `algorithmicx' style
  (./article.aux)
 \openout1 = `article.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 123.
-LaTeX Font Info:    ... okay on input line 123.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 123.
-LaTeX Font Info:    ... okay on input line 123.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 123.
-LaTeX Font Info:    ... okay on input line 123.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 123.
-LaTeX Font Info:    ... okay on input line 123.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 123.
-LaTeX Font Info:    ... okay on input line 123.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 123.
-LaTeX Font Info:    ... okay on input line 123.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 123.
-LaTeX Font Info:    ... okay on input line 123.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 123.
-LaTeX Font Info:    ... okay on input line 123.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 123.
-LaTeX Font Info:    ... okay on input line 123.
-Package hyperref Info: Link coloring ON on input line 123.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 131.
+LaTeX Font Info:    ... okay on input line 131.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 131.
+LaTeX Font Info:    ... okay on input line 131.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 131.
+LaTeX Font Info:    ... okay on input line 131.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 131.
+LaTeX Font Info:    ... okay on input line 131.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 131.
+LaTeX Font Info:    ... okay on input line 131.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 131.
+LaTeX Font Info:    ... okay on input line 131.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 131.
+LaTeX Font Info:    ... okay on input line 131.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 131.
+LaTeX Font Info:    ... okay on input line 131.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 131.
+LaTeX Font Info:    ... okay on input line 131.
+Package hyperref Info: Link coloring ON on input line 131.
  (./article.out) (./article.out)
 \@outlinefile=\write4
 \openout4 = `article.out'.
@@ -742,17 +742,17 @@ Package hyperref Info: Link coloring ON on input line 123.
 \makeMPintoPDFobject=\count384
 \everyMPtoPDFconversion=\toks60
 )
-LaTeX Font Info:    Trying to load font information for U+msa on input line 123.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 131.
  (/usr/local/texlive/2023/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 123.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 131.
  (/usr/local/texlive/2023/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) [1
 
 {/usr/local/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-Package hyperref Info: bookmark level for unknown remark defaults to 0 on input line 162.
+Package hyperref Info: bookmark level for unknown remark defaults to 0 on input line 170.
  [2]
 \g__nicematrix_max_cell_width_dim=\dimen314
 \c@iRow=\count385
@@ -781,135 +781,142 @@ Package hyperref Info: bookmark level for unknown remark defaults to 0 on input 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [3]
-Package hyperref Info: bookmark level for unknown definition defaults to 0 on input line 250.
+Package hyperref Info: bookmark level for unknown definition defaults to 0 on input line 255.
  [4]
-Package hyperref Info: bookmark level for unknown lemma defaults to 0 on input line 301.
-Package hyperref Info: bookmark level for unknown proof defaults to 0 on input line 304.
+Package hyperref Info: bookmark level for unknown proposition defaults to 0 on input line 329.
+Package hyperref Info: bookmark level for unknown proof defaults to 0 on input line 332.
+Package hyperref Info: bookmark level for unknown lemma defaults to 0 on input line 350.
  [5]
-Overfull \hbox (17.15016pt too wide) in paragraph at lines 393--394
+
+Package amsmath Warning: Foreign command \over;
+(amsmath)                \frac or \genfrac should be used instead
+(amsmath)                 on input line 392.
+
+[6] [7] [8]
+Overfull \hbox (17.15016pt too wide) in paragraph at lines 563--564
 \OML/cmm/m/it/10 U[]\OT1/cmr/bx/n/10 y \OMS/cmsy/m/n/10 2 \U/msb/m/n/10 R[]$\OT1/cmr/m/n/10 , $\OT1/cmr/bx/n/10 c[] \OT1/cmr/m/n/10 = \OML/cmm/m/it/10 X[]\OT1/cmr/bx/n/10 y \OMS/cmsy/m/n/10 2 \U/msb/m/n/10 R[]$\OT1/cmr/m/n/10 , $\OT1/cmr/bx/n/10 c[] \OT1/cmr/m/n/10 = \OML/cmm/m/it/10 Y[]\OT1/cmr/bx/n/10 y \OMS/cmsy/m/n/10 2 \U/msb/m/n/10 R[]$\OT1/cmr/m/n/10 , $\OT1/cmr/bx/n/10 c[] \OT1/cmr/m/n/10 = \OML/cmm/m/it/10 Z[]\OT1/cmr/bx/n/10 y \OMS/cmsy/m/n/10 2 \U/msb/m/n/10 R[]\OML/cmm/m/it/10 ;  []\OT1/cmr/bx/n/10 c[] \OT1/cmr/m/n/10 =|
  []
 
-[6]
-Overfull \hbox (8.55429pt too wide) detected at line 408
-[][][][]|
- []
 
-
-Overfull \hbox (57.91927pt too wide) detected at line 418
-[][][][]|
- []
-
-
-Overfull \hbox (20.96251pt too wide) detected at line 427
+Overfull \hbox (8.55429pt too wide) detected at line 578
 [][][][]|
  []
 
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
- [7]
-Overfull \hbox (9.16736pt too wide) detected at line 439
+ [9]
+Overfull \hbox (57.91927pt too wide) detected at line 588
 [][][][]|
  []
 
 
-Overfull \hbox (10.3pt too wide) detected at line 446
+Overfull \hbox (20.96251pt too wide) detected at line 597
 [][][][]|
  []
 
 
-Overfull \hbox (18.238pt too wide) detected at line 456
+Overfull \hbox (9.16736pt too wide) detected at line 609
 [][][][]|
  []
 
 
-Underfull \vbox (badness 2229) has occurred while \output is active []
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
- [8] [9]
-Overfull \hbox (6.9672pt too wide) detected at line 523
-[]|
+ [10]
+Overfull \hbox (10.3pt too wide) detected at line 616
+[][][][]|
  []
 
 
-Overfull \hbox (1.58125pt too wide) in paragraph at lines 530--531
- \OT1/cmr/bx/n/10 3.3. Struc-ture Preser-va-tion The-o-rem and its Proof.[][] \OT1/cmr/m/n/10 Equipped with lemma|
- []
-
-Package hyperref Info: bookmark level for unknown theorem defaults to 0 on input line 532.
-[10]
-Overfull \hbox (21.40997pt too wide) detected at line 581
-[][]\OML/cmm/m/it/10 U[]A[]\OT1/cmr/m/n/10 [:\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 2 : \OML/cmm/m/it/10 n \OMS/cmsy/m/n/10 ^^@ \OML/cmm/m/it/10 j\OT1/cmr/m/n/10 ] = (\OML/cmm/m/it/10 U[]A \OMS/cmsy/m/n/10 ^^@ [] [][]\OML/cmm/m/it/10 S[]\OT1/cmr/m/n/10 )[:\OML/cmm/m/it/10 ; j \OT1/cmr/m/n/10 + 2 : \OML/cmm/m/it/10 n\OT1/cmr/m/n/10 ] \OMS/cmsy/m/n/10 ^^@ [] []\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 B\OT1/cmr/m/n/10 [\OML/cmm/m/it/10 t; j \OT1/cmr/m/n/10 + 2 : \OML/cmm/m/it/10 n\OT1/cmr/m/n/10 ][])\OML/cmm/m/it/10 ;|
+Overfull \hbox (18.238pt too wide) detected at line 626
+[][][][]|
  []
 
 [11]
-Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on input line 630.
+Overfull \hbox (6.9672pt too wide) detected at line 693
+[]|
+ []
 
-Underfull \hbox (badness 3503) in paragraph at lines 671--672
+[12]
+Overfull \hbox (1.58125pt too wide) in paragraph at lines 700--701
+ \OT1/cmr/bx/n/10 3.3. Struc-ture Preser-va-tion The-o-rem and its Proof.[][] \OT1/cmr/m/n/10 Equipped with lemma|
+ []
+
+Package hyperref Info: bookmark level for unknown theorem defaults to 0 on input line 702.
+[13]
+Overfull \hbox (21.40997pt too wide) detected at line 751
+[][]\OML/cmm/m/it/10 U[]A[]\OT1/cmr/m/n/10 [:\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 2 : \OML/cmm/m/it/10 n \OMS/cmsy/m/n/10 ^^@ \OML/cmm/m/it/10 j\OT1/cmr/m/n/10 ] = (\OML/cmm/m/it/10 U[]A \OMS/cmsy/m/n/10 ^^@ [] [][]\OML/cmm/m/it/10 S[]\OT1/cmr/m/n/10 )[:\OML/cmm/m/it/10 ; j \OT1/cmr/m/n/10 + 2 : \OML/cmm/m/it/10 n\OT1/cmr/m/n/10 ] \OMS/cmsy/m/n/10 ^^@ [] []\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 B\OT1/cmr/m/n/10 [\OML/cmm/m/it/10 t; j \OT1/cmr/m/n/10 + 2 : \OML/cmm/m/it/10 n\OT1/cmr/m/n/10 ][])\OML/cmm/m/it/10 ;|
+ []
+
+[14]
+Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on input line 800.
+
+Underfull \hbox (badness 3503) in paragraph at lines 841--842
 [] $\OT1/cmr/m/n/10 [\OML/cmm/m/it/10 J; K; E[]; X[]; Y[]; Z[]\OT1/cmr/m/n/10 ] \OMS/cmsy/m/n/10   []\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 J; K; E[]; X[]; Y[]; Z[]; []; \OT1/cmr/bx/n/10 b[]\OML/cmm/m/it/10 ; ^^\[]\OT1/cmr/m/n/10 )$
  []
 
 
-Underfull \hbox (badness 1331) in paragraph at lines 676--677
+Underfull \hbox (badness 1331) in paragraph at lines 846--847
 []\OT1/cmr/bx/n/10 re-turn $\OML/cmm/m/it/10 B[]; []; []; []; []; \OML/cmm/b/it/10 ^^\$\OT1/cmr/m/n/10 . Now $\OML/cmm/m/it/10 F$ \OT1/cmr/m/n/10 is ex-pressed as $\OML/cmm/m/it/10 B[] \OT1/cmr/m/n/10 + [](\OML/cmm/m/it/10 U[]; \OMS/cmsy/m/n/10 ^^@\OT1/cmr/m/n/10 1) +
  []
 
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
- [12] [13] [14]
+ [15] [16] [17]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 769.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `superscript' on input line 769.
+(hyperref)                removing `math shift' on input line 939.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\top' on input line 769.
+(hyperref)                removing `superscript' on input line 939.
 
-[15] [16] [17]
-Package hyperref Info: bookmark level for unknown corollary defaults to 0 on input line 967.
- [18]
-Overfull \hbox (23.36644pt too wide) detected at line 1042
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\top' on input line 939.
+
+[18] [19] [20]
+Package hyperref Info: bookmark level for unknown corollary defaults to 0 on input line 1137.
+ [21]
+Overfull \hbox (23.36644pt too wide) detected at line 1212
 [][][][]|
  []
 
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
- [19]
-Overfull \hbox (45.95596pt too wide) detected at line 1063
+ [22]
+Overfull \hbox (45.95596pt too wide) detected at line 1233
 [][][][]|
  []
 
 
-Overfull \hbox (18.788pt too wide) detected at line 1078
+Overfull \hbox (18.788pt too wide) detected at line 1248
 [][][][]|
  []
 
-[20]
-Overfull \hbox (70.45844pt too wide) detected at line 1095
+[23]
+Overfull \hbox (70.45844pt too wide) detected at line 1265
 []|
  []
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 1125.
+(hyperref)                removing `math shift' on input line 1295.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 1125.
+(hyperref)                removing `math shift' on input line 1295.
 
-[21]
-Overfull \hbox (1.22264pt too wide) in paragraph at lines 1148--1150
+[24]
+Overfull \hbox (1.22264pt too wide) in paragraph at lines 1318--1320
 \OT1/cmr/m/n/10 where $\OT1/cmr/bx/n/10 e[]$ \OT1/cmr/m/n/10 is the first stan-dard ba-sis in $\U/msb/m/n/10 R[]$\OT1/cmr/m/n/10 , $\OML/cmm/m/it/10 U[] \OMS/cmsy/m/n/10 2 \U/msb/m/n/10 R[]$ \OT1/cmr/m/n/10 sat-is-fies $\OML/cmm/m/it/10 U[]\OT1/cmr/m/n/10 [1\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 :|
  []
 
 
-Overfull \hbox (5.5611pt too wide) detected at line 1162
+Overfull \hbox (5.5611pt too wide) detected at line 1332
 \OML/cmm/m/it/10 R[]\OT1/cmr/m/n/10 [\OML/cmm/m/it/10 j \OT1/cmr/m/n/10 + 1 : \OML/cmm/m/it/10 n; j \OT1/cmr/m/n/10 + 1 : \OML/cmm/m/it/10 n\OT1/cmr/m/n/10 ] = \OML/cmm/m/it/10 R[] \OT1/cmr/m/n/10 + \OML/cmm/m/it/10 R[]U[]\OT1/cmr/m/n/10 
 []\OML/cmm/m/it/10 U[] \OT1/cmr/m/n/10 + ^^H[]\OML/cmm/m/it/10 U[] \OT1/cmr/m/n/10 + \OML/cmm/m/it/10 R[]U[]\OT1/cmr/m/n/10 	[] + ^^C[]\OML/cmm/m/it/10 ;|
  []
@@ -917,34 +924,34 @@ Overfull \hbox (5.5611pt too wide) detected at line 1162
 
 Underfull \vbox (badness 2662) has occurred while \output is active []
 
- [22] [23]
-<qr_linear.pdf, id=392, 451.6875pt x 301.125pt>
+ [25] [26]
+<qr_linear.pdf, id=412, 451.6875pt x 301.125pt>
 File: qr_linear.pdf Graphic file (type pdf)
 <use qr_linear.pdf>
-Package pdftex.def Info: qr_linear.pdf  used on input line 1250.
+Package pdftex.def Info: qr_linear.pdf  used on input line 1420.
 (pdftex.def)             Requested size: 296.30812pt x 197.54846pt.
-<rq_linear.pdf, id=393, 451.6875pt x 301.125pt>
+<rq_linear.pdf, id=413, 451.6875pt x 301.125pt>
 File: rq_linear.pdf Graphic file (type pdf)
 <use rq_linear.pdf>
-Package pdftex.def Info: rq_linear.pdf  used on input line 1257.
+Package pdftex.def Info: rq_linear.pdf  used on input line 1427.
 (pdftex.def)             Requested size: 296.30812pt x 197.54846pt.
- [24]
-<qr_stability.pdf, id=404, 451.6875pt x 301.125pt>
+ [27]
+<qr_stability.pdf, id=425, 451.6875pt x 301.125pt>
 File: qr_stability.pdf Graphic file (type pdf)
 <use qr_stability.pdf>
-Package pdftex.def Info: qr_stability.pdf  used on input line 1271.
+Package pdftex.def Info: qr_stability.pdf  used on input line 1441.
 (pdftex.def)             Requested size: 296.30812pt x 197.54846pt.
- [25 <./qr_linear.pdf> <./rq_linear.pdf
+ [28 <./qr_linear.pdf> <./rq_linear.pdf
 
 pdfTeX warning: pdflatex (file ./rq_linear.pdf): PDF inclusion: multiple pdfs with page group included in a single page
->] [26 <./qr_stability.pdf>]
-<qr_comparison.pdf, id=3252, 451.6875pt x 301.125pt>
+>] [29 <./qr_stability.pdf>]
+<qr_comparison.pdf, id=3272, 451.6875pt x 301.125pt>
 File: qr_comparison.pdf Graphic file (type pdf)
 <use qr_comparison.pdf>
-Package pdftex.def Info: qr_comparison.pdf  used on input line 1297.
+Package pdftex.def Info: qr_comparison.pdf  used on input line 1467.
 (pdftex.def)             Requested size: 296.30812pt x 197.54846pt.
- [27 <./qr_comparison.pdf>]
-Overfull \hbox (2.83919pt too wide) in paragraph at lines 1323--1324
+ [30 <./qr_comparison.pdf>]
+Overfull \hbox (2.83919pt too wide) in paragraph at lines 1493--1494
 \OT1/cmr/m/n/10 proach, while demon-strat-ing sig-nif-i-cant per-for-mance ad-van-tages over ex-ist-ing HODLR-|
  []
 
@@ -953,27 +960,27 @@ Underfull \hbox (badness 4995) in paragraph at lines 19--20
 []\OT1/cmr/m/sc/8 T. Chen, S. Olver, et al.\OT1/cmr/m/n/8 , \OT1/cmr/m/it/8 Semisep-a-ra-bleMa-tri-ces.jl\OT1/cmr/m/n/8 , 2026, [][]$https : / / github . com /
  []
 
-[28])
+[31])
 \tf@thm=\write5
 \openout5 = `article.thm'.
 
- [29] (./article.aux)
+ [32] (./article.aux)
 Package rerunfilecheck Info: File `article.out' has not changed.
-(rerunfilecheck)             Checksum: 4639355881703EE0382CC120E6F09C75;4966.
+(rerunfilecheck)             Checksum: A47A034A92B9F05914247159545FB748;4968.
  ) 
 Here is how much of TeX's memory you used:
- 28063 strings out of 476025
- 568908 string characters out of 5790017
+ 28084 strings out of 476025
+ 569071 string characters out of 5790017
  1906388 words of memory out of 5000000
- 47928 multiletter control sequences out of 15000+600000
+ 47939 multiletter control sequences out of 15000+600000
  523690 words of font info for 73 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 89i,18n,90p,1651b,659s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 89i,22n,90p,1651b,682s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx7.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmti7.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmti8.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm7.pfb>
-Output written on article.pdf (29 pages, 874050 bytes).
+Output written on article.pdf (32 pages, 892780 bytes).
 PDF statistics:
- 3739 PDF objects out of 4296 (max. 8388607)
- 2588 compressed objects within 26 object streams
- 156 named destinations out of 1000 (max. 500000)
+ 3762 PDF objects out of 4296 (max. 8388607)
+ 2607 compressed objects within 27 object streams
+ 166 named destinations out of 1000 (max. 500000)
  209 words of extra memory for PDF output out of 10000 (max. 10000000)
 
