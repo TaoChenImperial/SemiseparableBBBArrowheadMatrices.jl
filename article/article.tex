@@ -332,14 +332,31 @@ As a preliminary step we note this structure is preserved under trunctation:
     We show for $k=2$ with the other cases following by induction. We write:
 \begin{align*}
     P[2\!:\!n,2\!:\!n] &= U[2:\!:\!n,:] J S[2\!:\!n,:]^\top + 
-    U[2\!:\!n,:] K \underbrace{U^\top A[:,2\!:\!n]}_{=U[:,2:n]^\top A[2:n,2:n] + U[:,1] A[1,2:n]^\top}\\
+    U[2\!:\!n,:] K \underbrace{U^\top A[:,2\!:\!n]}_{=U[2:n,:]^\top A[2:n,2:n] + U[1,:] A[1,2:n]^\top}\\
     &\qquad +
-    U[2\!:\!n,:] E[:,2\!:\!n] + X[2\!:\!n,:] S[2\!:\!n,:]^\top + 
+    U[2\!:\!n,:] E[:,2\!:\!n] + X[2\!:\!n,:] S[2\!:\!n,:]^\top \\
+    \\
+    &\qquad + Y[2:n,:]U^\top A[:,2:n] + Z[2:n,2:n]
 \end{align*}
 We can then write
-\[
-U[:,1] A[1,2:n]^\top = \underbrace{U[:,1] B[1,2:n]^\top - W[1,:]^\top S[k,:]}_{\in \calS_{r \times m}^{r \times (n-1)}} + W[1,:]^\top S[k\!:\!n,:]^\top.
-\]
+\begin{align*}
+U[2:n,:]K U[1,:] A[1,2:n]^\top &= U[2:n,:] \underbrace{K U[1,:] B[1,2:n]^\top}_{\in \calS_{r \times m}^{r \times (n-1)}} \\
+&\qquad + U[2:n,:] \underbrace{K U[1,:]W[1,:]^\top}_{\in \bbR^{r \times p}} S[2\!:\!n,:]^\top.
+\end{align*}
+Similarly,
+\begin{align*}
+Y[2:n,:] U[1,:] A[1,2:n]^\top &= \underbrace{Y[2:n,:] U[1,:] B[1,2:n]^\top}_{\in \calS_{(\ell-1) \times m}^{(n-1) \times (n-1)}} \\
+&\qquad +  \underbrace{Y[2:n,:] U[1,:]W[1,:]^\top}_{\in \calS_{(\ell-1) \times p}^{(n-1) \times p}} S[2\!:\!n,:]^\top.
+\end{align*}
+The theorem follows since we have
+\begin{align*}
+P[2:n,2:n] &= U[2:n,:] (J + K U[1,:] W[1,:]^\top) S[2:n,:]^\top + \\
+&\qquad U[2:n,:] K U[2:n,:]^\top A[2:n,2:n] \\
+&\qquad + U[2:n,:](E[:,2:n] + K U[1,:] B[1,2:n]^\top) \\
+&\qquad + (X[2:n,:] + Y[2:n,:]U[1,:]W[1,:]^\top)S[2:n,:]^\top \\
+&\qquad + Y[2:n,:]U[2:n,:]^\top A[2:n,2:n] \\
+&\qquad + Z[2:n,2:n] + Y[2:n,:] U[1,:]B[1,2:n]^\top.
+\end{align*}
 \end{proof}
 
 
