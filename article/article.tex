@@ -192,13 +192,14 @@ where
 and $\tau_k = 2\|\bfy_k\|^{-2}$ so that $\sqrt{\tau_k/2} \bfy_k$ has unit norm.
 Following the LAPACK format \cite{doi:10.1137/1.9780898719604}, the QR factorisation can be represented by a {\it factors matrix} containing the entries of $\bfy_k$ and $R$:
 \begin{equation*}
-F = \begin{bmatrix}
-r_{11} & r_{12} & r_{13} & \cdots & r_{1n} \\
-y_{21} & r_{22} & r_{23} & \cdots & r_{2n} \\
-y_{31} & y_{32} & r_{33} & \cdots & r_{3n} \\
-\vdots & \vdots & \vdots & \ddots & \vdots \\
-y_{n1} & y_{n2} & y_{n3} & \cdots & r_{nn}
-\end{bmatrix}
+F = \begin{bNiceMatrix}[cell-space-limits=10pt,columns-width=20pt]
+r_{11}      & r_{12} & \cdots       & r_{1k}  \\
+y_{21}      & r_{22} & \cdots       & r_{2k}  \\
+\vdots      & \ddots & \ddots       & \vdots  \\
+y_{k1}      & \cdots & y_{k,k-1}    & r_{kk}  \\
+\CodeAfter
+  \tikz \draw ([xshift=2pt,yshift=0pt]1.5-|1) -- ([xshift=6pt,yshift=0pt]5-|4.5);
+\end{bNiceMatrix}
 \end{equation*}
 alongside a vector $\bftau = [\tau_1,\ldots,\tau_{n-1},0]^\top$.
 
@@ -273,7 +274,7 @@ A[k\!:\!n, k\!:\!n] &= B[k\!:\!n, k\!:\!n]
 +
 \tril(U[k\!:\!n, :]V[k\!:\!n, :]^\top,-1) \\
 &\qquad +
-\triu(W[k\!:\!n, :]S[k\!:\!n, :]^\top,-1) \in {\mathrm{BPS}}_{(r,p),(\ell,m)}^{n-k+1 \times n-k+1}.
+\triu(W[k\!:\!n, :]S[k\!:\!n, :]^\top,1) \in {\mathrm{BPS}}_{(r,p),(\ell,m)}^{n-k+1 \times n-k+1}.
 \end{align*}
 
 We will also need to work with specific columns of banded matrices, which are convenient to express in terms of an explicit sparsity structure:
@@ -282,7 +283,7 @@ We will also need to work with specific columns of banded matrices, which are co
 Denote a {\it padded vector} with only the first $p$ rows being possibly nonzero as $\calS_p^n \subset \bbR^n$ and a {\it padded matrix} with only the principle $p \times q$ subblock as $\calS_{p \times q}^{m \times n} \subset \bbR^{m \times n}$. Explicitly, $\bfx \in \calS_p^n$ if $\bfx[k] = 0$ unless $k \leq p$ and $A \in \calS_{p \times q}^{m \times n}$ if $A[k,j] = 0$ unless $k \leq p$ and $j \leq q$.
 \end{definition}
 
-Note for example if $B \in \BM$ then $B[k:n,k] \in \calS_{\ell+1}^{n-k+1}$ and $B[k,k:n] \in \calS_{m+1}^{n-k+1}$.
+Note for example if $B \in \BM$ then $B[k\!:\!n,k] \in \calS_{\ell+1}^{n-k+1}$ and $B[k,k\!:\!n] \in \calS_{m+1}^{n-k+1}$.
 
 
 We will now describe the structure of each portion of the partial factors matrix.
@@ -325,13 +326,13 @@ We claim this structure is preserved: if $F_k$ has this form then so does $F_{k+
 
 As a preliminary step we note this structure is preserved under trunctation:
 
-\begin{lemma}
+\begin{lemma}\label{Lemma:Ppertub}
     If $P \in \calP(A)$ then $P[k\!:\!n,k\!:\!n] \in \calP(A[k\!:\!n,k\!:\!n])$.
 \end{lemma}
 \begin{proof}
     We show for $k=2$ with the other cases following by induction. We write:
 \begin{align*}
-    P[2\!:\!n,2\!:\!n] &= U[2:\!:\!n,:] J S[2\!:\!n,:]^\top + 
+    P[2\!:\!n,2\!:\!n] &= U[2\!:\!n,:] J S[2\!:\!n,:]^\top + 
     U[2\!:\!n,:] K \underbrace{U^\top A[:,2\!:\!n]}_{=U[2:n,:]^\top A[2:n,2:n] + U[1,:] A[1,2:n]^\top}\\
     &\qquad +
     U[2\!:\!n,:] E[:,2\!:\!n] + X[2\!:\!n,:] S[2\!:\!n,:]^\top \\
@@ -340,22 +341,22 @@ As a preliminary step we note this structure is preserved under trunctation:
 \end{align*}
 We can then write
 \begin{align*}
-U[2:n,:]K U[1,:] A[1,2:n]^\top &= U[2:n,:] \underbrace{K U[1,:] B[1,2:n]^\top}_{\in \calS_{r \times m}^{r \times (n-1)}} \\
-&\qquad + U[2:n,:] \underbrace{K U[1,:]W[1,:]^\top}_{\in \bbR^{r \times p}} S[2\!:\!n,:]^\top.
+U[2\!:\!n,:]K U[1,:] A[1,2\!:\!n]^\top &= U[2\!:\!n,:] \underbrace{K U[1,:] B[1,2\!:\!n]^\top}_{\in \calS_{r \times m}^{r \times (n-1)}} \\
+&\qquad + U[2\!:\!n,:] \underbrace{K U[1,:]W[1,:]^\top}_{\in \bbR^{r \times p}} S[2\!:\!n,:]^\top.
 \end{align*}
 Similarly,
 \begin{align*}
-Y[2:n,:] U[1,:] A[1,2:n]^\top &= \underbrace{Y[2:n,:] U[1,:] B[1,2:n]^\top}_{\in \calS_{(\ell-1) \times m}^{(n-1) \times (n-1)}} \\
-&\qquad +  \underbrace{Y[2:n,:] U[1,:]W[1,:]^\top}_{\in \calS_{(\ell-1) \times p}^{(n-1) \times p}} S[2\!:\!n,:]^\top.
+Y[2\!:\!n,:] U[1,:] A[1,2\!:\!n]^\top &= \underbrace{Y[2\!:\!n,:] U[1,:] B[1,2\!:\!n]^\top}_{\in \calS_{(\ell-1) \times m}^{(n-1) \times (n-1)}} \\
+&\qquad +  \underbrace{Y[2\!:\!n,:] U[1,:]W[1,:]^\top}_{\in \calS_{(\ell-1) \times p}^{(n-1) \times p}} S[2\!:\!n,:]^\top.
 \end{align*}
 The lemma follows since we have
 \begin{align*}
-P[2:n,2:n] &= U[2:n,:] (J + K U[1,:] W[1,:]^\top) S[2:n,:]^\top + \\
-&\qquad U[2:n,:] K U[2:n,:]^\top A[2:n,2:n] \\
-&\qquad + U[2:n,:](E[:,2:n] + K U[1,:] B[1,2:n]^\top) \\
-&\qquad + (X[2:n,:] + Y[2:n,:]U[1,:]W[1,:]^\top)S[2:n,:]^\top \\
-&\qquad + Y[2:n,:]U[2:n,:]^\top A[2:n,2:n] \\
-&\qquad + Z[2:n,2:n] + Y[2:n,:] U[1,:]B[1,2:n]^\top.
+P[2\!:\!n,2\!:\!n] &= U[2\!:\!n,:] (J + K U[1,:] W[1,:]^\top) S[2\!:\!n,:]^\top + \\
+&\qquad U[2\!:\!n,:] K U[2\!:\!n,:]^\top A[2\!:\!n,2\!:\!n] \\
+&\qquad + U[2\!:\!n,:](E[:,2\!:\!n] + K U[1,:] B[1,2\!:\!n]^\top) \\
+&\qquad + (X[2\!:\!n,:] + Y[2\!:\!n,:]U[1,:]W[1,:]^\top)S[2\!:\!n,:]^\top \\
+&\qquad + Y[2\!:\!n,:]U[2\!:\!n,:]^\top A[2\!:\!n,2\!:\!n] \\
+&\qquad + Z[2\!:\!n,2\!:\!n] + Y[2\!:\!n,:] U[1,:]B[1,2\!:\!n]^\top.
 \end{align*}
 \end{proof}
 
@@ -429,7 +430,7 @@ We now consider the first row in applying the $k$th Householder reflection to
 \begin{align*}
 A_{k-1} &:= F_{k-1}[k\!:\!n,k\!:\!n] \\
 &= A[k\!:\!n,k\!:\!n] +
-\underbrace{(U[k\!:\!n,:]  J+ X[k\!:\!n,:])}_{=:T_1 \in \bbR^{(n-k+1) \times r}} S[k\!:\!n,:]^\top  \\
+\underbrace{(U[k\!:\!n,:]  J+ X[k\!:\!n,:])}_{=:T_1 \in \bbR^{(n-k+1) \times p}} S[k\!:\!n,:]^\top  \\
 &\qquad + \underbrace{(U[k\!:\!n,:]  K + Y[k\!:\!n,:])}_{=:T_2\in \bbR^{(n-k+1) \times r}} U^\top A[:,k\!:\!n] \\
 &\qquad + \underbrace{U[k\!:\!n,:]  E[:,k\!:\!n] + Z[k\!:\!n,k\!:\!n]}_{=:T_3 \in \calS_{(n-k+1) \times (\ell +m)}^{(n-k+1) \times (n-k+1)}}.
 \end{align*}
@@ -442,7 +443,7 @@ B[k,k\!:\!n]^\top + \underbrace{\bfe_k^\top \triu(W S^\top,1)}_{
 \]
 we can write the first row as
 \begin{align*}
-\bfe_1^\top A_{k-1} &= \bfs_1^\top  + \underbrace{(W[k,:]^\top + \bfe_1^\top T_1)}_{=:\bfw_1^\top \in \bbR^{1 \times r}} S[k\!:\!n,:]^\top  + \underbrace{\bfe_1^\top T_2}_{=:\tilde\bfw_1^\top \in \bbR^{1 \times r}} (A^\top U)[k\!:\!n,:]^\top.
+\bfe_1^\top A_{k-1} &= \bfs_1^\top  + \underbrace{(W[k,:]^\top + \bfe_1^\top T_1)}_{=:\bfw_1^\top \in \bbR^{1 \times p}} S[k\!:\!n,:]^\top  + \underbrace{\bfe_1^\top T_2}_{=:\tilde\bfw_1^\top \in \bbR^{1 \times r}} (A^\top U)[k\!:\!n,:]^\top.
 \end{align*}
 for the sparse row vector (which will correspond to a slice of a banded matrix)
 \begin{align*}
@@ -469,9 +470,9 @@ for
 We therefore find
 \begin{align*}
 \tilde\bfy_k^\top A_{k-1} &= 
-\underbrace{\bfs_2^\top +  T_3  \tilde\bfy_k^\top}_{=: \bfs_3^\top \in \calS_{1 \times \ell+m+1}^{1 \times (n-k+1)}} + \underbrace{(V_k[k,:]^\top  + \tilde\bfy_k^\top T_2)}_{=: \tilde \bfw_2^\top \in \bbR^{(n-k+1) \times r}} (A^\top U)[k\!:\!n,:]^\top\\
+\underbrace{\bfs_2^\top +  T_3  \tilde\bfy_k^\top}_{=: \bfs_3^\top \in \calS_{1 \times \ell+m+1}^{1 \times (n-k+1)}} + \underbrace{(V_k[k,:]^\top  + \tilde\bfy_k^\top T_2)}_{=: \tilde \bfw_2^\top \in \bbR^{1 \times r}} (A^\top U)[k\!:\!n,:]^\top\\
 &\qquad + 
-  \underbrace{(\bfb_k^\top W[k\!:\!n,:] + \tilde\bfy_k^\top T_1)}_{=: \bfw_2^\top \in \bbR^{(n-k+1) \times r}}  S[k\!:\!n,:]^\top.
+  \underbrace{(\bfb_k^\top W[k\!:\!n,:] + \tilde\bfy_k^\top T_1)}_{=: \bfw_2^\top \in \bbR^{1 \times p}}  S[k\!:\!n,:]^\top.
 \end{align*}
 Thus we find for $\beta_k:= \tau_k \bfe_1^\top \tilde \bfy_k$ that applying the Householder reflection yields
 \begin{align*}
@@ -495,318 +496,58 @@ B_k[k,k\!:\!n]^\top &:= \bfs_1^\top  + \beta_k \bfs_2^\top - W_k[k,:]^\top \tild
 \end{lemma}
 
 \begin{proof}
-    We have already showed the result apart from the bottom right
+    We have already showed the result apart from the bottom right, in particular we need to show
+\begin{align*}
+A_k :&= F_k[(k\!+\!1)\!:\!n,(k\!+\!1)\!:\!n] \\
+&= 
+ ((I - \tau_k \tilde \bfy_k \tilde \bfy_k^\top)A_{k-1})[2\!:\!n-k,2\!:\!n-k] \in \calP(A[(k+1)\!:\!n,(k+1)\!:\!n]).
+\end{align*}
+From Lemma~\ref{Lemma:Ppertub} we know that since $A_{k-1} \in \calP(A[k\!:\!n,k\!:\!n])$ we have
 \[
-A_k := F_k[(k+1)\!:\!n,(k+1)\!:\!n] = 
- ((I - \tau_k \tilde \bfy_k \tilde \bfy_k^\top)A_{k-1})[(k+1)\!:\!n,(k+1)\!:\!n].
+A_{k-1}[2\!:\!(n-k),2\!:\!(n-k)] \in \calP(A[(k\!+\!1)\!:\!n,(k\!+\!1)\!:\!n]).
 \]
+We thus need only consider
+\begin{align*}
+\tilde \bfy_k \tilde \bfy_k^\top A_{k-1} &=
+(\bfb_k + U[k:n,:] V_k[k,:] + \alpha_k \bfe_1) \times \\
+&\qquad
+(\bfs_3^\top + \tilde \bfw_2^\top (U^\top A)[:,k:n] +
+ \bfw_2^\top S[k:n,:]^\top ) \\
+ &= \underbrace{\bfb_k \bfs_3^\top}_{\in \calS_{(\ell+1) \times (\ell+m+1)}^{(n-k+1) \times (n-k+1)}}  + \underbrace{\bfb_k \tilde \bfw_2^\top}_{\in \calS_{(\ell+1) \times r}^{(n-k+1) \times r}} (U^\top A)[:,k:n] + 
+ \underbrace{\bfb_k \bfw_2^\top}_{\in \calS_{(\ell+1) \times r}^{(n-k+1) \times p}} S[k:n,:]^\top   \\
+&\qquad + U[k:n,:] \underbrace{ V_k[k,:] \bfs_3^\top}_{\in \calS_{r \times (\ell+m+1)}^{r \times (n-k+1)}} + 
+U[k:n,:] \underbrace{ V_k[k,:] \tilde \bfw_2^\top}_{\in \bbR^{r \times r}} (U^\top A)[:,k:n]  \\
+&\qquad + U[k:n,:] \underbrace{ V_k[k,:] \bfw_2^\top}_{\in \bbR^{r \times p}} S[k:n,:]^\top + 
+ \bfe_1 (\cdots).
+\end{align*}
+Dropping the first row and column we see this term is in $\calP(A[k\!:\!n,k\!:\!n])$, using a similar argument as Lemma~\ref{Lemma:Ppertub}.
+
+
 
 \end{proof}
 
-
-
-\subsection{Problem Formulation and Notation}
-
-We begin by establishing notation for matrix subblocks. For a matrix $M \in \mathbb{R}^{n \times n}$, let $M[i:j, m:n]$ denote the submatrix consisting of rows $i$ through $j$ and columns $m$ through $n$ (inclusive). When extracting a single row or column, the result is a column vector:
-
- $M[i:j, m] \in \mathbb{R}^{j-i+1}$: the $m$-th column from row $i$ to row $j$ (a column vector).
-
- $M[i, m:n] \in \mathbb{R}^{n-m+1}$: the $i$-th row from column $m$ to column $n$ (also a column vector).
-
-For brevity, we write $M[k,:]$ for the entire $k$-th row and $M[:,k]$ for the entire $k$-th column.
-
-
-
-
-Define vectors \( \bar{\mathbf{u}}_k = U[k,:] \in \mathbb{R}^r \), \( \bar{\mathbf{v}}_k = V[k,:] \in \mathbb{R}^r \), \( \bar{\mathbf{w}}_k = W[k,:] \in \mathbb{R}^p \), and \( \bar{\mathbf{s}}_k = S[k,:] \in \mathbb{R}^p \) for \( k=1,\ldots,n \). The matrix \( A \) can then be expressed element-wise as:
-\begin{equation*}
-A =
-\begin{bmatrix}
-b_{11} & \bar{\mathbf{w}}_1^\top \bar{\mathbf{s}}_2 + b_{12} & \cdots & \bar{\mathbf{w}}_1^\top \bar{\mathbf{s}}_n + b_{1n} \\
-\bar{\mathbf{u}}_2^\top \bar{\mathbf{v}}_1 + b_{21} & b_{22} & \cdots & \bar{\mathbf{w}}_2^\top \bar{\mathbf{s}}_n + b_{2n} \\
-\vdots & \vdots & \ddots & \vdots \\
-\bar{\mathbf{u}}_n^\top \bar{\mathbf{v}}_1 + b_{n1} & \bar{\mathbf{u}}_n^\top \bar{\mathbf{v}}_2 + b_{n2} & \cdots & b_{nn}
-\end{bmatrix}.
-\end{equation*}
-
-
-Next, we introduce two key definitions and a pivotal lemma.
-
-\subsection{Core Definitions and a Key Lemma}
-
-While the final factor matrix of a QR factorization is a BPS matrix, at  intermediate  stages it has a specific structured perturbation. Here we describe this structure in terms of a linear space that, at each stage, the perturbation to the principle submatrix lies in:
-
-
-
-In addition, we need to describe the structure of the upper-triangular part in terms of a structured vector:
-
-
-\begin{definition}
-Given \( A \in  \BPS \) and $j=1, 2, ..., n$, define the vector space
-\begin{align*}
-\calV_j(A) &:= \bigg\{\mathbf{d} +  S[j:n,:]\boldsymbol{\alpha} + (A^\top U)[j:n,:]\boldsymbol{\beta} : \\
-&\qquad\quad \mathbf{d} = \begin{bmatrix} \mathbf{d}_s \in \mathbb{R}^{\min(\ell+m,n+1-j)}  \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n+1-j}, \boldsymbol{\alpha} \in \mathbb{R}^p , \boldsymbol{\beta} \in \mathbb{R}^r\bigg\} \subset \bbR^{n+1-j}.
-\end{align*}
-\end{definition}
-
-
-\begin{lemma}\label{lemma:structure_preserve}
-Given \( A \in \BPS \) and  \( P \in \calP(A) \), let \( \tilde{C} = (I - \tau \bfy \bfy^\top) (A+P) \) where $\tau$ is a coefficient, $\bfy = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b}$ with $\mathbf{e}_1$ being the first standard basis vector, $U^{(2)}\in\mathbb{R}^{n\times r}$ satisfying $U^{(2)}[1,:]=\mathbf{0}$ and $U^{(2)}[2:n,:]=U[2:n,:]$, $\bar{\mathbf{k}}\in\mathbb{R}^r$, and $\mathbf{b}\in\mathbb{R}^{n}$ nonzero only in entries $2$ through $\min(\ell+1, n)$. Then the following hold:
-\begin{enumerate}
-    \item The principal submatrix satisfies \( \tilde{C}[2:n, 2:n] = A[2:n, 2:n] + \tilde P\) for \(\tilde P  \in \calP(A[2:n, 2:n]) \).
-    \item The first row satisfies \( \tilde{C}[1, 2:n] \in \calV_2(A) \).
-\end{enumerate}
-\end{lemma}
-
-\begin{proof}
-Let us introduce some supplementary notations first:
-
-    \( C = A + UJS^\top + UKU^\top A + UE + XS^\top + YU^\top A + Z \), where \( J, K, E, X, Y, Z \) are as in Definition \ref{def:hmbpsm};
-
-    \( \tilde{C} = (I - \tau \bfy \bfy^\top)C \), where the vector \( \bfy \) can be expressed as \( \bfy = \mathbf{e}_1 + U^{(2)}\bar{\mathbf{k}} + \mathbf{b} \). Here, \(\mathbf{e}_1=(1,0,...,0)^\top \in \mathbb{R}^n\), \( U^{(2)} \in \mathbb{R}^{n\times r} \) satisfies \( U^{(2)}[1,:] = \mathbf{0} \) and \( U^{(2)}[2:n,:] = U[2:n,:] \), \( \bar{\mathbf{k}} \in \mathbb{R}^r \), \( \mathbf{b} = (0, b_2, \ldots, b_{\min(\ell+1,n)}, 0, \ldots, 0)^\top \in \mathbb{R}^n \), and \(\tau\) is a coefficient.
-
-
-We can also write:
-\[
-\mathbf{e}_1^\top A = \underbrace{\mathbf{d}_1^\top}_{\min(m+1,n)\hbox{ nonzero entries}} + \underbrace{\bar{\mathbf{w}}_1^\top}_{\in \bbR^{1 \times p}} S^\top,
-\]
-and
-\[
-\mathbf{b}^\top A = \underbrace{\bar{\mathbf{d}}^\top}_{\min(\ell+m+1, n) \hbox{ nonzero entries}} + {\underbrace{\mathbf{f}^\top}_{\mathbf{b}^\top W  \in \mathbb{R}^{1 \times p} }} S^\top.
-\]
-
-
-
-Next define the auxiliary vectors: \(\mathbf{c}_1 = J^\top U^\top \bfy \in \mathbb{R}^p\), \(\mathbf{c}_2 = K^\top U^\top \bfy \in \mathbb{R}^r\), \(\mathbf{c}_3 = U^\top \bfy \in \mathbb{R}^r\), \(\mathbf{c}_4 = X^\top \bfy \in \mathbb{R}^p\), \(\mathbf{c}_5 = Y^\top \bfy \in \mathbb{R}^r\), \(\mathbf{c}_6 = Z^\top \bfy \in \mathbb{R}^{n}, \quad \text{which has the form } \mathbf{c}_6 = \begin{bmatrix} \mathbf{c}_{6s} \\ \mathbf{0} \end{bmatrix} \text{ with } \mathbf{c}_{6s} \in \mathbb{R}^{\min(\ell+m,n)}\).
-
-Also, let \( \mathbf{x}^{(1)} = X[1,:] \in \mathbb{R}^p \), \( \bfy^{(1)} = Y[1,:] \in \mathbb{R}^r \), and \( \mathbf{z}^{(1)} = Z[1,:] \in \mathbb{R}^n \).
-
-We now compute \( (I - \tau \bfy \bfy^\top) C \) by distributing the transformation over each term in the definition of \( C \).To maintain clarity in the following derivations, we use the label "nonzero entries" to specifically denote dense subblocks or vectors whose support is confined to the leading indices (determined by $\ell$ and $m$). These terms are systematically tracked to ensure they map directly onto the structured generators $\{J, K, E, X, Y, Z\}$ defined in the space $\calP(A)$.
-
-(i) Transformation of \( A \):
-Substituting the expressions \( \bfy=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), \( \mathbf{e}_1^\top A=\mathbf{d}_1^\top+\bar{\mathbf{w}}_1^\top S^\top \), and \( \mathbf{b}^\top A=\bar{\mathbf{d}}^\top+\mathbf{f}^\top S^\top \), we obtain:
-\begin{equation}\label{proof_first}
-\begin{aligned}
-(I - \tau \bfy \bfy^\top)A = & A + \mathbf{e}_1 \big[ \underbrace{(-\tau \mathbf{d}_1^\top - \tau \bar{\mathbf{d}}^\top)}_{\min(\ell+m+1,n)\hbox{ nonzero entries}} + \underbrace{(-\tau \bar{\mathbf{w}}_1^\top - \tau \mathbf{f}^\top)}_{\in \bbR^{1 \times p}}S^\top \\
-& + \underbrace{(-\tau \bar{\mathbf{k}}^\top)}_{\in \bbR^{1 \times r}}U^{(2)\top}A\big] + U^{(2)}\underbrace{(-\tau \bar{\mathbf{k}} \bar{\mathbf{w}}_1^\top - \tau \bar{\mathbf{k}} \mathbf{f}^\top)}_{\in \bbR^{r \times p}} S^\top \\
-& + U^{(2)}\underbrace{(-\tau \bar{\mathbf{k}} \bar{\mathbf{k}}^\top)}_{\in \bbR^{r \times r}}U^{(2)\top}A + U^{(2)}\underbrace{(-\tau \bar{\mathbf{k}} \mathbf{d}_1^\top - \tau \bar{\mathbf{k}} \bar{\mathbf{d}}^\top)}_{\bbR^{r\times \min(\ell+m+1.n)} \hbox{ nonzero entries}} \\
-& + \underbrace{(-\tau \mathbf{b} \bar{\mathbf{w}}_1^\top - \tau \mathbf{b} \mathbf{f}^\top)}_{\bbR^{\min(\ell+1,n)\times p} \hbox{ nonzero entries}}S^\top + \underbrace{(-\tau \mathbf{b} \bar{\mathbf{k}}^\top)}_{\bbR^{\min(\ell+1,n)\times r} \hbox{ nonzero entries}}U^{(2)\top}A \\& + \underbrace{(-\tau \mathbf{b} \mathbf{d}_1^\top - \tau \mathbf{b} \bar{\mathbf{d}}^\top)}_{\bbR^{\min(\ell+1,n) \times \min(\ell+m+1,n)} \hbox{ nonzero entries}}.
-\end{aligned}
-\end{equation}
-Dropping the first column, we  see that the first row of the term in brackets is in $\calV_2(A)$. Dropping the first row and column of the remaining terms are in $\calP(A[2:n,2:n])$.
-
-The transformations of $UJS^\top$, $UKU^\top A$, $UE$, $XS^\top$, $YU^\top A$, and $Z$ yield expressions that follow this same pattern—terms involving $\mathbf{e}_1$ (after dropping the first column) belong to $\calV_2(A)$, while the remaining terms (after dropping first row and column) belong to $\calP(A[2:n,2:n])$:
-
-(ii) Transformation of \( UJS^\top \): Substituting the expressions \( \bfy^\top UJ=\mathbf{c}_1^\top \), \( \bfy=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), and \( U=\mathbf{e}_1\bar{\mathbf{u}}_1^\top+U^{(2)}\), we obtain
-\begin{equation}
-\begin{aligned}
-(I - \tau \bfy \bfy^\top)UJS^\top = & \mathbf{e}_1\underbrace{(\bar{\mathbf{u}}_1^\top J - \tau \mathbf{c}_1^\top)}_{\in \bbR^{1 \times p}}S^\top + U^{(2)}\underbrace{(J - \tau \bar{\mathbf{k}} \mathbf{c}_1^\top)}_{\in \bbR^{r \times p}}S^\top + \underbrace{(-\tau \mathbf{b} \mathbf{c}_1^\top)}_{\bbR^{\min(\ell+1,n)\times p} \hbox{ nonzero entries}}S^\top.
-\end{aligned}
-\end{equation}
-
-(iii) Transformation of \( UKU^\top A \): Substituting the expressions \( \bfy^\top UK=\mathbf{c}_2^\top\), \( \bfy=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), \( U=\mathbf{e}_1\bar{\mathbf{u}}_1^\top+U^{(2)}\), and \( \mathbf{e}_1^\top A=\mathbf{d}_1^\top+\bar{\mathbf{w}}_1^\top S^\top\), we obtain
-\begin{equation}
-\begin{aligned}
-& (I - \tau \bfy \bfy^\top)UKU^\top A \\
-= & \mathbf{e}_1\big[\underbrace{(\bar{\mathbf{u}}_1^\top K \bar{\mathbf{u}}_1 \mathbf{d}_1^\top - \tau \mathbf{c}_2^\top \bar{\mathbf{u}}_1 \mathbf{d}_1^\top)}_{\min(\ell+m+1,n)\hbox{ nonzero entries}} + \underbrace{(\bar{\mathbf{u}}_1^\top K \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top - \tau \mathbf{c}_2^\top \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top)}_{\in \bbR^{1 \times p}}S^\top + \underbrace{(\bar{\mathbf{u}}_1^\top K - \tau \mathbf{c}_2^\top)}_{\in \bbR^{1 \times r}}U^{(2\top}A\big] \\
-& + U^{(2)}\underbrace{(K \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top - \tau \bar{\mathbf{k}} \mathbf{c}_2^\top \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top)}_{\in \bbR^{r \times p}}S^\top + U^{(2)}\underbrace{(K - \tau \bar{\mathbf{k}} \mathbf{c}_2^\top)}_{\in \bbR^{r \times r}}U^{(2)\top}A \\&+ U^{(2)}\underbrace{(K \bar{\mathbf{u}}_1 \mathbf{d}_1^\top - \tau \bar{\mathbf{k}} \mathbf{c}_2^\top \bar{\mathbf{u}}_1 \mathbf{d}_1^\top)}_{\bbR^{r\times \min(\ell+m+1,n)} \hbox{ nonzero entries}} + \underbrace{(-\tau \mathbf{b} \mathbf{c}_2^\top \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top)}_{\bbR^{\min(\ell+1,n)\times p} \hbox{ nonzero entries}}S^\top \\&+ \underbrace{(-\tau \mathbf{b} \mathbf{c}_2^\top)}_{\bbR^{\min(\ell+1,n)\times r} \hbox{ nonzero entries}}U^{(2)\top}A + \underbrace{(-\tau \mathbf{b} \mathbf{c}_2^\top \bar{\mathbf{u}}_1 \mathbf{d}_1^\top)}_{\bbR^{\min(\ell+1,n) \times \min(\ell+m+1,n)} \hbox{ nonzero entries}}.
-\end{aligned}
-\end{equation}
-
-
-
-
-
-(iv) Transformation of \( UE \): Substituting the expressions \( \bfy^\top U=\mathbf{c}_3^\top \), \( \bfy=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), and \( U=\mathbf{e}_1\bar{\mathbf{u}}_1^\top+U^{(2)}\), we obtain
-\begin{equation}
-\begin{aligned}
-(I - \tau \bfy \bfy^\top)UE = & \mathbf{e}_1\underbrace{(\bar{\mathbf{u}}_1^\top E - \tau \mathbf{c}_3^\top E)}_{\min(\ell+m+1,n)\hbox{ nonzero entries}
-} + U^{(2)}\underbrace{(E - \tau \bar{\mathbf{k}} \mathbf{c}_3^\top E)}_{\bbR^{r\times \min(\ell+m+1,n)} \hbox{ nonzero entries}} + \\& \underbrace{(-\tau \mathbf{b} \mathbf{c}_3^\top E)}_{\bbR^{\min(\ell+1,n) \times \min(\ell+m+1,n)} \hbox{ nonzero entries}}.
-\end{aligned}
-\end{equation}
-
-(v) Transformation of \( XS^\top \): Substituting the expressions \(\bfy^\top X=\mathbf{c}_4^\top \) and \(\bfy=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), we obtain
-\begin{equation}
-\begin{aligned}
-(I - \tau \bfy \bfy^\top)XS^\top = \mathbf{e}_1\underbrace{(-\tau \mathbf{c}_4^\top)}_{\in \bbR^{1 \times p}}S^\top + U^{(2)}\underbrace{(-\tau \bar{\mathbf{k}} \mathbf{c}_4^\top)}_{\in \bbR^{r \times p}}S^\top + \underbrace{(X - \tau \mathbf{b} \mathbf{c}_4^\top)}_{\bbR^{\min(\ell+1,n)\times p} \hbox{ nonzero entries}}S^\top.
-\end{aligned}
-\end{equation}
-
-(vi) Transformation of \( YU^\top A \): Substituting the expressions \(\bfy^\top Y=\mathbf{c}_5^\top \), \(\bfy=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), \(U=\mathbf{e}_1\bar{\mathbf{u}}_1^\top+U^{(2)}\), and \(\mathbf{e}_1^\top A=\mathbf{d}_1^\top+\bar{\mathbf{w}}_1^\top S^\top \), we obtain
-\begin{equation}
-\begin{aligned}
-& (I - \tau \bfy \bfy^\top)YU^\top A \\
-= & \mathbf{e}_1\big[\underbrace{(-\tau \mathbf{c}_5^\top \bar{\mathbf{u}}_1 \mathbf{d}_1^\top)}_{\min(\ell+m+1,n)\hbox{ nonzero entries}} + \underbrace{(-\tau \mathbf{c}_5^\top \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top)}_{\in \bbR^{1 \times p}}S^\top + \underbrace{(-\tau \mathbf{c}_5^\top)}_{\in \bbR^{1 \times r}}U^{(2)\top}A\big] \\
-& + U^{(2)}\underbrace{(-\tau \bar{\mathbf{k}} \mathbf{c}_5^\top \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top)}_{\in \bbR^{r \times p}}S^\top + U^{(2)}\underbrace{(-\tau \bar{\mathbf{k}} \mathbf{c}_5^\top)}_{\in \bbR^{r \times r}}U^{(2)\top}A + U^{(2)}\underbrace{(-\tau \bar{\mathbf{k}} \mathbf{c}_5^\top \bar{\mathbf{u}}_1 \mathbf{d}_1^\top)}_{\bbR^{r\times \min(\ell+m+1,n)} \hbox{ nonzero entries}} \\
-& + \underbrace{(Y \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top - \tau \mathbf{b} \mathbf{c}_5^\top \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top)}_{\bbR^{\min(\ell+1,n)\times p} \hbox{ nonzero entries}}S^\top + \underbrace{(Y - \tau \mathbf{b} \mathbf{c}_5^\top)}_{\bbR^{\min(\ell+1,n)\times r} \hbox{ nonzero entries}}U^{(2)\top}A \\& + \underbrace{(Y \bar{\mathbf{u}}_1 \mathbf{d}_1^\top - \tau \mathbf{b} \mathbf{c}_5^\top \bar{\mathbf{u}}_1 \mathbf{d}_1^\top)}_{\bbR^{\min(\ell+1,n) \times \min(\ell+m+1,n)} \hbox{ nonzero entries}}.
-\end{aligned}
-\end{equation}
-
-\textbf{(vii) Transformation of \( Z \):} Substituting the expressions \(\bfy^\top Z=\mathbf{c}_6^\top \) and \(\bfy=\mathbf{e}_1+U^{(2)}\bar{\mathbf{k}}+\mathbf{b}\), we obtain
-
-\begin{equation}\label{proof_last}
-\begin{aligned}
-(I - \tau \bfy \bfy^\top)Z = &\mathbf{e}_1\underbrace{(-\tau \mathbf{c}_6^\top)}_{\min(\ell+m+1,n)\hbox{ nonzero entries}
-} + U^{(2)}\underbrace{(-\tau \bar{\mathbf{k}} \mathbf{c}_6^\top)}_{\bbR^{r\times \min(\ell+m+1,n)} \hbox{ nonzero entries}
-} \\&+ \underbrace{(Z - \tau \mathbf{b} \mathbf{c}_6^\top)}_{\bbR^{\min(\ell+1,n) \times \min(\ell+m+1,n)} \hbox{ nonzero entries}}.
-\end{aligned}
-\end{equation}
-
-Since $\calP(A[2:n,2:n])$ and $\calV_2(A)$ are both vector spaces, their elements are closed under addition. Therefore, we can sum all contributions of each type separately to obtain the overall structure:
-
-Firstly, the submatrix \( \tilde{C}[2:n, 2:n] \) satisfies:
-\begin{equation}\label{submatrix_structure}
-\tilde{C}[2:n, 2:n] = \tilde{A} + \tilde{U} \tilde{J} \tilde{S}^\top + \tilde{U} \tilde{K} \tilde{U}^\top \tilde{A} + \tilde{U} \tilde{E} + \tilde{X} \tilde{S}^\top + \tilde{Y} \tilde{U}^\top \tilde{A} + \tilde{Z},
-\end{equation}
-where
-\begin{align*}
-    \tilde{A} &= A[2:n, 2:n] \\
-    \tilde{U} &= U[2:n, :] \\
-    \tilde{S} &= S[2:n, :]
-\end{align*}
-and the updated modification matrices are given by:
-\begin{align*}
-    \tilde{J} &= -\tau \bar{\mathbf{k}} \bar{\mathbf{w}}_1^\top - \tau \bar{\mathbf{k}} \mathbf{f}^\top + J - \tau \bar{\mathbf{k}} \mathbf{c}_1^\top + K \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top - \tau \bar{\mathbf{k}} \mathbf{c}_2^\top \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top - \tau \bar{\mathbf{k}} \mathbf{c}_4^\top - \tau \bar{\mathbf{k}} \mathbf{c}_5^\top \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top, \\
-    \tilde{K} &= -\tau \bar{\mathbf{k}} \bar{\mathbf{k}}^\top + K - \tau \bar{\mathbf{k}} \mathbf{c}_2^\top - \tau \bar{\mathbf{k}} \mathbf{c}_5^\top, \\
-    \tilde{E} &= [\tilde{E}_s, \mathbf{0}] \in \mathbb{R}^{r \times (n-1)}, \quad \text{with} \\
-    \tilde{E}_s &= (-\tau \bar{\mathbf{k}} \mathbf{d}_1^\top - \tau \bar{\mathbf{k}} \bar{\mathbf{d}}^\top + K \bar{\mathbf{u}}_1 \mathbf{d}_1^\top - \tau \bar{\mathbf{k}} \mathbf{c}_2^\top \bar{\mathbf{u}}_1 \mathbf{d}_1^\top + E - \tau \bar{\mathbf{k}} \mathbf{c}_3^\top E \\
-    &\quad - \tau \bar{\mathbf{k}} \mathbf{c}_5^\top \bar{\mathbf{u}}_1 \mathbf{d}_1^\top - \tau \bar{\mathbf{k}} \mathbf{c}_6^\top)[:, 2:\min(\ell+m+1, n)], \\
-    \tilde{X} &= \begin{bmatrix} \tilde{X}_s \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{(n-1) \times p}, \quad \text{with} \\
-    \tilde{X}_s &= (-\tau \mathbf{b} \bar{\mathbf{w}}_1^\top - \tau \mathbf{b} \mathbf{f}^\top - \tau \mathbf{b} \mathbf{c}_1^\top - \tau \mathbf{b} \mathbf{c}_2^\top \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top + X - \tau \mathbf{b} \mathbf{c}_4^\top \\
-    &\quad + Y \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top - \tau \mathbf{b} \mathbf{c}_5^\top \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top)[2:\min(\ell+1, n), :], \\
-    \tilde{Y} &= \begin{bmatrix} \tilde{Y}_s \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{(n-1) \times r}, \quad \text{with} \\
-    \tilde{Y}_s &= (-\tau \mathbf{b} \bar{\mathbf{k}}^\top - \tau \mathbf{b} \mathbf{c}_2^\top + Y - \tau \mathbf{b} \mathbf{c}_5^\top)[2:\min(\ell+1, n), :], \\
-    \tilde{Z} &= \begin{bmatrix} \tilde{Z}_s & \mathbf{0} \\ \mathbf{0} & \mathbf{0} \end{bmatrix} \in \mathbb{R}^{(n-1) \times (n-1)}, \quad \text{with} \\
-    \tilde{Z}_s &= (-\tau \mathbf{b} \mathbf{d}_1^\top - \tau \mathbf{b} \bar{\mathbf{d}}^\top - \tau \mathbf{b} \mathbf{c}_2^\top \bar{\mathbf{u}}_1 \mathbf{d}_1^\top - \tau \mathbf{b} \mathbf{c}_3^\top E + Y \bar{\mathbf{u}}_1 \mathbf{d}_1^\top - \tau \mathbf{b} \mathbf{c}_5^\top \bar{\mathbf{u}}_1 \mathbf{d}_1^\top \\
-    &\quad + Z - \tau \mathbf{b} \mathbf{c}_6^\top)[2:\min(\ell+1, n), 2:\min(\ell+m+1, n)].
-\end{align*}
-
-The forms of \( \tilde{J}, \tilde{K}, \tilde{E}, \tilde{X}, \tilde{Y}, \tilde{Z} \) confirm the first part of the lemma.
-
-Secondly, the first row of the transformed matrix, \( \tilde{C}[1, 2:n] \), can be expressed as:
-\begin{equation*}
-\tilde{C}[1, 2:n] = \hat{\mathbf{d}} +  S[2:n, :]\boldsymbol{\alpha} + (A^\top U^{(2)})[2:n, :]\boldsymbol{\beta},
-\end{equation*}
-where
-\begin{align*}
-    \hat{\mathbf{d}} &= \begin{bmatrix} \hat{\mathbf{d}}_s \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n-1}, \quad \text{with} \\
-    \hat{\mathbf{d}}_s &= (\mathbf{d}_1 - \tau \mathbf{d}_1 - \tau \bar{\mathbf{d}} + \mathbf{d}_1 \bar{\mathbf{u}}_1^\top K^\top \bar{\mathbf{u}}_1   - \tau \mathbf{d}_1 \bar{\mathbf{u}}_1^\top \mathbf{c}_2 + E^\top \bar{\mathbf{u}} - \tau E^\top \mathbf{c}_3 \\
-    &\quad + \mathbf{d}_1 \bar{\mathbf{u}}_1^\top \bfy^{(1)} - \tau \mathbf{d}_1 \bar{\mathbf{u}}_1^\top \mathbf{c}_5 + \mathbf{z}^{(1)} - \tau \mathbf{c}_6)[2:\min(\ell+m+1, n)], \\
-    \hat{\boldsymbol{\alpha}} &= (\bar{\mathbf{w}}_1 - \tau \bar{\mathbf{w}}_1 - \tau \mathbf{f} + J^\top \bar{\mathbf{u}}_1 - \tau \mathbf{c}_1 + \bar{\mathbf{w}}_1 \bar{\mathbf{u}}_1^\top K^\top \bar{\mathbf{u}}_1  - \tau \bar{\mathbf{w}}_1\bar{\mathbf{u}}_1^\top \mathbf{c}_2 \\
-    &\quad + \mathbf{x}^{(1)} - \tau \mathbf{c}_4 + \bar{\mathbf{w}}_1 \bar{\mathbf{u}}_1^\top \bfy^{(1)}  - \tau \bar{\mathbf{w}}_1 \bar{\mathbf{u}}_1^\top \mathbf{c}_5) \in \mathbb{R}^p, \\
-    \hat{\boldsymbol{\beta}} &= (-\tau \bar{\mathbf{k}} + K^\top \bar{\mathbf{u}}_1 - \tau \mathbf{c}_2 + \bfy^{(1)} - \tau \mathbf{c}_5) \in \mathbb{R}^r.
-\end{align*}
-
-Noting that \( U^{(2)} = U - \mathbf{e}_1 \bar{\mathbf{u}}_1^\top \) and \( \mathbf{e}_1^\top A = \mathbf{d}_1^\top + \bar{\mathbf{w}}_1^\top S^\top \), we have \( U^{(2)\top} A = U^\top A - \bar{\mathbf{u}}_1 \bar{\mathbf{w}}_1^\top S^\top - \bar{\mathbf{u}}_1 \mathbf{d}_1^\top \). Substituting this yields an alternative expression:
-\begin{equation}\label{row_structure}
-\tilde{C}[1, 2:n] = \tilde{\mathbf{d}} +  S[2:n, :]\tilde{\boldsymbol{\alpha}} + (A^\top U)[2:n, :]\tilde{\boldsymbol{\beta}},
-\end{equation}
-where
-\begin{align*}
-    \tilde{\mathbf{d}} &= \begin{bmatrix} \tilde{\mathbf{d}}_s \\ \mathbf{0} \end{bmatrix} \in \mathbb{R}^{n-1}, \quad \text{with} \\
-    \tilde{\mathbf{d}}_s &= (\mathbf{d}_1 - \tau \mathbf{d}_1 - \tau \bar{\mathbf{d}} + E^\top \bar{\mathbf{u}}_1 - \tau E^\top \mathbf{c}_3 + \mathbf{z}^{(1)} - \tau \mathbf{c}_6 + \tau \mathbf{d}_1\bar{\mathbf{u}}_1^\top \bar{\mathbf{k}})[2:\min(\ell+m+1, n)], \\
-    \tilde{\boldsymbol{\alpha}} &= (\bar{\mathbf{w}}_1 - \tau \bar{\mathbf{w}}_1 - \tau \mathbf{f} + J^\top \bar{\mathbf{u}}_1 - \tau \mathbf{c}_1 + \mathbf{x}^{(1)} - \tau \mathbf{c}_4 + \tau \bar{\mathbf{w}}_1 \bar{\mathbf{u}}_1^\top \bar{\mathbf{k}}) \in \mathbb{R}^p, \\
-    \tilde{\boldsymbol{\beta}} &= (-\tau \bar{\mathbf{k}} + K^\top \bar{\mathbf{u}}_1 - \tau \mathbf{c}_2 + \bfy^{(1)} - \tau \mathbf{c}_5) \in \mathbb{R}^r.
-\end{align*}
-
-This confirms that \( \tilde{C}[1, 2:n] \in \calV_2(A) \), completing the proof of the lemma.
-\end{proof}
-
-\subsection{Structure Preservation Theorem and its Proof}
-
-Equipped with lemma \ref{lemma:structure_preserve}, we now state and prove the main theorem concerning the structure of the QR factor matrix \( F \).
+We now arrive at the main result: the final factors matrix is BPS:
 
 \begin{theorem}\label{thm:structure_preserve}
-After applying the QR factorization to a BPS matrix \( A \) (as expressed in Eq. \eqref{express_A}) with lower semiseparable rank \( r \), upper semiseparable rank \( p \), lower bandwidth \( \ell \), and upper bandwidth \( m \), the resulting factor matrix \( F \) is also a BPS matrix. Specifically, its lower semiseparable part has rank \( r \); its upper semiseparable part has rank \( r + p \); its banded part has lower bandwidth \( \ell \) and upper bandwidth \( \ell + m \).
+    The QR factorisation of a BPS matrix yields a BPS factors matrix:
+$
+F_n \in {\mathrm{BPS}}_{(r,r+p),(\ell,\ell+m)}^{n \times n}.
+$
 
 \end{theorem}
 
 \begin{proof}
-The QR factorization is computed by performing a sequence of \( n-1 \) Householder transformations, eliminating the subdiagonal entries of \( A \) column by column.
-
-Let \( A^{(i)} \) denote the matrix after the \( i \)-th Householder transformation, with \( A^{(0)} = A \). Define \( A_i = A[i:n, i:n] \), \( U_i = U[i:n, :] \), \( V_i = V[i:n, :] \), \( S_i = S[i:n, :] \), and \( W_i = W[i:n, :] \). Let \( \bar{\mathbf{u}}_i = (u_i^{(1)}, \ldots, u_i^{(r)})^\top \) and \( \bar{\mathbf{w}}_i = (w_i^{(1)}, \ldots, w_i^{(p)})^\top \). Let \( \bar{S} = U^\top A \in \mathbb{R}^{r \times n} \).
-
-We prove by induction that after the \( j \)-th transformation (\( 0 \le j < n \)):
-\begin{enumerate}
-    \item The submatrix \( A^{(j)}[j+1:n, j+1:n] = A_{j+1} + P_{j+1} \) for \(P_{j+1}  \in \calP(A_{j+1}) \)
-    \item The \( j \)-th row of the final factor \( F \), \( F[j, j+1:n]^\top \in \calV_{j+1}(A) \).
-    \item The \( j \)-th column of \( F \) below the diagonal, \( F[j+1:n, j] \), has the form \( (U \bar{\mathbf{k}}_{j+1})[j+1:n] + \mathbf{b}_{j+1}[2:n+1-j] \), where \( \bar{\mathbf{k}}_{j+1} \in \mathbb{R}^r \) and \( \mathbf{b}_{j+1} \in \mathbb{R}^{n+1-j} \) is non-zero only in its first \( \min(\ell+1, n+1-j) \) entries.
-\end{enumerate}
-
-Base Case ($j=0$): Initially, \( A^{(0)} = A \) is trivially \(= A_{1} + \mathbf{0}_{n\times n}\) for \(\mathbf{0}_{n\times n}\in \calV(A_1)\)(with \( J, K, E, X, Y, Z = \mathbf{0} \)).
-
-Inductive Step: Assume the induction hypothesis holds for \( j \). That is, \( A^{(j)}[j+1:n, j+1:n] = A_{j+1} + P_{j+1} \) for \(P_{j+1}  \in \calP(A_{j+1}) \), and for \( k = 1, \ldots, j \):
-\begin{equation}
-F[k+1:n, i] = (U \bar{\mathbf{k}}_{k+1})[k+1:n] + \mathbf{b}_{k+1}[2:n+1-k], \label{F_tril}
-\end{equation}
-\begin{equation}
-F[k, k+1:n]^\top = \tilde{\mathbf{d}}_{k+1}^\top + (\tilde{\boldsymbol{\alpha}}_{k+1}^\top S^\top)[k+1:n] + (\tilde{\boldsymbol{\beta}}_{k+1}^\top \bar{S})[k+1:n], \label{F_triu}
-\end{equation}
-with \( \tilde{\boldsymbol{\alpha}}_{k+1} \in \mathbb{R}^p \), \( \tilde{\boldsymbol{\beta}}_{k+1} \in \mathbb{R}^r \), and \( \tilde{\mathbf{d}}_{k+1} \in \mathbb{R}^{n-i} \) non-zero only in its first \( \min(\ell+m, n-k) \) entries.
-
-Furthermore, assume:
-\begin{equation*}
-\begin{aligned}
-A^{(j)}[j+1:n, j+1:n] = & A_{j+1} + U_{j+1} J_{j+1} S_{j+1}^\top + U_{j+1} K_{j+1} U_{j+1}^\top A_{j+1} \\
-& + U_{j+1} E_{j+1} + X_{j+1} S_{j+1}^\top + Y_{j+1} U_{j+1}^\top A_{j+1} + Z_{j+1}, \label{After_HT}
-\end{aligned}
-\end{equation*}
-where the modification matrices \( J_{j+1}, K_{j+1}, E_{j+1}, X_{j+1}, Y_{j+1}, Z_{j+1} \) possess the sparsity patterns specified in Definition \ref{def:hmbpsm}.
-
-If \( j < n-1 \), we now perform the \( (j+1) \)-th Householder transformation on $A_{j+1}+P_{j+1}$. Let \( \bfy_{j+1} \) be the corresponding Householder vector. It can be expressed as  \(\bfy_{j+1}[1:j] = \mathbf{0}\) and \( \bfy_{j+1}[j+1:n] = \mathbf{e}_{j+1} + U^{(j+2)} \bar{\mathbf{k}}_{j+2} + \mathbf{b}_{j+2} \), where \( \mathbf{e}_{j+1} \in \mathbb{R}^{n-j} \) is the first standard basis vector, \( U^{(j+2)} \in \mathbb{R}^{(n-j) \times r} \) satisfies \( U^{(j+2)}[1,:] = \mathbf{0} \) and \( U^{(j+2)}[2:n-j, :] = U[j+2:n, :] \), \( \bar{\mathbf{k}}_{j+2} \in \mathbb{R}^r \), and \( \mathbf{b}_{j+2} \in \mathbb{R}^{n-j} \) is non-zero only in entries $2$ through \( \min(\ell+1, n-j) \). This vector defines the \( (j+1) \)-th column of \( F \):
-\begin{equation}
-F[j+2:n, j+1] = (U \bar{\mathbf{k}}_{j+2})[j+2:n] + \mathbf{b}_{j+2}[2:n-j]. \label{F_tril_2}
-\end{equation}
-
-We now apply Lemma \ref{lemma:structure_preserve} to \( A^{(j)}[j+1:n, j+1:n] \), which is \( A_{j+1} + P_{j+1}\). The Householder transformation \( (I - \tau_{j+1} \bfy_{j+1}[j+1:n] \bfy_{j+1}[j+1:n]^\top) \) is applied to \( A_{j+1}+P_{j+1} \), here \(\tau_{j+1}\) is a coefficient found to satisfy the definition of a Householder transformation.
-
-From the lemma, the resulting submatrix \( A^{(j+1)}[j+2:n, j+2:n] \) can be expressed as \(A_{j+2}+P_{j+2}\) for \(P_{j+2}\in \calP(A_{j+2})\). Its structure is given by equations analogous to \eqref{submatrix_structure}, with updated modification matrices \( J_{j+2}, K_{j+2}, E_{j+2}, X_{j+2}, Y_{j+2}, Z_{j+2} \), which retain the required sparsity patterns.
-
-Furthermore, the lemma states that \( A^{(j+1)}[j+1, j+2:n] \in \calV_2(A_j) \). This row becomes \( F[j+1, j+2:n] \) in the final factor matrix. Following the derivation \eqref{row_structure} in the lemma, and using the relation
-\begin{equation}\label{eq:relation_UA}
-U_{j+1}^\top A_{j+1}[:, 2:n-j] = (U^\top A - \sum_{t=1}^{j} \bar{\mathbf{u}}_t \bar{\mathbf{w}}_t^\top S^\top)[:, j+2:n] - \sum_{t=\max(j-m+2,1)}^{j} \bar{\mathbf{u}}_t (B[t, j+2:n]^\top),
-\end{equation}
-we can also express this row in the form:
-\begin{equation}
-\begin{aligned}
-F[j+1, j+2:n] = & \tilde{\mathbf{d}}_{j+2} + (S\tilde{\boldsymbol{\alpha}}_{j+2})[j+2:n] + (\bar{S}^\top\tilde{\boldsymbol{\beta}}_{j+2})[j+2:n], \label{F_triu_2}
-\end{aligned}
-\end{equation}
-
-where \( \tilde{\mathbf{d}}_{j+2} \) only nonzero in the first $\min(\ell+m, n-j-1)$ entries, \( \tilde{\boldsymbol{\alpha}}_{j+2}\in \mathbb{R}^p\), and \( \tilde{\boldsymbol{\beta}}_{j+2}\in \mathbb{R}^r \). That means \(F[j+1,j+2:n]\in \calV_{j+2}(A)\).
-
-By the principle of induction, the hypotheses hold for all \( j = 0, \ldots, n-1 \).
-
-Upon completion of all \( n-1 \) transformations, the factor matrix \( F \) is fully determined. Aggregating the results from \eqref{F_tril} and \eqref{F_triu}, we conclude that \( F \) can be written in the form:
-\begin{equation}
-F = B_F + \tril(U \bar{K}^\top, -1) + \triu([\bar{A},\bar{B}] [S,\bar{S}^\top]^\top, 1), \label{express_F}
-\end{equation}
-where
-
- \( \bar{K} \in \mathbb{R}^{n \times r} \) is defined by \( \bar{K}[k,:] = \bar{\mathbf{k}}_{k+1}^\top \) for \( k=1,\ldots,n-1 \) and \( \bar{K}[n,:] = \mathbf{0} \).
-
- \( \bar{A} \in \mathbb{R}^{n \times p} \) is defined by \( \bar{A}[k,:] = \boldsymbol{\alpha}_{k+1}^\top \) for \( i=k,\ldots,n-1 \) and \( \bar{A}[n,:] = \mathbf{0} \).
-
-\( \bar{B} \in \mathbb{R}^{n \times r} \) is defined by \( \bar{B}[k,:] = \boldsymbol{\beta}_{k+1}^\top \) for \( k=1,\ldots,n-1 \) and \( \bar{B}[n,:] = \mathbf{0} \).
-
-\( B_F \) is a banded matrix with lower bandwidth \( \ell \) and upper bandwidth \( \ell+m \), defined by:
-    \[
-    B_F[k,j] =
-    \begin{cases}
-        A^{(k)}[k,k], & k = j < n \\
-        A^{(n-1)}[n,n], & k = j = n \\
-        \mathbf{b}_{j+1}[k-j+1], & 0 < k - j \le \ell \\
-        \tilde{\mathbf{d}}_{k+1}[j-k], & 0 < j - k \le \ell + m \\
-        0, & \text{otherwise}.
-    \end{cases}
-    \]
-
-
-The representation in \eqref{express_F} explicitly shows that \( F \) is a BPS matrix with a lower semiseparable rank of \( r \), an upper semiseparable rank of \( r+p \), a lower bandwidth of \( \ell \), and an upper bandwidth of \( \ell+m \). This completes the proof.
+    Follows immediately from the above as
+\[
+F_n = F_n[:,1:n] = B_n + \tril(U V_n^\top,-1) + \triu(W_n \tilde S^\top,1).
+\]
 \end{proof}
+
 
 \section{Fast Algorithms for QR Factorization and Direct Solvers}
 \label{sec:algorithms}
+
+We now discuss the practical implementation of an $O(n)$ algorithm for computing the QR factorisation of a BPS matrix.
 
 \subsection{Fast QR factorization for BPS Matrices}
 \label{sec:fastqr}
