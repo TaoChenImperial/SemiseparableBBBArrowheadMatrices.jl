@@ -238,16 +238,17 @@ y_{n1}      & \cdots &    y_{n,k-1} &  y_{nk}      & a_{n,k+1}^k   & \cdots & a_
         \tikz \draw ([xshift=6pt,yshift=0pt]5-|5) -- ([xshift=6pt,yshift=0pt]8-|5);
 \end{bNiceMatrix},
 \]
-alongside $\bftau_k = [\tau_1,\ldots,\tau_k,0,\ldots,0]^\top$. We can view applying the $k$-th Householder transformation as a map
-\[
-{\cal H}_k(F_k, \bftau_k)  := (F_{k+1}, \bftau_{k+1}).
-\]
+alongside $\bftau_k = [\tau_1,\ldots,\tau_k,0,\ldots,0]^\top$. 
 
+% We can view applying the $k$-th Householder transformation as a map
+% \[
+% {\cal H}_k(F_k, \bftau_k)  := (F_{k+1}, \bftau_{k+1}).
+% \]
 
 The intermediate factors matrices {\it does not} have BPS structure, however, we shall so that it is a structured perturbation of BPS.
 
 
-\section{Structure Preservation of the factors matrix for BPS matrices}
+\section{Structure of the factors matrix for BPS matrices}
 \label{sec:main}
 
 We now turn our attention to understanding the structure that $F_k$ exhibits.  In particular, we claim it is a structured perturbation of a BPS matrix. To be precise, we first introduce a notation for BPS matrices:
@@ -277,7 +278,7 @@ A[k\!:\!n, k\!:\!n] &= B[k\!:\!n, k\!:\!n]
 \triu(W[k\!:\!n, :]S[k\!:\!n, :]^\top,1) \in {\mathrm{BPS}}_{(r,p),(\ell,m)}^{n-k+1 \times n-k+1}.
 \end{align*}
 
-We will also need to work with specific columns of banded matrices, which are convenient to express in terms of an explicit sparsity structure:
+We will also need to work with padded vectors or matrices:
 
 \begin{definition}
 Denote a {\it padded vector} with only the first $p$ rows being possibly nonzero as $\calS_p^n \subset \bbR^n$ and a {\it padded matrix} with only the principle $p \times q$ subblock as $\calS_{p \times q}^{m \times n} \subset \bbR^{m \times n}$. Explicitly, $\bfx \in \calS_p^n$ if $\bfx[k] = 0$ unless $k \leq p$ and $A \in \calS_{p \times q}^{m \times n}$ if $A[k,j] = 0$ unless $k \leq p$ and $j \leq q$.
@@ -286,29 +287,10 @@ Denote a {\it padded vector} with only the first $p$ rows being possibly nonzero
 Note for example if $B \in \BM$ then $B[k\!:\!n,k] \in \calS_{\ell+1}^{n-k+1}$ and $B[k,k\!:\!n] \in \calS_{m+1}^{n-k+1}$.
 
 
-We will now describe the structure of each portion of the partial factors matrix.
-The first $k$-th rows/columns of $F_k$ will maintain the BPS structure albeit with an increased upper semiseparable rank of $p+r$.
-The bottom right will be a structured perturbation of a BPS matrix. In particular,
-the partial factors matrices will satisfy the following: for $B_k \in {\mathrm{BM}}_{(\ell,\ell+m)}^{n \times n}$,
-$V_k \in \bbR^{n \times r}$, $W_k \in \bbR^{n \times (r+p)}$, and
-\[
-\tilde S :=  \begin{bmatrix} S & A^\top U
-\end{bmatrix} \in \bbR^{n \times (r+p)},
-\]
-we have the first $k$ rows/columns satisfying the conditions of the BPS format:
-\begin{align*}
-F_k[:,1\!:\!k] &= (B_k + \tril(U V_k^\top, -1) + \triu(W_k \tilde S^\top,1))[:,1\!:\!k] \\
-F_k[1\!:\!k,:] &= (B_k + \tril(U V_k^\top, -1) + \triu(W_k \tilde S^\top,1))[1\!:\!k,:]
-\end{align*}
-whilst the bottom right block is a perturbed BPS matrix:
-\begin{align*}
-F_k[k\!+\!1\!:\!n,k\!+\!1\!:\!n] &= A[k+1\!:\!n,k+1\!:\!n] + P_k,
-\end{align*}
-where $P_k \in \calP(A[k+1\!:\!n,k+1\!:\!n])$ for the following perturbation space:
+We will now describe the structure of each portion of the partial factors matrix. We will describe the bottom right in terms of the following vector space:
 
 \begin{definition}\label{def:hmbpsm}
 Given
-
 \[
 A = B + \tril(UV^\top, -1) + \triu(WS^\top, 1)  \in \BPS
 \]
@@ -322,9 +304,38 @@ UJS^\top + UKU^\top A + UE + XS^\top + YU^\top A + Z :\\
 \end{align*}
 \end{definition}
 
-We claim this structure is preserved: if $F_k$ has this form then so does $F_{k+1}$. The basis case $F_0 := A$ is trivial: we can take the perturbation to be zero.
 
-As a preliminary step we note this structure is preserved under trunctation:
+We will show that $F_k$ has the following structure:
+The first $k$ rows/columns of $F_k$ will maintain the BPS structure albeit with an increased upper semiseparable rank of $p+r$.
+The bottom right will be a structured perturbation of a BPS matrix.
+
+In particular,
+the partial factors matrices will satisfy the following:
+
+\begin{definition}
+We say $F_k \in {\rm BPSF}_k(A)$ if for
+\[
+\tilde S :=  \begin{bmatrix} S & A^\top U
+\end{bmatrix} \in \bbR^{n \times (r+p)},
+\]
+ there exist 
+ $B_k \in {\mathrm{BM}}_{(\ell,\ell+m)}^{n \times n}$,
+$V_k \in \bbR^{n \times r}$, $W_k \in \bbR^{n \times (r+p)}$, 
+so that the first $k$ rows and columns satisfy the conditions of the BPS format:
+\begin{align*}
+F_k[:,1\!:\!k] &= (B_k + \tril(U V_k^\top, -1) + \triu(W_k \tilde S^\top,1))[:,1\!:\!k] \\
+F_k[1\!:\!k,:] &= (B_k + \tril(U V_k^\top, -1) + \triu(W_k \tilde S^\top,1))[1\!:\!k,:]
+\end{align*}
+whilst the bottom right block is a perturbed BPS matrix:
+\begin{align*}
+F_k[k\!+\!1\!:\!n,k\!+\!1\!:\!n] &= A[k+1\!:\!n,k+1\!:\!n] + P_k,
+\end{align*}
+where $P_k \in \calP(A[k+1\!:\!n,k+1\!:\!n])$.
+\end{definition}
+
+
+We will show that the factors matrix $F_k \in {\rm BPSF}_k(A)$ by induction.
+As a preliminary step we note that the perturbation structure of the bottom right is preserved under truncation:
 
 \begin{lemma}\label{Lemma:Ppertub}
     If $P \in \calP(A)$ then $P[k\!:\!n,k\!:\!n] \in \calP(A[k\!:\!n,k\!:\!n])$.
@@ -361,11 +372,11 @@ P[2\!:\!n,2\!:\!n] &= U[2\!:\!n,:] (J + K U[1,:] W[1,:]^\top) S[2\!:\!n,:]^\top 
 \end{proof}
 
 
-The first step is to understand the structure of the Householder reflector, which corresponds to rows $k+1$ through $n$ of
+The next step is to understand the structure of the Householder reflector, which corresponds to rows $k+1$ through $n$ of
 the $k$-th column of $F_k$:
 
 \begin{lemma}
-    Suppose $F_{k-1}$ has the prescribed form. Then there exists $B_k$ and $V_k$ such that
+    Suppose $F_{k-1}  \in {\rm BPSF}_{k-1}(A)$. Then there exists $B_k$ and $V_k$ such that
 \[
 F_k[:,1:k] = (B_k + \tril(U V_k^\top, -1) + \triu(W_{k-1} \tilde S^\top,1))[:,1:k]
 \]
@@ -414,7 +425,7 @@ The remaining (not structurally zero) entries of $B_k$ and $V_k$ are at this poi
 We now show the first $k$ rows of $F_k$ (corresponding to $R$) also have the specified form:
 
 \begin{lemma}
-    Suppose $F_{k-1}$ has the prescribed form. Then there exists $B_k, V_k, W_k$ such that
+    Suppose $F_{k-1}  \in {\rm BPSF}_{k-1}(A)$. Then there exists $B_k, V_k, W_k$ such that
 \[
 F_k[1:k,:] = (B_k + \tril(U V_k^\top, -1) + \triu(W_k \tilde S^\top,1))[1:k,:]
 \]
@@ -492,7 +503,7 @@ B_k[k,k\!:\!n]^\top &:= \bfs_1^\top  + \beta_k \bfs_2^\top - W_k[k,:]^\top \tild
 \end{proof}
 
 \begin{lemma}
-    Suppose $F_{k-1}$ has the prescribed form. Then so does $F_k$. 
+    Suppose $F_{k-1}  \in {\rm BPSF}_{k-1}(A)$. Then $F_k \in {\rm BPSF}_k(A)$. 
 \end{lemma}
 
 \begin{proof}
@@ -504,7 +515,7 @@ A_k :&= F_k[(k\!+\!1)\!:\!n,(k\!+\!1)\!:\!n] \\
 \end{align*}
 From Lemma~\ref{Lemma:Ppertub} we know that since $A_{k-1} \in \calP(A[k\!:\!n,k\!:\!n])$ we have
 \[
-A_{k-1}[2\!:\!(n-k),2\!:\!(n-k)] \in \calP(A[(k\!+\!1)\!:\!n,(k\!+\!1)\!:\!n]).
+A_{k-1}[2\!:\!(n-k+1),2\!:\!(n-k+1)] \in \calP(A[(k\!+\!1)\!:\!n,(k\!+\!1)\!:\!n]).
 \]
 We thus need only consider
 \begin{align*}
@@ -521,9 +532,6 @@ U[k:n,:] \underbrace{ V_k[k,:] \tilde \bfw_2^\top}_{\in \bbR^{r \times r}} (U^\t
  \bfe_1 (\cdots).
 \end{align*}
 Dropping the first row and column we see this term is in $\calP(A[k\!:\!n,k\!:\!n])$, using a similar argument as Lemma~\ref{Lemma:Ppertub}.
-
-
-
 \end{proof}
 
 We now arrive at the main result: the final factors matrix is BPS:
@@ -537,7 +545,7 @@ $
 \end{theorem}
 
 \begin{proof}
-    Follows immediately from the above as
+    Follows immediately from the fact $F_n \in {\rm BPSF}_n(A)$ as
 \[
 F_n = F_n[:,1:n] = B_n + \tril(U V_n^\top,-1) + \triu(W_n \tilde S^\top,1).
 \]
