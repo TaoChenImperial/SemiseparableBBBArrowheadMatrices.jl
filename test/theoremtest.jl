@@ -44,7 +44,7 @@ end
         end
     end
 
-    @testset "Proposition 3.5" begin
+    @testset "Lemma 3.6" begin
         ℓ,m = 2,1
         r,p = 3,2
         n = 20
