@@ -1,14 +1,14 @@
 # Fdb version 4
-["bibtex article"] 1774448004 "article.aux" "article.bbl" "article" 1774448368 0
+["bibtex article"] 1776255363 "article.aux" "article.bbl" "article" 1776255445 0
   "./references.bib" 1773780968 7488 01c486f54116353937a4b5aa671e456b ""
   "./siamplain.bst" 1765101700 20530 3b70bf0c2e3ff2b6ef486581c42b8ff9 ""
-  "article.aux" 1774448368 18876 c5958e5e8a1bb6b1bccbcf578c500f53 "pdflatex"
+  "article.aux" 1776255445 25875 d70c9c93c2b7d507f2fca635b5eddef6 "pdflatex"
   (generated)
   "article.bbl"
   "article.blg"
   (rewritten before read)
-["pdflatex"] 1774448366 "/Users/solver/Projects/SemiseparableBBBArrowheadMatrices.jl/article/article.tex" "article.pdf" "article" 1774448368 0
-  "/Users/solver/Projects/SemiseparableBBBArrowheadMatrices.jl/article/article.tex" 1774448366 95951 bebe67b1089062ae63e655200216abc5 ""
+["pdflatex"] 1776255444 "/Users/solver/Projects/SemiseparableBBBArrowheadMatrices.jl/article/article.tex" "article.pdf" "article" 1776255445 0
+  "/Users/solver/Projects/SemiseparableBBBArrowheadMatrices.jl/article/article.tex" 1776255444 82008 c840f81d56d8e90b8ca0c76548127294 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy5.tfm" 1246382020 1120 1e8878807317373affa7f7bba4cf2f6a ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy6.tfm" 1246382020 1124 14ccf5552bc7f77ca02a8a402bea8bfb ""
@@ -100,6 +100,7 @@
   "/usr/local/texlive/2023/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreshade.code.tex" 1601326656 35249 abd4adf948f960299a4b3d27c5dddf46 ""
   "/usr/local/texlive/2023/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransformations.code.tex" 1673816307 22012 81b34a0aa8fa1a6158cc6220b00e4f10 ""
   "/usr/local/texlive/2023/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransparency.code.tex" 1601326656 8893 e851de2175338fdf7c17f3e091d94618 ""
+  "/usr/local/texlive/2023/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarymatrix.code.tex" 1673816307 4228 c39d423dc1a80da31c8c67bf1067f384 ""
   "/usr/local/texlive/2023/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarypositioning.code.tex" 1601326656 3937 3f208572dd82c71103831da976d74f1a ""
   "/usr/local/texlive/2023/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarytopaths.code.tex" 1608933718 11518 738408f795261b70ce8dd47459171309 ""
   "/usr/local/texlive/2023/texmf-dist/tex/generic/pgf/frontendlayer/tikz/tikz.code.tex" 1673816307 186782 af500404a9edec4d362912fe762ded92 ""
@@ -186,6 +187,7 @@
   "/usr/local/texlive/2023/texmf-dist/tex/latex/lineno/lineno.sty" 1674162155 152262 eb3bf7a579d4a34a0ed4f6b445bafbd8 ""
   "/usr/local/texlive/2023/texmf-dist/tex/latex/lipsum/lipsum.ltd.tex" 1632168149 95525 6fd0552101a6b1f9b7a84b402ec435ba ""
   "/usr/local/texlive/2023/texmf-dist/tex/latex/lipsum/lipsum.sty" 1632168149 14690 c2c754218a7108db7823a4839c1bc3cd ""
+  "/usr/local/texlive/2023/texmf-dist/tex/latex/nicematrix/nicematrix.sty" 1678227661 348689 e1ba39e0ea3fbcc8a16ab3b20e81a119 ""
   "/usr/local/texlive/2023/texmf-dist/tex/latex/ntheorem/ntheorem.sty" 1346969955 43120 799f06af91d8fb275749981ca21a5146 ""
   "/usr/local/texlive/2023/texmf-dist/tex/latex/oberdiek/hypcap.sty" 1575152444 3822 b53c749cd81352b4679a35b0dafefb95 ""
   "/usr/local/texlive/2023/texmf-dist/tex/latex/pgf/basiclayer/pgf.sty" 1601326656 1090 bae35ef70b3168089ef166db3e66f5b2 ""
@@ -201,6 +203,7 @@
   "/usr/local/texlive/2023/texmf-dist/tex/latex/refcount/refcount.sty" 1576624809 9878 9e94e8fa600d95f9c7731bb21dfb67a4 ""
   "/usr/local/texlive/2023/texmf-dist/tex/latex/rerunfilecheck/rerunfilecheck.sty" 1657483315 9714 ba3194bd52c8499b3f1e3eb91d409670 ""
   "/usr/local/texlive/2023/texmf-dist/tex/latex/todonotes/todonotes.sty" 1675198268 21300 a6e0d5f13b9360f0419aa0d6b30a9c96 ""
+  "/usr/local/texlive/2023/texmf-dist/tex/latex/tools/array.sty" 1667332637 12691 5b542990fe866f3d772f71346cf85b95 ""
   "/usr/local/texlive/2023/texmf-dist/tex/latex/tools/bm.sty" 1654720880 13231 b52297489a0e9d929aae403417d92a02 ""
   "/usr/local/texlive/2023/texmf-dist/tex/latex/tools/calc.sty" 1654720880 10214 de3e21cfc0eccc98ca7f8dac0ef263d2 ""
   "/usr/local/texlive/2023/texmf-dist/tex/latex/url/url.sty" 1388531844 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
@@ -210,10 +213,10 @@
   "/usr/local/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1699047580 4623355 b8cad38412faebe1ce5b780a45db67bd ""
   "/usr/local/texlive/2023/texmf-var/web2c/pdftex/pdflatex.fmt" 1699047529 7883460 018c8100e583f89cddb33cb29214a9c9 ""
   "/usr/local/texlive/2023/texmf.cnf" 1678822455 577 1b2b1af17af2508fb20dd85783af4050 ""
-  "article.aux" 1774448368 18876 c5958e5e8a1bb6b1bccbcf578c500f53 "pdflatex"
-  "article.bbl" 1774448004 5298 31fd368ca9c1ce4eaab18ed02e189d89 "bibtex article"
-  "article.out" 1774448368 4942 09093893f815a54430f2d034e523a70f "pdflatex"
-  "article.tex" 1774448366 95951 bebe67b1089062ae63e655200216abc5 ""
+  "article.aux" 1776255445 25875 d70c9c93c2b7d507f2fca635b5eddef6 "pdflatex"
+  "article.bbl" 1776255363 5298 31fd368ca9c1ce4eaab18ed02e189d89 "bibtex article"
+  "article.out" 1776255445 4146 2ffe272779266d34337a9c08e1def0a3 "pdflatex"
+  "article.tex" 1776255444 82008 c840f81d56d8e90b8ca0c76548127294 ""
   "qr_comparison.pdf" 1770901859 59280 9d8ee4b29282b561c8a438b2085e07c9 ""
   "qr_linear.pdf" 1770901859 192689 cb430c962bae40cd37388ced94a1618c ""
   "qr_stability.pdf" 1774441370 175196 706fa5fc00a507338da8b70cdffe5781 ""
