@@ -389,7 +389,7 @@ V_k[1\!:\!k-1,:] &:= V_{k-1}[1\!:\!k-1,:].
 \end{align*}
 The first $k$ rows of the $k$th column follow by defining $B_k[k,k] := r_{kk}$. Thus the main contribution of this lemma is structure in the $k$-th Householder reflector which corresponds to the $k+1$ through $n$th rows.
 
-Note that
+Note that\sotodo{fix the following}
 \[
  P_{k-1}[1\!:\!n\!-\!k\!+\!1, 1] = U(JS^\top \bfe_1 + K ).
 \]
@@ -447,8 +447,8 @@ A_{k-1} &:= F_{k-1}[k\!:\!n,k\!:\!n] \\
 \end{align*}
 Noting that
 \[
-\bfe_1^\top A[k\!:\!n,k\!:\!n] = 
-B[k,k\!:\!n]^\top + \underbrace{\bfe_k^\top \triu(W S^\top,1)}_{ 
+ A[k,k\!:\!n]^\top = 
+B[k,k\!:\!n]^\top + \underbrace{\bfe_k^\top \triu(W S^\top,1)[:,k\!:\!n]}_{ 
     W[k,:]^\top S[k:n,:]^\top   - W[k,:]^\top S[k,:] \bfe_1^\top
 }
 \]
@@ -469,7 +469,7 @@ For the vector associated with the $k$th Householder reflection
 &=\underbrace{B_k[k\!:\!n,k]}_{=: \bfb_k \in \calS_{\ell+1}^{n-k+1}} + U[k\!:\!n,:] V_k[k,:] +
 \underbrace{(1-B_k[k,k] - U[k,:]^\top V_k[k,:])}_{=: \alpha_k} \bfe_1
 \end{align*}
-we first write 
+we first write\sotodo{fix error in truncation reduction}
 \begin{align*}
 \tilde\bfy_k^\top A[k\!:\!n,k\!:\!n] &=  \bfs_2^\top + V_k[k,:]^\top \underbrace{U[k\!:\!n,:]^\top A[k\!:\!n,k\!:\!n] }_{= (A^\top U)[k:n,:]^\top}+  \bfb_k^\top W[k\!:\!n,:]  S[k\!:\!n,:]^\top
 \end{align*}
@@ -509,9 +509,10 @@ B_k[k,k\!:\!n]^\top &:= \bfs_1^\top  + \beta_k \bfs_2^\top - W_k[k,:]^\top \tild
 \begin{proof}
     We have already showed the result apart from the bottom right, in particular we need to show
 \begin{align*}
-A_k :&= F_k[(k\!+\!1)\!:\!n,(k\!+\!1)\!:\!n] \\
+A_k &:= F_k[(k\!+\!1)\!:\!n,(k\!+\!1)\!:\!n] \\
 &= 
- ((I - \tau_k \tilde \bfy_k \tilde \bfy_k^\top)A_{k-1})[2\!:\!n-k,2\!:\!n-k] \in \calP(A[(k+1)\!:\!n,(k+1)\!:\!n]).
+ ((I - \tau_k \tilde \bfy_k \tilde \bfy_k^\top)A_{k-1})[2\!:\!n-k+1,2\!:\!n-k+1] \\
+ &\in \calP(A[(k+1)\!:\!n,(k+1)\!:\!n]).
 \end{align*}
 From Lemma~\ref{Lemma:Ppertub} we know that since $A_{k-1} \in \calP(A[k\!:\!n,k\!:\!n])$ we have
 \[
@@ -525,7 +526,7 @@ We thus need only consider
 (\bfs_3^\top + \tilde \bfw_2^\top (U^\top A)[:,k:n] +
  \bfw_2^\top S[k:n,:]^\top ) \\
  &= \underbrace{\bfb_k \bfs_3^\top}_{\in \calS_{(\ell+1) \times (\ell+m+1)}^{(n-k+1) \times (n-k+1)}}  + \underbrace{\bfb_k \tilde \bfw_2^\top}_{\in \calS_{(\ell+1) \times r}^{(n-k+1) \times r}} (U^\top A)[:,k:n] + 
- \underbrace{\bfb_k \bfw_2^\top}_{\in \calS_{(\ell+1) \times r}^{(n-k+1) \times p}} S[k:n,:]^\top   \\
+ \underbrace{\bfb_k \bfw_2^\top}_{\in \calS_{(\ell+1) \times p}^{(n-k+1) \times p}} S[k:n,:]^\top   \\
 &\qquad + U[k:n,:] \underbrace{ V_k[k,:] \bfs_3^\top}_{\in \calS_{r \times (\ell+m+1)}^{r \times (n-k+1)}} + 
 U[k:n,:] \underbrace{ V_k[k,:] \tilde \bfw_2^\top}_{\in \bbR^{r \times r}} (U^\top A)[:,k:n]  \\
 &\qquad + U[k:n,:] \underbrace{ V_k[k,:] \bfw_2^\top}_{\in \bbR^{r \times p}} S[k:n,:]^\top + 
