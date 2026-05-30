@@ -140,7 +140,7 @@
 \maketitle
 
 \begin{abstract}
-We show that the QR factorization of a banded-plus-semiseparable (BPS) matrix is computable in optimal linear complexity by showing that the intermediate stages of a QR factorization as computed using Householder reflection maintain a specific structure. This theoretical result enables the design of stable, linear-complexity algorithms for solving the associated linear systems. For symmetric BPS matrices, we further show that the $RQ$ product---central to eigenvalue computations via the QR algorithm---also preserves the BPS structure, leading to a linear-complexity algorithm for each iteration. Numerical experiments validate the optimal linear complexity, confirm high numerical accuracy,  and demonstrate substantial speedups compared with existing hierarchical approaches. The algorithms have been implemented in an open-source Julia package, providing an efficient and accessible platform for practical use.
+We show that the QR factorization of a banded-plus-semiseparable (BPS) matrix is computable in optimal linear complexity with respect to the discretization size by showing that the intermediate stages of a QR factorization as computed using Householder reflection maintain a specific structure which has optimal storage. This theoretical result enables the design of stable, linear-complexity algorithms for solving the associated linear systems. For symmetric BPS matrices, we further show that the $RQ$ product---central to eigenvalue computations via the QR algorithm---also preserves the BPS structure, leading to a linear-complexity algorithm for each iteration. Numerical experiments validate the optimal linear complexity, confirm high numerical accuracy,  and demonstrate substantial speedups compared with existing hierarchical approaches. The algorithms have been implemented in an open-source Julia package, providing an efficient and accessible platform for practical use.
 \end{abstract}
 
 \begin{keywords}
@@ -158,7 +158,7 @@ Banded-plus-semiseparable (BPS) matrices, expressible as
 A = \underbrace{B}_{\text{banded}} + \underbrace{\tril(UV^\top, -1)}_{\text{lower semiseparable rank } r} + \underbrace{\triu(WS^\top, 1)}_{\text{upper semiseparable rank } p} \in \bbR^{n \times n},
 \end{equation*}
 where $U ,V \in \bbR^{n \times r}$ and $W,S \in \bbR^{n,p}$
- arise in numerous applications from spectral methods for differential equations~\cite{iserles2025stable} to signal processing, control theory, and eigenvalue problems~\cite{vandebril2005note}. Importantly, the inverse of a banded matrix is itself a BPS matrix, making this structure fundamental for representing inverses of banded matrices~\cite{rozsa1991band}. Their structure requires only $O(n)$ storage, which invites the development of \( O(n) \) algorithms, a goal successfully achieved for iterations of the QR algorithm for symmetric semiseparable systems~\cite{vandebril2005implicit}, and for solving linear systems with diagonal-plus-semiseparable matrices~\cite{eidelman1997inversion}.
+ arise in numerous applications from spectral methods for differential equations~\cite{iserles2025stable} to signal processing, control theory, and eigenvalue problems~\cite{vandebril2005note}. Importantly, the inverse of a banded matrix is itself a BPS matrix, making this structure fundamental for representing inverses of banded matrices~\cite{rozsa1991band}. Their structure requires only $O(n)$ storage as $n \rightarrow \infty$, which invites the development of \( O(n) \) algorithms, a goal successfully achieved for iterations of the QR algorithm for symmetric semiseparable systems~\cite{vandebril2005implicit}, and for solving linear systems with diagonal-plus-semiseparable matrices~\cite{eidelman1997inversion}.
   However, generalizing these results to the case where the matrix is nonsymmetric, or the banded part $B$ is a genuine banded matrix, rather than merely a diagonal one, and representing the QR factorization in its entirety  presents significant algorithmic challenges.
 
 
@@ -229,7 +229,7 @@ r_{11} & r_{12} & \cdots & r_{1k} & r_{1,k+1} & \cdots & r_{1n} \\
         \tikz \draw ([xshift=0pt,yshift=-2pt]5-|5) -- (8-|5);
 \end{bNiceMatrix}.
 \]
-We can represent this partial factorization via
+We can encode this partial factorization in a partial factor matrix:
 \[
 F_k = \begin{bNiceMatrix}[cell-space-limits=10pt,columns-width=20pt]
 r_{11}      & r_{12} & \cdots       & r_{1k} & r_{1,k+1} & \cdots & r_{1n} \\
@@ -271,14 +271,14 @@ Denote the set of {\it banded matrices}  with lower-bandwidth $\ell$, and upper-
 
 
 \begin{definition}
-Denote the set of {\it banded-plus-semiseparable matrices} (BPS) with lower-semiseparable rank $r$, upper-semiseparable rank $p$, lower-bandwidth $\ell$, and upper-bandwidth $m$  as $\BPS \subset \bbR^{n \times n}$. In particular, $A \in \BPS \subset \bbR^{n \times n}$ if
+Denote the set of {\it banded-plus-semiseparable matrices} which have lower-semiseparable rank $r$, upper-semiseparable rank $p$, lower-bandwidth $\ell$, and upper-bandwidth $m$  as $\BPS \subset \bbR^{n \times n}$. In particular, $A \in \BPS \subset \bbR^{n \times n}$ if
 \[
 A = B + \tril(UV^\top, -1) + \triu(WS^\top, 1)\label{express_A}
 \]
 for \( U, V \in \mathbb{R}^{n\times r} \), \( W, S \in \mathbb{R}^{n\times p} \), and \( B   \in \BM \).
 \end{definition}
 
-We note that the BPS structure is not uniquely defined, so we assume if we know $A \in BPS$ we have access to $U,V,W,S$. This structure is preserved under principal subsection:
+We note that the BPS structure is not uniquely defined, so we implicitly assume that if we know $A \in \BPS$ we have access to $U,V,W,S$. This structure is preserved under principal subsection:
 \begin{align*}
 A[k\!:\!n, k\!:\!n] &= B[k\!:\!n, k\!:\!n]
 +
@@ -290,20 +290,20 @@ A[k\!:\!n, k\!:\!n] &= B[k\!:\!n, k\!:\!n]
 We will also need to work with padded vectors or matrices:
 
 \begin{definition}
-Denote a {\it padded vector} with only the first $p$ rows being possibly nonzero as $\calS_p^n \subset \bbR^n$ and a {\it padded matrix} with only the principal $p \times q$ subblock as $\calS_{p \times q}^{m \times n} \subset \bbR^{m \times n}$. Explicitly, $\bfx \in \calS_p^n$ if $\bfx[k] = 0$ unless $k \leq p$ and $A \in \calS_{p \times q}^{m \times n}$ if $A[k,j] = 0$ unless $k \leq p$ and $j \leq q$.
+Denote a {\it padded vector} with only the first $p$ rows being possibly nonzero as $\calS_p^n \subset \bbR^n$ and a {\it padded matrix} with only the principal $p \times q$ subblock being possibly nonzero as $\calS_{p \times q}^{m \times n} \subset \bbR^{m \times n}$. Explicitly, $\bfx \in \calS_p^n$ if $\bfx[k] = 0$ unless $k \leq p$ and $A \in \calS_{p \times q}^{m \times n}$ if $A[k,j] = 0$ unless $k \leq p$ and $j \leq q$.
 \end{definition}
 
 Note for example if $B \in \BM$ then $B[k\!:\!n,k] \in \calS_{\ell+1}^{n-k+1}$ and $B[k,k\!:\!n] \in \calS_{m+1}^{n-k+1}$.
 
 
-We will now describe the structure of each portion of the partial factor matrix. We will describe the bottom right in terms of the following vector space:
+We will now describe the structure of each portion of the partial factor matrix. We will describe the bottom right in terms of the following linear space of matrices:
 
 \begin{definition} \label{def:P}
 Given
 \[
 A = B + \tril(UV^\top, -1) + \triu(WS^\top, 1)  \in \BPS
 \]
-define the vector space:
+define the linear space:
 \begin{align*}
 \calP(A) &:= \bigg\{
 UJS^\top + UKU^\top A + UE + XS^\top + YU^\top A + Z :\\
@@ -376,8 +376,9 @@ P[2\!:\!n,2\!:\!n] &= U[2\!:\!n,:] (J + K U[1,:] W[1,:]^\top) S[2\!:\!n,:]^\top 
 &\qquad + U[2\!:\!n,:](E[:,2\!:\!n] + K U[1,:] B[1,2\!:\!n]^\top) \\
 &\qquad + (X[2\!:\!n,:] + Y[2\!:\!n,:]U[1,:]W[1,:]^\top)S[2\!:\!n,:]^\top \\
 &\qquad + Y[2\!:\!n,:]U[2\!:\!n,:]^\top A[2\!:\!n,2\!:\!n] \\
-&\qquad + Z[2\!:\!n,2\!:\!n] + Y[2\!:\!n,:] U[1,:]B[1,2\!:\!n]^\top.
+&\qquad + Z[2\!:\!n,2\!:\!n] + Y[2\!:\!n,:] U[1,:]B[1,2\!:\!n]^\top,
 \end{align*}
+which is precisely the required form.
 \end{proof}
 
 
@@ -455,7 +456,7 @@ F_k[1:k,:] = (B_k + \tril(U V_k^\top, -1) + \triu(W_k \tilde S^\top,1))[1:k,:]
 \begin{proof}
 The first $k-1$ rows follow by defining $V_k$ as before and:
 \begin{align*}
-B_k[1\!:\!k-1,:] &:= B_{k-1}[1\!:\!k-1,:] \\
+B_k[1\!:\!k-1,:] &:= B_{k-1}[1\!:\!k-1,:], \\
 W_k[1\!:\!k-1,:] &:= W_{k-1}[1\!:\!k-1,:].
 \end{align*}
 
@@ -544,6 +545,8 @@ B_k[k,k\!:\!n]^\top &:= \bfs_1^\top  + \beta_k \bfs_3^\top  \in \calS_{1 \times 
 
 \end{proof}
 
+We put these results together to show that the structure for partial factor matrices is preserved at each iteration:
+
 \begin{lemma} \label{Lemma:Structure_preserve}
     For $1\leq k \leq n-1$, suppose $F_{k-1}  \in {\rm BPSF}_{k-1}(A)$. Then $F_k \in {\rm BPSF}_k(A)$. 
 \end{lemma}
@@ -571,7 +574,6 @@ with $J^{(k)}\in \mathbb R^{r\times p}$, $K^{(k)}\in \mathbb R^{r\times r}$, $E^
 
 
 We thus need only consider $\bfy_k \bfy_k^\top A_{k-1}$.
-
 Let $\hat U_k\in \mathbb R^{n-k+1}$ s.t. $\hat U_k[1,:] = \mathbf{0}$ and $\hat U_k[2:n-k+1,:]=U[k+1:n,:]$; $\hat A_k \in \mathbb R^{(n-k+1)\times(n-k+1)}$ s.t. $\hat A_k[1,:] = \mathbf{0}$ and $\hat A_k[2:n-k+1,:] = A[k+1:n,:]$.
 
 Using the technique from the proof of Lemma \ref{lemma:upper} we can write
@@ -611,32 +613,14 @@ Noticing that $(\hat U_k^\top \hat A_k)[:,2:n-k+1]= U[k+1:n,:]^\top A[k+1:n,k+1:
     + Y_{k+1}U[(k\!+\!1)\!:\!n,:]^\top A[(k\!+\!1)\!:\!n,(k\!+\!1)\!:\!n] + Z_{k+1} \\
     \in & A[(k+1)\!:\!n,(k+1)\!:\!n]+\calP(A[(k+1)\!:\!n,(k+1)\!:\!n])
 \end{align*}
-
 where
-\begin{align}\label{eq:submatrix_update_J}
-    J_{k+1} := J^{(k)} - \tau_kV_k[k,:] \bfw_3^\top \in \mathbb R^{r\times p}, 
-\end{align}
-
-\begin{align}\label{eq:submatrix_update_K}
-    K_{k+1} := K^{(k)} - \tau_kV_k[k,:]\tilde \bfw_2^\top \in \mathbb R^{r\times r},
-\end{align}
-
-\begin{align}\label{eq:submatrix_update_E}
-    E_{k+1} := E^{(k)} - \tau_k V_k[k,:] \bfs_4^\top[2:n-k+1] \in \calS_{r\times(\ell+m)}^{r\times(n-k)},
-\end{align}
-
-\begin{align}\label{eq:submatrix_update_X}
-    X_{k+1} := X^{(k)} - \tau_k \hat \bfb_k[2:n-k+1]\bfw_3^\top \in \calS_{\ell \times p}^{(n-k)\times p},
-\end{align}
-
-\begin{align}\label{eq:submatrix_update_Y}
-    Y_{k+1} := Y^{(k)} - \tau_k\hat \bfb_k[2:n-k+1] \tilde \bfw_2^\top \in \calS_{\ell \times r}^{(n-k) \times r} 
-\end{align}
-
-and 
-
-\begin{align}\label{eq:submatrix_update_Z}
-    Z_{k+1} := Z^{(k)} - \tau_k \hat \bfb_k[2:n-k+1]\bfs_4^\top [2:n-k+1] \in \calS_{\ell \times (\ell+m)}^{(n-k)\times(n-k)}.
+\begin{align}
+    J_{k+1} &:= J^{(k)} - \tau_kV_k[k,:] \bfw_3^\top \in \mathbb R^{r\times p}, \label{eq:submatrix_update_J} \\
+    K_{k+1} &:= K^{(k)} - \tau_kV_k[k,:]\tilde \bfw_2^\top \in \mathbb R^{r\times r}, \label{eq:submatrix_update_K} \\
+    E_{k+1} &:= E^{(k)} - \tau_k V_k[k,:] \bfs_4^\top[2:n-k+1] \in \calS_{r\times(\ell+m)}^{r\times(n-k)},\label{eq:submatrix_update_E} \\
+    X_{k+1} &:= X^{(k)} - \tau_k \hat \bfb_k[2:n-k+1]\bfw_3^\top \in \calS_{\ell \times p}^{(n-k)\times p}, \label{eq:submatrix_update_X} \\
+    Y_{k+1} &:= Y^{(k)} - \tau_k\hat \bfb_k[2:n-k+1] \tilde \bfw_2^\top \in \calS_{\ell \times r}^{(n-k) \times r}  \label{eq:submatrix_update_Y}, \\
+    Z_{k+1} &:= Z^{(k)} - \tau_k \hat \bfb_k[2:n-k+1]\bfs_4^\top [2:n-k+1] \in \calS_{\ell \times (\ell+m)}^{(n-k)\times(n-k)}. \label{eq:submatrix_update_Z}
 \end{align}
 
 \end{proof}
@@ -652,12 +636,11 @@ $
 \end{theorem}
 
 \begin{proof}
-    It is easy to see that $F_0:=A\in {\rm BPSF}_{0}(A)$(with the parameter matrices $J, K, E, X, Y$ and $Z$ all $\mathbf{0}$). From Lemma \ref{lemma:lower}, \ref{lemma:upper}, and \ref{Lemma:Structure_preserve}, an induction argument shows that $F_{n-1}$ can be written as 
+    It is easy to see that $F_0:=A\in {\rm BPSF}_{0}(A)$ (with the parameter matrices $J, K, E, X, Y$ and $Z$ all $\mathbf{0}$). From Lemma \ref{lemma:lower}, \ref{lemma:upper}, and \ref{Lemma:Structure_preserve}, an induction argument shows that $F_{n-1}$ can be written as 
 \[
 F_{n-1} = B_{n-1} + \tril(U V_{n-1}^\top,-1) + \triu(W_{n-1} \tilde S^\top,1)
 \]
-
-except at the entry $[n,n]$.
+except at the entry $F_n[n,n]$.
 
 Now define $V_n:=V_{n-1}$, $W_n:=W_{n-1}$, and let $B_n$ coincide with $B_{n-1}$ everywhere except for the last diagonal entry $B_n[n,n]=F_{n-1}[n,n]$. We then obain
 
@@ -673,27 +656,18 @@ F_{n} = B_{n} + \tril(U V_{n}^\top,-1) + \triu(W_{n} \tilde S^\top,1).
 \section{Fast Algorithms for QR Factorization and Direct Solvers}
 \label{sec:algorithms}
 
-We now discuss the practical implementation of an $O(n)$ algorithm for computing the QR factorization of a BPS matrix.
-
-\subsection{Fast QR factorization for BPS Matrices}
-\label{sec:fastqr}
-
-We now present an $O(n)$ algorithm for computing the QR factorization of a BPS matrix based on theorem \ref{thm:structure_preserve}.
+We now discuss the practical implementation of an $O(n)$ algorithm for computing the QR factorization of a BPS matrix based on theorem \ref{thm:structure_preserve}.
 
 \begin{algorithm}[H]
 \caption{Fast QR Factorization for BPS Matrices}
 \label{algo:fastqr}
 \begin{algorithmic}
-\State \textbf{Input} $B \in \mathbb{R}^{n \times n}$: banded matrix with lower bandwidth $\ell$ and upper bandwidth $m$;
- $U, V \in \mathbb{R}^{n \times r}$: generators for lower semiseparable part (rank $r$);
- $W, S \in \mathbb{R}^{n \times p}$: generators for upper semiseparable part (rank $p$)
-\State \textbf{Output} $B_n$: banded part of factor matrix $F$ with bandwidths $\ell$ and $\ell+m$;
-$V_n \in \mathbb{R}^{n \times r}$: generator for lower semiseparable part of $F$;
-$W_n\in \mathbb{R}^{n\times(r+p)}$ and $\tilde S\in \mathbb{R}^{n\times(r+p)}$: generators for upper semiseparable part of $F$;
-$\boldsymbol{\tau} \in \mathbb{R}^{n}$: Householder scaling coefficients.
+\State \textbf{Input} Banded-plus-semiseparable matrix $A \in \BPS$.
+\State \textbf{Output} Factor matrix $F \in {\mathrm{BPS}}_{(r,r+p),(\ell,\ell+m)}^{n \times n}$ and scaling vector
+$\boldsymbol{\tau} \in \mathbb{R}^{n}$.
 
 \State \textbf{Initialization:}
-\State Compute $A^\top U$ in n $O(n)$ utilizing the semiseparable structure of $A$ and set $\tilde S \gets \begin{bmatrix} S & A^\top U
+\State Compute $A^\top U$ in $O(n)$ utilizing the semiseparable structure of $A$ \sotodoinline{Add citation for algorithm for fast semiseparable multiplication} and set $\tilde S \gets \begin{bmatrix} S & A^\top U
 \end{bmatrix}$ 
 \State Initialize $B_n \gets \mathbf{0}_{n \times n}$, $V_n \gets \mathbf{0}_{n \times r}$, $W_n \gets \mathbf{0}_{n \times (r+p)}$
 \State Initialize parameter matrices: $J \gets \mathbf{0}_{r \times p}$, $K \gets \mathbf{0}_{r \times r}$, $E_s \gets \mathbf{0}_{r \times \min(\ell+m,n)}$, $X_s \gets \mathbf{0}_{\min(\ell,n) \times p}$, $Y_s \gets \mathbf{0}_{\min(\ell,n) \times r}$, $Z_s \gets \mathbf{0}_{\min(\ell,n) \times \min(\ell+m,n)}$
@@ -726,7 +700,7 @@ $\boldsymbol{\tau} \in \mathbb{R}^{n}$: Householder scaling coefficients.
 
 \State \textbf{Final step:}
 \State $B_n[n, n] \gets A_{n-1}[n, n]$
-\State \Return $B_n, V_n, W_n, \tilde S, \boldsymbol{\tau}$. Now $F$ is expressed as $B_n + \tril(U V_n, -1) + \triu(W_n\tilde S^\top, 1)$
+\State \Return $B_n + \tril(UV_n^\top,-1) + \triu(W_n \tilde S^\top,1)$ and  $\boldsymbol{\tau}$.
 \end{algorithmic}
 \end{algorithm}
 
@@ -739,10 +713,10 @@ $\boldsymbol{\tau} \in \mathbb{R}^{n}$: Householder scaling coefficients.
 \State \textbf{Input} $A_{k-1} \in \mathbb{R}^{(n-k+1) \times (n-k+1)}$: current submatrix;
 $U_k \in \mathbb{R}^{(n-k+1) \times r}$: $U[k:n, :]$;
 $\ell$: lower bandwidth.
-\State \textbf{Output} $\bar{\mathbf{k}} \in \mathbb{R}^r$, $\mathbf{b} \in \mathbb{R}^{n-k+1}$, $\tau\in \mathbb{R}$ s.t. $\bfy$: = $ \bfe_1 + \tilde U_k\bar{\mathbf{k}} + \mathbf{b}$ is the Householder vector where $\tilde U_k \in \mathbb{R}^{(n-k+1) \times r}$ with $\tilde U_k[1,:]=\mathbf{0}$ and $\tilde U_k[2:n-k+1,:]=U[k+1:n,:]$. $I-\tau \bfy \bfy^\top$ is the Householder transformation(Note that the expression for $\bfy$ here differs from that in Eq.~(\ref{eq:y_k}); both forms are valid, and it is straightforward to convert between them.).
+\State \textbf{Output} $\bar{\mathbf{k}} \in \mathbb{R}^r$, $\mathbf{b} \in \mathbb{R}^{n-k+1}$, $\tau\in \mathbb{R}$ s.t. $\bfy$: = $ \bfe_1 + \tilde U_k\bar{\mathbf{k}} + \mathbf{b}$ is the Householder vector where $\tilde U_k \in \mathbb{R}^{(n-k+1) \times r}$ with $\tilde U_k[1,:]=\mathbf{0}$ and $\tilde U_k[2:n-k+1,:]=U[k+1:n,:]$. $I-\tau \bfy \bfy^\top$ is the Householder transformation. (Note that the expression for $\bfy$ here differs from that in Eq.~(\ref{eq:y_k}); both forms are valid, and it is straightforward to convert between them.)
 
-\State $\mathbf{b} \gets $ Eq.(\ref{eq:hv_update_1})
-\State $\bar{\mathbf{k}} \gets $ Eq.(\ref{eq:hv_update_2})
+\State $\mathbf{b} \gets $ Eq. (\ref{eq:hv_update_1})\sotodoinline{this equation usess $B$ and $\tilde b_k$ which are not an input to this algorithm.}
+\State $\bar{\mathbf{k}} \gets $ Eq. (\ref{eq:hv_update_2}) \sotodoinline{this equation usess $V$, $\alpha_k$ and $V$ which are not an input to this algorithm.}
 \State $\mathbf{b}$ is only nonzero in entries $2$ through $\min(\ell+1, n-k+1)$.
 \State $\tau \gets 2/\bfy^\top\bfy$
 \State \Return $\bar{\mathbf{k}}$, $\mathbf{b}$, $\tau$
@@ -753,9 +727,9 @@ $\ell$: lower bandwidth.
 \caption{ComputeRowUpdate}
 \label{algo:compute_row}
 \begin{algorithmic}
-\State \textbf{Input} $A_{k-1}$: current submatrix;
- $U, \tilde S$: generator matrices;
-$\mathbf{k}_{k}$, $\mathbf{b}_{k}$, $\tau_k$: Householder vector and coefficient.
+\State \textbf{Input} Current submatrix $A_{k-1}$,
+  matrices $U, \tilde S$, a
+$\mathbf{k}_{k}$, and scaling vector $\mathbf{b}_{k}$, $\tau_k$.
 \State \textbf{Output} semiseparable part $\tilde \bfw \in \mathbb{R}^{r+p}$ and banded part $\tilde{\mathbf{d}} \in \mathbb{R}^{n-k+1}$ 
 
 \State $\tilde \bfw^\top \gets $ Eq.(\ref{eq:row_updtae_1})
@@ -775,12 +749,12 @@ $\bar{\mathbf{k}}_{k}$, $\mathbf{b}_{k}$, $\tau_k$.
 \Ensure Updated $J, K, E_s, X_s, Y_s, Z_s$
 
 \State Compute updates using formulas from Lemma~\ref{Lemma:Structure_preserve} proof:
-\State $J_{\text{new}} \gets $ Eq.(\ref{eq:submatrix_update_J})
-\State $K_{\text{new}} \gets $ Eq.(\ref{eq:submatrix_update_K})
-\State $E_s^{\text{new}} \gets $ Eq.(\ref{eq:submatrix_update_E})
-\State $X_s^{\text{new}} \gets $ Eq.(\ref{eq:submatrix_update_X})
-\State $Y_s^{\text{new}} \gets $ Eq.(\ref{eq:submatrix_update_Y})
-\State $Z_s^{\text{new}} \gets $ Eq.(\ref{eq:submatrix_update_Z})
+\State $J_{\text{new}} \gets $Eq. (\ref{eq:submatrix_update_J})
+\State $K_{\text{new}} \gets $Eq. (\ref{eq:submatrix_update_K})
+\State $E_s^{\text{new}} \gets $Eq. (\ref{eq:submatrix_update_E})
+\State $X_s^{\text{new}} \gets $Eq. (\ref{eq:submatrix_update_X})
+\State $Y_s^{\text{new}} \gets $Eq. (\ref{eq:submatrix_update_Y})
+\State $Z_s^{\text{new}} \gets $Eq. (\ref{eq:submatrix_update_Z})
 
 \State \Return $J_{\text{new}}, K_{\text{new}}, E_s^{\text{new}}, X_s^{\text{new}}, Y_s^{\text{new}}, Z_s^{\text{new}}$
 \end{algorithmic}
@@ -788,7 +762,7 @@ $\bar{\mathbf{k}}_{k}$, $\mathbf{b}_{k}$, $\tau_k$.
 
 \subsubsection*{Complexity Analysis}
 
-The algorithm runs for $n-1$ steps. The cost per step can be expressed as a polynomial in terms of $r$, $p$, $\ell$, and $m$. Since these are constants independent of $n$, the total complexity is $O(n)$. The memory footprint is also $O(n)$, as we store only the generators and banded components.
+The algorithm runs for $n-1$ steps. The cost per step can be expressed as a polynomial in terms of $r$, $p$, $\ell$, and $m$. Since these are constants independent of $n$, the total complexity is $O(n)$ as $n \rightarrow \infty$. The memory footprint is also $O(n)$, as we store only the generators and banded components.
 
 \begin{remark}
 
@@ -866,7 +840,7 @@ Algorithm~\ref{algo_applyQ} exploits this structure to compute \( Q^\top\mathbf{
 \begin{algorithm}
 \caption{Fast Application of \( Q^\top \) to a Vector}\label{algo_applyQ}
 \begin{algorithmic}
-\State \textbf{Input:} Factor matrix \( F \) in BPS form: \( F = B_n + \tril(U V_n^\top, -1) + \triu(W_n \tilde S^\top, 1) \); coefficient vector \( \boldsymbol{\tau} = [\tau_1, \ldots, \tau_{n-1},0]^\top \in \mathbb{R}^{n} \); right-hand side vector \( \mathbf{b} \in \mathbb{R}^n \)
+\State \textbf{Input:} Factor matrix $F \in {\mathrm{BPS}}_{(r,r+p),(\ell,\ell+m)}^{n \times n}$, scaling vector \( \boldsymbol{\tau} = [\tau_1, \ldots, \tau_{n-1},0]^\top \in \mathbb{R}^{n} \), right-hand side \( \mathbf{b} \in \mathbb{R}^n \).
 \State \textbf{Output:} \( \mathbf{c} = Q^\top\mathbf{b} \in \mathbb{R}^n \)
 
 \State Initialize:
@@ -949,7 +923,7 @@ After computing \( \mathbf{c} = Q^\top \mathbf{b} \), we solve the upper triangu
 \[
 R = B_R + \triu(W_n \tilde S^\top, 1),
 \]
-where \( B_R = \triu(B_n) \) is the upper triangular part of the banded component, maintaining upper bandwidth \( \ell+m \).
+where \( B_R = \triu(B_n) \) is the upper triangular part of the banded component of the factor matrix, maintaining upper bandwidth \( \ell+m \).
 
 Algorithm~\ref{algo_backsub}, which is equivalent to the one introduced in~\cite{olver2013fast}, exploits this structure to perform backward substitution in \( O(n) \) operations by maintaining a running sum for the semiseparable contributions.
 
@@ -967,13 +941,13 @@ Algorithm~\ref{algo_backsub}, which is equivalent to the one introduced in~\cite
 
 
 \For{\( j = n \) down to \( 1 \)}
-    \State Initialize residual: \( \text{res} \gets 0 \)
+    \State Initialize \sotodoinline{Why is this called residual?} residual: \( \text{res} \gets 0 \)
 
     \State Add semiseparable contribution: \( \text{res} \gets \text{res} + W_n[j,:]^\top \mathbf{s} \)
 
     \State Add banded contributions:
     \For{\( k = j+1 \) to \( \min(j+\ell+m, n) \)}
-        \State \( \text{res} \gets \text{res} + B_n[j,k] \cdot \mathbf{x}[k] \)
+        \State \( \text{res} \gets \text{res} + B_n[j,k]  \mathbf{x}[k] \)
     \EndFor
 
     \State Solve for \( x_j \): \( \mathbf{x}[j] \gets (\mathbf{c}[j] - \text{res}) / B_n[j,j] \)
@@ -1057,7 +1031,7 @@ for \( U, V \in \mathbb{R}^{n\times r} \) and \( B   \in \SBM \).
 Following the $QR$ factorization of $A \in \SBPS$, we let $R$ be the upper triangular factor and $ I - \tau_k \bfy_k \bfy_k^\top$ be the $k$-th Householder reflector. We define the sequence of matrices $\{R_k\}$ such that $R_0 = R$ and $R_k = R_{k-1} (I - \tau_k \bfy_k \bfy_k^\top)$ for $k=1, \dots, n-1$, leading to $R_{n-1} = RQ$. The structural properties of $R_k$ are governed by its trailing columns, which we formally describe using the following definition:
 
 \begin{definition}
-Given an upper triangular matrix $R\in \mathbb R^{n\times n}$ and $U\in \mathbb R^{n\times r}$, define the vector space:
+Given an upper triangular matrix $R\in \mathbb R^{n\times n}$ and $U\in \mathbb R^{n\times r}$, define the linear space:
 \begin{align*}
 \calH(R;U) &:= \bigg\{
 RU\Omega U^\top + \Phi U^\top + RU\Psi + \Lambda :\\
@@ -1119,7 +1093,7 @@ The structural form of the first $k$ columns of $R_k$ below the diagonal is char
 \begin{lemma} \label{lemma: RQ_lower}
     For $1\leq k \leq n-1$, suppose $R_{k-1}  \in {\rm SBPSR}_{k-1}(A)$. Then there exists $B_k$ and $V_k$ such that
 \[
-\tril(R_k[:,1:k]) = \tril \big( (B_k + \tril(\tilde U V_k^\top, -1) + \triu(V_k \tilde U^\top,1))[:,1:k]\big)
+\tril(R_k[:,1:k]) = \tril\big( (B_k + \tril(\tilde U V_k^\top, -1) + \triu(V_k \tilde U^\top,1))[:,1:k]\big)
 \]
 \end{lemma}
 
@@ -1190,12 +1164,9 @@ The structural form of the first $k$ columns of $R_k$ below the diagonal is char
     \end{align*}
 
     which leads to the definitions
-    \begin{align}\label{eq:rq_col_1}
-        V_k[k,:] := \bfr_1+\delta_k\bfr_2 \in \mathbb R^r
-    \end{align}
-    and
-    \begin{align}\label{eq:rq_col_2}
-        B_k[k:n,k]:=\bft_1 + \delta_k \bft_2 \in \calS_{\ell+1}^{n-k+1}.
+    \begin{align}
+        V_k[k,:] &:= \bfr_1+\delta_k\bfr_2 \in \mathbb R^r, \label{eq:rq_col_1} \\
+        B_k[k:n,k]&:=\bft_1 + \delta_k \bft_2 \in \calS_{\ell+1}^{n-k+1}. \label{eq:rq_col_2}
     \end{align}
 \end{proof}
 
@@ -1208,55 +1179,54 @@ The following lemma completes the inductive step by demonstrating that the trail
 \begin{proof}
     We have already established the desired structure for all entries except the bottom-right block. It therefore remains to show that
     \begin{align*}
-        &R_k[k+1:n,k+1:n]\\:=&\big(R_{k-1}[k:n,k:n](I-\tau_k\bfy_k\bfy_k^\top)\big)[2:n-k+1,2:n-k+1]\\
-        \in &R[k+1:n,k+1:n] + \calH(R[k+1:n,k+1:n];U[k+1:n,:]).
+        R_k[k\!+\!1\!:\!n,k\!+\!1\!:\!n]& :=\big(R_{k-1}[k\!:\!n,k\!:\!n](I-\tau_k\bfy_k\bfy_k^\top)\big)[2\!:\!n\!-\!k\!+\!1,2\!:\!n\!-\!k\!+\!1]\\
+        &\in R[k\!+\!1\!:\!n,k\!+\!1\!:\!n] + \calH(R[k\!+\!1\!:\!n,k\!+\!1\!:\!n];U[k\!+\!1\!:\!n,:]).
     \end{align*}
     By Lemma \ref{Lemma:PpertubR}, since $R_{k-1}[k:n,k:n]\in R[k:n,k:n]+\calH(R[k:n,k:n];U[k:n,:])$, it follows that
     \begin{align*}
-        &R_{k-1}[k+1:n,k+1:n]\\ \in & R[k+1:n,k+1:n]+\calH(R[k+1:n,k+1:n];U[k+1:n,:]).
+        R_{k-1}[k\!+\!1\!:\!n,k\!+\!1\!:\!n] &\in R[k\!+\!1\!:\!n,k\!+\!1\!:\!n]+\calH(R[k\!+\!1\!:\!n,k\!+\!1\!:\!n];U[k\!+\!1\!:\!n,:]).
     \end{align*}
 
     More explicitly, we may write
     \begin{align*}
-        &R_{k-1}[k+1:n,k+1:n]\\=&R[k+1:n,k+1:n] +R[k+1:n,k+1:n]U[k+1:n,:]\Omega_k U[k+1:n,:]^\top\\&
-        +\Phi_k[2:n-k+1,:]U[k+1:n,:]^\top\\&+R[k+1:n,k+1:n]U[k+1:n,:]\Psi_k[:,2:n-k+1]\\&+\Lambda_k[2:n-k+1,2:n-k+1].
+        R_{k-1}[k\!+\!1\!:\!n,k\!+\!1\!:\!n]&= R[k\!+\!1\!:\!n,k\!+\!1\!:\!n] \\
+        & \qquad +R[k\!+\!1\!:\!n,k\!+\!1\!:\!n]U[k\!+\!1\!:\!n,:]\Omega_k U[k\!+\!1\!:\!n,:]^\top\\
+        &\qquad
+        +\Phi_k[2\!:\!n\!-\!k\!+\!1,:]U[k\!+\!1\!:\!n,:]^\top\\
+        &\qquad +R[k\!+\!1\!:\!n,k\!+\!1\!:\!n]U[k\!+\!1\!:\!n,:]\Psi_k[\!:\!,2\!:\!n\!-\!k\!+\!1]\\
+        &\qquad +\Lambda_k[2\!:\!n\!-\!k\!+\!1,2\!:\!n\!-\!k\!+\!1].
     \end{align*}
 
     It thus remains to analyze the term $R_{k-1}[k:n,k:n]\bfy_k\bfy_k^\top$:
 
     \begin{align*}
-        &R_{k-1}[k:n,k:n]\bfy_k\bfy_k^\top\\=&\big(\bft_3+(RU)[k:n,:]\bfr_2\big)(\hat\bfb_k^\top+\bar\bfk_k^\top U[k:n,:]^\top)\\=&\underbrace{\bft_3\hat\bfb_k^\top}_{\in \calS^{(n-k+1)\times(n-k+1)}_{(\ell+1)\times(\ell+1)}} + \underbrace{\bft_3\bar \bfk_k^\top}_{\in\calS^{(n-k+1)\times r}_{(\ell+1)\times r}} U[k:n,:]^\top + (RU)[k:n,:]\underbrace{\bfr_2\hat\bfb_k^\top}_{\in \calS^{r\times(n-k+1)}_{r\times(\ell+1)}} \\&+(RU)[k:n,:]\underbrace{\bfr_2\bar\bfk_k^\top}_{\in\mathbb R^{r\times r}} U[k:n,:]^\top.
+        R_{k-1}[k\!:\!n,k\!:\!n]\bfy_k\bfy_k^\top&=\big(\bft_3+(RU)[k\!:\!n,:]\bfr_2\big)(\hat\bfb_k^\top+\bar\bfk_k^\top U[k\!:\!n,:]^\top)\\
+        &=\underbrace{\bft_3\hat\bfb_k^\top}_{\in \calS^{(n-k+1)\times(n-k+1)}_{(\ell+1)\times(\ell+1)}} + \underbrace{\bft_3\bar \bfk_k^\top}_{\in\calS^{(n-k+1)\times r}_{(\ell+1)\times r}} U[k\!:\!n,:]^\top \\
+        &\qquad + (RU)[k\!:\!n,:]\underbrace{\bfr_2\hat\bfb_k^\top}_{\in \calS^{r\times(n-k+1)}_{r\times(\ell+1)}} \\
+        &\qquad +(RU)[k\!:\!n,:]\underbrace{\bfr_2\bar\bfk_k^\top}_{\in\mathbb R^{r\times r}} U[k\!:\!n,:]^\top.
     \end{align*}
 
     Using 
     \begin{align*}
         \big((RU)[k:n,:]\big)[2:n-k+1,:] = R[k+1:n,k+1:n]U[k+1:n,:],
     \end{align*}
-
     we can express
     \begin{align*}
-        &R_k[k+1:n,k+1:n]\\=&R_{k-1}[k+1:n,k+1:n]\\&-\tau_k\big(R_{k-1}[k:n,k:n]\bfy_k\bfy_k^\top)\big)[2:n-k+1,2:n-k+1]\\=&
-        R[k+1:n,k+1:n]\\&+R[k+1:n,k+1:n]U[k+1:n,:]\Omega_{k+1}U[k+1:n,:]^\top\\&
-        +\Phi_{k+1}U[k+1:n,:]^\top+R[k+1:n,k+1:n]U[k+1:n,:]\Psi_{k+1}+\Lambda_{k+1}
+        R_k[k\!+\!1\!:\!n,k\!+\!1\!:\!n]&=R_{k-1}[k\!+\!1\!:\!n,k\!+\!1\!:\!n] \\
+        &\qquad -\tau_k\big(R_{k-1}[k\!:\!n,k\!:\!n]\bfy_k\bfy_k^\top)[2\!:\!n\!-\!k\!+\!1,2\!:\!n\!-\!k\!+\!1]\\
+        &=
+        R[k\!+\!1\!:\!n,k\!+\!1\!:\!n]\\
+        &\qquad+R[k\!+\!1\!:\!n,k\!+\!1\!:\!n]U[k\!+\!1\!:\!n,:]\Omega_{k+1}U[k\!+\!1\!:\!n,:]^\top\\
+        &\qquad
+        +\Phi_{k+1}U[k\!+\!1\!:\!n,:]^\top\\
+        &\qquad +R[k\!+\!1\!:\!n,k\!+\!1\!:\!n]U[k\!+\!1\!:\!n,:]\Psi_{k+1}+\Lambda_{k+1}
     \end{align*}
-
     where
-    \begin{align}\label{eq:rq_submatrix_1}
-        \Omega_{k+1}:=\Omega_k-\tau_k\bfr_2\bar \bfk_k^\top \in \mathbb R^{r\times r},
-    \end{align}
-    
-    \begin{align}\label{eq:rq_submatrix_2}
-        \Phi_{k+1}:=\Phi_{k}[2:n-k+1,:]-\tau_k\bft_3[2:n-k+1]\bar \bfk_k^\top \in \calS^{(n-k)\times r}_{\ell \times r},
-    \end{align}
-    
-    \begin{align}\label{eq:rq_submatrix_3}
-        \Psi_{k+1}:=\Psi_{k}[:,2:n-k+1]-\tau_k\bfr_2\hat \bfb_k^\top [2:n-k+1] \in \calS^{r\times(n-k)}_{r\times \ell},
-    \end{align}
-
-    and
-    
-    \begin{align}\label{eq:rq_submatrix_4}
-        \Lambda_{k+1}:=&\Lambda_k[2:n-k+1,2:n-k+1]-\tau_k\bft_3[2:n-k+1]\hat \bfb_k^\top[2:n-k+1]\\ \in &\calS^{(n-k)\times(n-k)}_{\ell \times \ell}.
+    \begin{align}
+        \Omega_{k+1}&:=\Omega_k-\tau_k\bfr_2\bar \bfk_k^\top \in \mathbb R^{r\times r}, \label{eq:rq_submatrix_1}\\
+        \Phi_{k+1}&:=\Phi_{k}[2\!:\!n\!-\!k\!+\!1,:]-\tau_k\bft_3[2\!:\!n\!-\!k\!+\!1]\bar \bfk_k^\top \in \calS^{(n-k)\times r}_{\ell \times r}, \label{eq:rq_submatrix_2}\\
+        \Psi_{k+1}&:=\Psi_{k}[:,2\!:\!n\!-\!k\!+\!1]-\tau_k\bfr_2\hat \bfb_k^\top [2\!:\!n\!-\!k\!+\!1] \in \calS^{r\times(n-k)}_{r\times \ell}, \label{eq:rq_submatrix_3}, \\
+        \Lambda_{k+1}&:=\Lambda_k[2\!:\!n\!-\!k\!+\!1,2\!:\!n\!-\!k\!+\!1]-\tau_k\bft_3[2\!:\!n\!-\!k\!+\!1]\hat \bfb_k^\top[2\!:\!n\!-\!k\!+\!1] \label{eq:rq_submatrix_4}\\ &\in \calS^{(n-k)\times(n-k)}_{\ell \times \ell}.  \notag
     \end{align}
 \end{proof}
 
@@ -1271,18 +1241,15 @@ $
 \end{theorem}
 
 \begin{proof}
-    It is easy to see that $R_0:=R\in {\rm SBPSR}_{0}(A)$(with the parameter matrices $\Omega, \Phi, \Psi,$ and $\Lambda$ all $\mathbf{0}$). Applying Lemma \ref{lemma: RQ_lower} and \ref{lemma: RQ_sub_matrix}, it follows by induction that
+    It is easy to see that $R_0:=R\in {\rm SBPSR}_{0}(A)$ (with the parameter matrices $\Omega, \Phi, \Psi,$ and $\Lambda$ all $\mathbf{0}$). Applying Lemma \ref{lemma: RQ_lower} and \ref{lemma: RQ_sub_matrix}, it follows by induction that
 
 \[
 \tril(R_{n-1}[:,1:n-1]) = \tril \big(B_{n-1} + \tril(\tilde U V_{n-1}^\top,-1) + \triu(V_{n-1} \tilde U^\top,1)\big).
-\].
-
+\]
 Now define $B_n$ by setting $B_n[n,n]=R_{n-1}[n,n]$ and letting it coincide with $B_{n-1}$ elsewhere, and set $V_n:=V_{n-1}$. Then
-
 \[
 \tril(R_{n-1}) = \tril \big(B_{n} + \tril(\tilde U V_n^\top,-1) + \triu(V_n \tilde U^\top,1)\big).
-\].
-    
+\]  
 Since $QR=R_{n-1}$ and both sides are symmetric, it follows that
 \[
 QR = B_n + \tril(\tilde U V_n^\top,-1) + \triu(V_n \tilde U^\top,1).
@@ -1356,20 +1323,22 @@ To verify that the theoretical $O(n)$ complexity holds for matrices with differe
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.8\textwidth]{qr_linear.pdf}
-\caption{Log-log plot of the total solver time (QR factorization + application of $Q^\top$ + backward substitution) versus matrix size $n$ for four parameter sets $(\ell, m, r, p)$. The dashed line has slope 1, indicating linear scaling.}
+\caption{Log-log plot of the total solver time (QR factorization + application of $Q^\top$ + backward substitution) versus matrix size $n$ for four parameter sets $(\ell, m, r, p)$. The dashed line has slope 1, indicating linear scaling. \sotodoinline{Split into 2 plots: one for factorization, one for the solve ( applying $Q^\top$, andback-substitution)}}
 \label{fig:qr_scaling}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.8\textwidth]{rq_linear.pdf}
-\caption{Log-log plot of the $RQ$ computation time for symmetric BPS matrices versus $n$ for four parameter sets $(\ell, r)$. The dashed line has slope 1, indicating linear scaling.}
+\caption{Log-log plot of the $RQ$ computation time for symmetric BPS matrices versus $n$ for four parameter sets $(\ell, r)$. The dashed line has slope 1, indicating linear scaling. \sotodoinline{Doess this include factorisation time? I'm surprised it's roughly the same speed.  Include plots for both the factorisation and also ONLY the $RQ$}}
 \label{fig:rq_scaling}
 \end{figure}
 
 Figure~\ref{fig:qr_scaling} demonstrates the linear time complexity of our complete QR solver for BPS linear systems. The total execution time scales as $O(n)$ across five orders of magnitude, from $n=100$ to $n=10^6$, for four different parameter configurations. All curves align with the reference line of slope 1, confirming the analysis in Section~\ref{sec:algorithms}.
 
-Figure~\ref{fig:rq_scaling} confirms the $O(n)$ complexity of computing the $RQ$ product for symmetric BPS matrices, a key operation in the QR eigenvalue algorithm. Four parameter sets exhibit linear scaling, with all curves parallel to the $O(n)$ reference line, confirming the analysis in Section~\ref{sec:fastrq}.
+Figure~\ref{fig:rq_scaling} confirms the $O(n)$ complexity of computing the $RQ$ product for symmetric BPS matrices, a key operation in the QR eigenvalue algorithm. Four parameter sets exhibit linear scaling, with all curves parallel to the $O(n)$ reference line, confirming the analysis in Section~\ref{sec:fastrq}. 
+
+\sotodoinline{Add how the complexities depend on $r,m,\ell, p$}
 
 \subsection{Numerical Stability of the QR Solver}
 \label{subsec:stability}
@@ -1377,7 +1346,7 @@ Figure~\ref{fig:rq_scaling} confirms the $O(n)$ complexity of computing the $RQ$
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.8\textwidth]{qr_stability.pdf}
-\caption{Log-log plot of the maximum residual $\max|A\mathbf{x} - \mathbf{b}|$ versus matrix size $n$ for four parameter sets $(\ell, m, r, p)$. Here $\mathbf{x}$ is computed by our complete QR solver (QR factorization followed by application of $Q^\top$ and backward substitution). The dashed gray line indicates the machine precision $\epsilon_{\mathrm{machine}} \approx 2.22 \times 10^{-16}$.}
+\caption{Log-log plot  of the maximum residual $\max|A\mathbf{x} - \mathbf{b}|$ versus matrix size $n$ for four parameter sets $(\ell, m, r, p)$. Here $\mathbf{x}$ is computed by our complete QR solver (QR factorization followed by application of $Q^\top$ and backward substitution). The dashed gray line indicates the machine precision $\epsilon_{\mathrm{machine}} \approx 2.22 \times 10^{-16}$.}
 \label{fig:stability}
 \end{figure}
 
@@ -1389,11 +1358,11 @@ where $\mathbf{x}$ is the solution computed by our solver for a randomly generat
 
 To isolate the numerical behavior of the QR factorization itself, all test matrices are constructed to be well-conditioned; more precisely, they are diagonally dominant. This ensures that the observed residuals are not influenced by ill-conditioning of the linear system, but instead reflect only the numerical errors introduced by the factorization and solution process.
 
-For all parameter configurations and across six orders of magnitude in $n$ (from $n=10$ to $n=10^6$), the computed residuals remain very small. The growth of the error is gradual: for smaller matrices, it is near machine precision ($\sim 10^{-16}$), while for the largest matrices, the maximum error corresponds to approximately 14 digits of accuracy. Even for the most challenging case (semiseparable-dominated with $r=p=8$) and the largest $n=10^6$, the algorithm achieves a maximum residual of about $4.6 \times 10^{-15}$, demonstrating its robustness and reliable numerical stability across a wide range of matrix structures and sizes.
+For all parameter configurations and across six orders of magnitude in $n$ (from $n=10$ to $n=10^6$), the computed residuals remain very small. The growth of the error is gradual: for smaller matrices, it is near machine precision ($\sim 10^{-16}$), while for the largest matrices, the maximum error corresponds to approximately 14 digits of accuracy. Even for the most challenging case (semiseparable-dominated with $r=p=8$) and the largest $n=10^6$, the algorithm preserves a maximum residual error of less than $5 \times 10^{-15}$, demonstrating its robustness and reliable numerical stability across a wide range of matrix structures and sizes.
 
 
 \begin{remark}
-Measuring the accuracy of large-scale QR factorization presents a methodological challenge. Traditional approaches---comparing the factor matrix $\tilde{F}$ generated by our structured QR algorithm against the factor matrix $F_{\text{dense}}$ produced by a standard dense QR routine, or evaluating the reconstruction error $\|\tilde{Q}\tilde{R} - A\|$ where $\tilde{Q},\tilde{R}$ are extracted from $\tilde{F}$---require $O(n^3)$ operations and become infeasible for $n > 10^4$.
+Measuring the accuracy of large-scale QR factorization presents a methodological challenge. Traditional approaches like comparing the factor matrix $\tilde{F}$ generated by our structured QR algorithm against the factor matrix $F_{\text{dense}}$ produced by a standard dense QR routine, or evaluating the reconstruction error $\|\tilde{Q}\tilde{R} - A\|$ where $\tilde{Q},\tilde{R}$ are extracted from $\tilde{F}$ would require $O(n^3)$ operations to compute the dense equivalent matrices and therefore becomes infeasible for $n > 10^4$.
 
 We overcome this limitation by leveraging the structure of BPS matrices: after obtaining the solution $\mathbf{x}$ via our $O(n)$ solver, we compute the residual $A\mathbf{x} - \mathbf{b}$ using the $O(n)$ matrix-vector multiplication algorithm for BPS matrices~\cite{chandrasekaran2002fast}. This approach allows us to verify accuracy for matrices as large as $n=10^6$ while maintaining overall $O(n)$ computational cost.
 \end{remark}
@@ -1403,11 +1372,11 @@ We overcome this limitation by leveraging the structure of BPS matrices: after o
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.8\textwidth]{qr_comparison.pdf}
-\caption{Comparison of QR factorization times between our fast BPS QR algorithm and the HODLR QR implementation from~\cite{massei2020hm}. Both algorithms operate on banded-plus-semiseparable matrices with parameters $\ell=4$, $m=5$, $r=2$, $p=3$. }
+\caption{Comparison of QR factorization times between our fast BPS QR algorithm and the HODLR QR implementation from~\cite{massei2020hm}. Both algorithms operate on banded-plus-semiseparable matrices with parameters $\ell=4$, $m=5$, $r=2$, $p=3$. \sotodoinline{Add a solve time comparison as well}}
 \label{fig:comparison}
 \end{figure}
 
-We compare our fast QR factorization against the state-of-the-art HODLR (Hierarchically Off-Diagonal Low-Rank) QR implementation from the hm-toolbox~\cite{massei2020hm}. The hm-toolbox provides efficient MATLAB routines for various structured matrices, including HODLR and HSS matrices, and represents one of the most mature implementations for hierarchical matrix computations.
+We compare our fast QR factorization against the state-of-the-art HODLR (Hierarchically Off-Diagonal Low-Rank) QR implementation from the hm-toolbox~\cite{massei2020hm}. Hm-toolbox provides efficient MATLAB routines for various structured matrices, including HODLR and HSS matrices, and represents one of the most mature implementations for hierarchical matrix computations. \sotodoinline{Don't we know hm-toolbox is $O(n \log n)$? We should say that ours has better complexity}
 
 Figure~\ref{fig:comparison} compares the execution times of QR factorization for BPS matrices obtained using the two approaches. Our algorithm consistently exhibits superior performance as the matrix size increases. This advantage arises from its explicit exploitation of the banded-plus-semiseparable structure, which avoids the overhead associated with general hierarchical representations.
 
@@ -1417,18 +1386,12 @@ Moreover, the performance gap widens with increasing $n$, confirming that our me
 \section{Conclusions}
 \label{sec:conclusions}
 
-In this paper, we have established a fundamental theoretical result for BPS matrices and developed efficient algorithms based on this foundation. Our main contribution is the proof that the QR factorization of a BPS matrix preserves the BPS structure, with precisely characterized ranks and bandwidths in the resulting factor matrix. This theoretical insight enabled the design of a complete $O(n)$ direct solver for BPS linear systems, comprising:
-
-a structure-preserving QR factorization algorithm (Algorithm~\ref{algo:fastqr});
-
-an efficient $O(n)$ application of $Q^\top$ (Algorithm~\ref{algo_applyQ});
-
-a fast backward substitution routine (Algorithm~\ref{algo_backsub}).
+In this paper, we have established a fundamental theoretical result for BPS matrices and developed efficient algorithms based on this foundation. Our main contribution is the proof that the QR factorization of a BPS matrix preserves the BPS structure, with precisely characterized ranks and bandwidths in the resulting factor matrix. This theoretical insight enabled the design of a complete $O(n)$ direct solver for BPS linear systems, comprising: (1) a structure-preserving QR factorization algorithm (Algorithm~\ref{algo:fastqr}); (2)an efficient $O(n)$ application of $Q^\top$ (Algorithm~\ref{algo_applyQ}); and (3) a fast backward substitution routine (Algorithm~\ref{algo_backsub}).
 
 
 Furthermore, for symmetric BPS matrices, we have shown that the $RQ$ product---a key operation in the QR algorithm for eigenvalues---also maintains the BPS structure. This led to the development of another $O(n)$ algorithm (Algorithm~\ref{algo:fastrq}) for computing $RQ$ without explicitly forming the dense orthogonal matrix $Q$, opening the door to efficient eigenvalue computations for symmetric BPS matrices.
 
-The numerical experiments confirm the linear scaling and accuracy of our approach, while demonstrating significant performance advantages over existing HODLR-based methods. Our implementation in the SemiseparableMatrices.jl package provides the scientific computing community with efficient, open-source tools for working with this important class of structured matrices.
+The numerical experiments confirm the linear scaling and accuracy of our approach, while demonstrating significant performance advantages over existing HOD-LR-based methods. Our implementation in the SemiseparableMatrices.jl package provides the scientific computing community with efficient, open-source tools for working with this important class of structured matrices.
 
 \subsection*{Future Work}
 
