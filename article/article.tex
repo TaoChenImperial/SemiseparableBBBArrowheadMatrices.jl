@@ -412,27 +412,27 @@ with $J_k\in \mathbb R^{r\times p}$, $K_k\in \mathbb R^{r\times r}$, $E_k\in \ca
 
 
 The $k$-th Householder reflection is defined in terms of
-\begin{align*}
-F_{k-1}[k:n,k] &= A[k:n,k] +   P_{k-1}[1:n-k+1, 1]\\
+\begin{align}
+F_{k-1}[k:n,k] &= A[k:n,k] +   P_{k-1}[1:n-k+1, 1] \nonumber\\
 &= B[k\!:\!n,k] + \begin{bmatrix}
 0\\
     U[k+1\!:\!n,:] 
-\end{bmatrix} V[k,:] \\
+\end{bmatrix} V[k,:] \nonumber\\
 & \qquad +  \begin{bmatrix}
-0\\
+0 \\
     U[k+1\!:\!n,:] 
 \end{bmatrix} \underbrace{(J_k S[k,:] + K_k U^\top A[:,k] + E_k[:,1])}_{=: \bfv_k \in \bbR^r}
-\\
+\nonumber\\ \label{eq:tilde_b_k}
 &\qquad + \underbrace{\begin{bmatrix}
     X_{ks} S[1,:] + Y_{ks} U^\top A[:,k] +Z_{ks}[:,1] \in \bbR^{\min(\ell,n-k+1)} \\ \bfzero
 \end{bmatrix}}_{=: \tilde \bfb_k}.
-\end{align*}
+\end{align}
 
 
 Letting
-\[
+\begin{align}\label{eq:alpha_k}
 \alpha_k := \text{sign}(F_{k-1}[k,k])\big| F_{k-1}[k,k] +\text{sign}(F_{k-1}[k,k])\| F_{k-1}[k\!:\!n,k]\|  \big|,
-\]
+\end{align}
 
 we define:
 \begin{align}\label{eq:hv_update_1}
@@ -667,14 +667,14 @@ We now discuss the practical implementation of an $O(n)$ algorithm for computing
 $\boldsymbol{\tau} \in \mathbb{R}^{n}$.
 
 \State \textbf{Initialization:}
-\State Compute $A^\top U$ in $O(n)$ utilizing the semiseparable structure of $A$ \sotodoinline{Add citation for algorithm for fast semiseparable multiplication} and set $\tilde S \gets \begin{bmatrix} S & A^\top U
+\State Compute $A^\top U$ in $O(n)$~\cite{chandrasekaran2002fast} and set $\tilde S \gets \begin{bmatrix} S & A^\top U
 \end{bmatrix}$ 
 \State Initialize $B_n \gets \mathbf{0}_{n \times n}$, $V_n \gets \mathbf{0}_{n \times r}$, $W_n \gets \mathbf{0}_{n \times (r+p)}$
 \State Initialize parameter matrices: $J \gets \mathbf{0}_{r \times p}$, $K \gets \mathbf{0}_{r \times r}$, $E_s \gets \mathbf{0}_{r \times \min(\ell+m,n)}$, $X_s \gets \mathbf{0}_{\min(\ell,n) \times p}$, $Y_s \gets \mathbf{0}_{\min(\ell,n) \times r}$, $Z_s \gets \mathbf{0}_{\min(\ell,n) \times \min(\ell+m,n)}$
 
 \For{$k = 1$ to $n-1$}
     \State \textbf{Step 1: Form Householder vector $\bfy_k$}
-    \State Run $ \text{FormHouseholderVector}(A_{k-1}, U[k:n, :], \ell)$ (Algorithm \ref{algo:form_householder}) to get:
+    \State Run $ \text{FormHouseholderVector}(A_{k-1}, U[k:n, :], V[k:n, :], \ell)$ (Algorithm \ref{algo:form_householder}) to get:
     \State $\bar{\mathbf{k}}_{k} \gets \text{low-rank part from } \mathbf{y}_k$
     \State $\mathbf{b}_{k} \gets \text{banded part from } \bfy_k$
     \State $\tau_k \gets \text{scaling coefficient}$
@@ -704,19 +704,18 @@ $\boldsymbol{\tau} \in \mathbb{R}^{n}$.
 \end{algorithmic}
 \end{algorithm}
 
-
-
 \begin{algorithm}
 \caption{FormHouseholderVector}
 \label{algo:form_householder}
 \begin{algorithmic}
-\State \textbf{Input} $A_{k-1} \in \mathbb{R}^{(n-k+1) \times (n-k+1)}$: current submatrix;
-$U_k \in \mathbb{R}^{(n-k+1) \times r}$: $U[k:n, :]$;
+\State \textbf{Input} $A_{k-1} \in \mathbb{R}^{(n-k+1) \times (n-k+1)}$: the current trailing submatrix at step $k$, expressible as the remaining block of the original matrix plus accumulated structured perturbations, i.e., $A_{k-1} = A[k:n, k:n] + P_{k-1}$ where $P_{k-1} \in \mathcal{P}(A[k:n, k:n])$;
+$U_k \in \mathbb{R}^{(n-k+1) \times r}$: $U[k:n, :]$;$V_k \in \mathbb{R}^{(n-k+1) \times r}$: $V[k:n, :]$;
 $\ell$: lower bandwidth.
 \State \textbf{Output} $\bar{\mathbf{k}} \in \mathbb{R}^r$, $\mathbf{b} \in \mathbb{R}^{n-k+1}$, $\tau\in \mathbb{R}$ s.t. $\bfy$: = $ \bfe_1 + \tilde U_k\bar{\mathbf{k}} + \mathbf{b}$ is the Householder vector where $\tilde U_k \in \mathbb{R}^{(n-k+1) \times r}$ with $\tilde U_k[1,:]=\mathbf{0}$ and $\tilde U_k[2:n-k+1,:]=U[k+1:n,:]$. $I-\tau \bfy \bfy^\top$ is the Householder transformation. (Note that the expression for $\bfy$ here differs from that in Eq.~(\ref{eq:y_k}); both forms are valid, and it is straightforward to convert between them.)
-
-\State $\mathbf{b} \gets $ Eq. (\ref{eq:hv_update_1})\sotodoinline{this equation usess $B$ and $\tilde b_k$ which are not an input to this algorithm.}
-\State $\bar{\mathbf{k}} \gets $ Eq. (\ref{eq:hv_update_2}) \sotodoinline{this equation usess $V$, $\alpha_k$ and $V$ which are not an input to this algorithm.}
+\State $\tilde \bfb_k \gets $ Eq. (\ref{eq:tilde_b_k}), \text{computed using the entries available within the input $A_{k-1}$.}
+\State $\alpha_k \gets $ Eq. (\ref{eq:alpha_k}), computed entirely from $A_{k-1}$.
+\State $\mathbf{b} \gets $ Eq. (\ref{eq:hv_update_1})
+\State $\bar{\mathbf{k}} \gets $ Eq. (\ref{eq:hv_update_2}) 
 \State $\mathbf{b}$ is only nonzero in entries $2$ through $\min(\ell+1, n-k+1)$.
 \State $\tau \gets 2/\bfy^\top\bfy$
 \State \Return $\bar{\mathbf{k}}$, $\mathbf{b}$, $\tau$
@@ -941,16 +940,16 @@ Algorithm~\ref{algo_backsub}, which is equivalent to the one introduced in~\cite
 
 
 \For{\( j = n \) down to \( 1 \)}
-    \State Initialize \sotodoinline{Why is this called residual?} residual: \( \text{res} \gets 0 \)
+    \State Initialize  accumulated sum: \( \text{sum} \gets 0 \)
 
-    \State Add semiseparable contribution: \( \text{res} \gets \text{res} + W_n[j,:]^\top \mathbf{s} \)
+    \State Add semiseparable contribution: \( \text{sum} \gets \text{sum} + W_n[j,:]^\top \mathbf{s} \)
 
     \State Add banded contributions:
     \For{\( k = j+1 \) to \( \min(j+\ell+m, n) \)}
-        \State \( \text{res} \gets \text{res} + B_n[j,k]  \mathbf{x}[k] \)
+        \State \( \text{sum} \gets \text{sum} + B_n[j,k]  \mathbf{x}[k] \)
     \EndFor
 
-    \State Solve for \( x_j \): \( \mathbf{x}[j] \gets (\mathbf{c}[j] - \text{res}) / B_n[j,j] \)
+    \State Solve for \( x_j \): \( \mathbf{x}[j] \gets (\mathbf{c}[j] - \text{sum}) / B_n[j,j] \)
 
     \State Update semiseparable accumulator: \( \mathbf{s} \gets \mathbf{s} + \tilde S[j,:]^\top \mathbf{x}[j] \)
 \EndFor
@@ -1321,24 +1320,54 @@ To verify that the theoretical $O(n)$ complexity holds for matrices with differe
 
 
 \begin{figure}[htbp]
-\centering
-\includegraphics[width=0.8\textwidth]{qr_linear.pdf}
-\caption{Log-log plot of the total solver time (QR factorization + application of $Q^\top$ + backward substitution) versus matrix size $n$ for four parameter sets $(\ell, m, r, p)$. The dashed line has slope 1, indicating linear scaling. \sotodoinline{Split into 2 plots: one for factorization, one for the solve ( applying $Q^\top$, andback-substitution)}}
-\label{fig:qr_scaling}
+  \centering
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{qr_linear.pdf}
+    \vspace{0.1cm}
+    \\ \textbf{(a)} QR factorization phase.
+    \label{fig:qr_fact_only}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{qr_solver_linear.pdf}
+    \vspace{0.1cm}
+    \\ \textbf{(b)} solution phase.
+    \label{fig:qr_solve_only}
+  \end{minipage}
+  \vspace{0.3cm}
+  \caption{Log-log plots of execution times versus matrix size $n$ for four parameter sets $(\ell, m, r, p)$, demonstrating optimal linear complexity. (a) Execution time for the structured QR factorization; (b) Execution time for the solve phase (applying $Q^\top$ and backward substitution). The dashed lines have a slope of 1, indicating perfect linear scaling $O(n)$.}
+  \label{fig:qr_scaling}
 \end{figure}
 
 \begin{figure}[htbp]
-\centering
-\includegraphics[width=0.8\textwidth]{rq_linear.pdf}
-\caption{Log-log plot of the $RQ$ computation time for symmetric BPS matrices versus $n$ for four parameter sets $(\ell, r)$. The dashed line has slope 1, indicating linear scaling. \sotodoinline{Doess this include factorisation time? I'm surprised it's roughly the same speed.  Include plots for both the factorisation and also ONLY the $RQ$}}
-\label{fig:rq_scaling}
+  \centering
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{rq_linear.pdf}
+    \vspace{0.1cm}
+    \\ \textbf{(a)} Isolated $RQ$ product loop.
+    \label{fig:only_rq}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{qr_plus_rq_linear.pdf}
+    \vspace{0.1cm}
+    \\ \textbf{(b)} Combined $QR$ and $RQ$.
+    \label{fig:qr_plus_rq}
+  \end{minipage}
+  \vspace{0.3cm}
+  \caption{Log-log plots of computation times for symmetric BPS matrices versus $n$ across four distinct parameter sets $(\ell, r)$. The left panel (a) illustrates the isolated $RQ$ computation cost, while the right panel (b) presents the cumulative execution time encompassing both the complete structured $QR$ factorization and the subsequent $RQ$ product. The dashed reference lines possess a slope of 1, indicating strict $O(n)$ linear scaling for both components.}
+  \label{fig:rq_scaling}
 \end{figure}
 
-Figure~\ref{fig:qr_scaling} demonstrates the linear time complexity of our complete QR solver for BPS linear systems. The total execution time scales as $O(n)$ across five orders of magnitude, from $n=100$ to $n=10^6$, for four different parameter configurations. All curves align with the reference line of slope 1, confirming the analysis in Section~\ref{sec:algorithms}.
+Figure~\ref{fig:qr_scaling} demonstrates the linear time complexity of our complete QR solver for BPS linear systems. The execution time scales as $O(n)$ across five orders of magnitude, from $n=100$ to $n=10^6$, for four different parameter configurations. All curves align with the reference line of slope 1, confirming the analysis in Section~\ref{sec:algorithms}.
 
 Figure~\ref{fig:rq_scaling} confirms the $O(n)$ complexity of computing the $RQ$ product for symmetric BPS matrices, a key operation in the QR eigenvalue algorithm. Four parameter sets exhibit linear scaling, with all curves parallel to the $O(n)$ reference line, confirming the analysis in Section~\ref{sec:fastrq}. 
 
-\sotodoinline{Add how the complexities depend on $r,m,\ell, p$}
+While the computational time scales as $O(n)$, the underlying constant factor depends polynomially on the structural parameters $r, p, \ell,$ and $m$. Specifically, the cost per step is dominated by updating the perturbation space $\mathcal{P}(A)$, leading to an overall complexity of $O(n \cdot (r^2 + rp + r(\ell+m) + \ell p + \ell(\ell+m)))$ for the complete solver. This strict parameter dependence accounts for the vertical offsets among the curves in Figure~\ref{fig:qr_scaling} and Figure~\ref{fig:rq_scaling}: configurations with larger semiseparable ranks or wider bandwidths exhibit an elevated constant overhead, while maintaining the identical linear scaling slope of 1.
 
 \subsection{Numerical Stability of the QR Solver}
 \label{subsec:stability}
@@ -1370,15 +1399,32 @@ We overcome this limitation by leveraging the structure of BPS matrices: after o
 \subsection{Comparison with HODLR QR}
 
 \begin{figure}[htbp]
-\centering
-\includegraphics[width=0.8\textwidth]{qr_comparison.pdf}
-\caption{Comparison of QR factorization times between our fast BPS QR algorithm and the HODLR QR implementation from~\cite{massei2020hm}. Both algorithms operate on banded-plus-semiseparable matrices with parameters $\ell=4$, $m=5$, $r=2$, $p=3$. \sotodoinline{Add a solve time comparison as well}}
-\label{fig:comparison}
+  \centering
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{qr_comparison.pdf}
+    \vspace{0.1cm}
+    \\ \textbf{(a)} QR factorization phase.
+    \label{fig:qr_fact_comp}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{qr_solver_comparison.pdf}
+    \vspace{0.1cm}
+    \\ \textbf{(b)} solution phase.
+    \label{fig:qr_solve_comp}
+  \end{minipage}
+  \vspace{0.3cm}
+  \caption{Log-log performance comparisons between our proposed fast BPS QR algorithm and the HODLR QR implementation from~\cite{massei2020hm}(with parameters $\ell=4$, $m=5$, $r=2$, $p=3$). Panel (a) illustrates the execution times for the structured QR factorization phase; Panel (b) presents the execution times for the solve phase (applying $Q^\top$ and backward substitution).}
+  \label{fig:comparison}
 \end{figure}
 
-We compare our fast QR factorization against the state-of-the-art HODLR (Hierarchically Off-Diagonal Low-Rank) QR implementation from the hm-toolbox~\cite{massei2020hm}. Hm-toolbox provides efficient MATLAB routines for various structured matrices, including HODLR and HSS matrices, and represents one of the most mature implementations for hierarchical matrix computations. \sotodoinline{Don't we know hm-toolbox is $O(n \log n)$? We should say that ours has better complexity}
+We compare our fast QR factorization against the state-of-the-art HODLR (Hierarchically Off-Diagonal Low-Rank) QR implementation from the hm-toolbox~\cite{massei2020hm}. Hm-toolbox provides efficient MATLAB routines for various structured matrices, including HODLR and HSS matrices, and represents one of the most mature implementations for hierarchical matrix computations. 
 
-Figure~\ref{fig:comparison} compares the execution times of QR factorization for BPS matrices obtained using the two approaches. Our algorithm consistently exhibits superior performance as the matrix size increases. This advantage arises from its explicit exploitation of the banded-plus-semiseparable structure, which avoids the overhead associated with general hierarchical representations.
+Crucially, while general HODLR-based QR factorization algorithms typically incur an asymptotic computational complexity of $O(n \log n)$ due to their hierarchical partitioning schemes, our proposed specialized algorithm achieves an optimal linear complexity of $O(n)$ by directly preserving and tracking the BPS structure throughout the reflections.
+
+Figure~\ref{fig:comparison} compares the execution times of QR factorization for BPS matrices obtained using the two approaches. Our algorithm consistently exhibits superior performance as the matrix size increases. This deterministic scaling advantage arises from its explicit exploitation of the underlying BPS structure, which altogether avoids the $O(n \log n)$ hierarchical overhead associated with general low-rank approximations.
 
 Moreover, the performance gap widens with increasing $n$, confirming that our method is particularly well suited for large-scale problems. For $n = 1{,}000{,}000$, our implementation achieves an approximate $9\times$ speedup over the HODLR approach, highlighting the practical benefits of the proposed specialized algorithm.
 
