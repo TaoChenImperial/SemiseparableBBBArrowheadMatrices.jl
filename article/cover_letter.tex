@@ -1,0 +1,55 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper, margin=25mm]{geometry}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{hyperref}
+\usepackage{microtype}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.8em} 
+\renewcommand{\baselinestretch}{1.0} 
+
+\begin{document}
+
+{\small\it
+Department of Mathematics \\
+Imperial College London \\
+London, SW7 2AZ, United Kingdom
+}
+
+\vspace{-0.6em}
+\rule{\textwidth}{0.8pt}
+
+\vspace{0.5em}
+\today
+
+\vspace{0.5em}
+Editorial Board \\
+SIAM Journal on Matrix Analysis and Applications \\
+Society for Industrial and Applied Mathematics
+
+\vspace{0.5em}
+Subject: Submission of Manuscript Regarding Linear Complexity QR Factorization for BPS Matrices
+
+\vspace{0.5em}
+Dear Editor-in-Chief and Members of the Editorial Board,
+
+On behalf of my co-author, Dr. Sheehan Olver, and myself, I am writing to submit our manuscript titled \textit{the QR factorization for banded-plus-semiseparable matrices is computable in linear complexity} for exclusive consideration for publication in the SIAM Journal on Matrix Analysis and Applications.
+
+Banded-plus-semiseparable(BPS) matrices arise naturally in spectral methods when discretizing differential and integral equations. While general hierarchical methods approximate low-rank off-diagonal blocks in superlinear complexity, they introduce significant hierarchical overhead and lose explicit parameterization when applied to precise BPS forms.
+
+In this paper, we resolve this challenge by proving that the QR factorization of a BPS matrix can be computed in optimal linear complexity. By tracking the algebraic structure throughout successive Householder transformations, we demonstrate that the intermediate trailing submatrices maintain a structured, compact parameterization requiring minimal storage. 
+
+Specifically, we provide an exact proof showing that structural perturbations from sequential reflections remain confined within an optimal parameter subspace. Building upon this structured framework, we develop stable direct solvers by exploiting fast techniques for applying the orthogonal transformations and performing backward substitution. For symmetric BPS matrices, we establish that the core RQ product strictly preserves the structural form, enabling fast eigenvalue computations. Finally, comprehensive numerical experiments confirm perfect linear scaling and substantial speedups over state-of-the-art software within the Julia ecosystem.
+
+Given your journal's outstanding reputation in structured numerical linear algebra, we believe our work offers an optimal paradigm that aligns closely with your readership. We confirm this manuscript is original, unpublished, and not under consideration elsewhere. Thank you very much for your time and consideration.
+
+\vspace{1.5em}
+Sincerely yours,
+
+\vspace{2.5em} 
+Tao Chen \\
+Department of Mathematics, Imperial College London \\
+Email: \href{mailto:t.chen24@imperial.ac.uk}{t.chen24@imperial.ac.uk}
+
+\end{document}
