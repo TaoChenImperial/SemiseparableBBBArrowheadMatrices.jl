@@ -1,12 +1,29 @@
-% SIAM Article Template
-\documentclass[review,onefignum,onetabnum]{siamart171218}
+%% 
+%% Copyright 2019-2020 Elsevier Ltd
+%% 
+%% This file is part of the 'CAS Bundle'.
+%% --------------------------------------
+%% 
+%% It may be distributed under the conditions of the LaTeX Project Public
+%% License, either version 1.2 of this license or (at your option) any
+%% later version.  The latest version of this license is in
+%%    http://www.latex-project.org/lppl.txt
+%% and version 1.2 or later is part of all distributions of LaTeX
+%% version 1999/12/01 or later.
+%% 
+%% The list of all files belonging to the 'CAS Bundle' is
+%% given in the file `manifest.txt'.
+%% 
+%% Template article for cas-sc documentclass for 
+%% double column output.
 
-% Information that is shared between the article and the supplement
-% (title and author information, macros, packages, etc.) goes into
-% ex_shared.tex. If there is no supplement, this file can be included
-% directly.
+%\documentclass[a4paper,fleqn,longmktitle]{cas-sc}
+\documentclass[a4paper,fleqn]{cas-sc}
 
-% Packages and macros go here
+% \usepackage[numbers]{natbib}
+%\usepackage[authoryear]{natbib}
+\usepackage[authoryear,longnamesfirst]{natbib}
+
 \usepackage{lipsum}
 \usepackage{amsfonts}
 \usepackage{graphicx}
@@ -14,6 +31,13 @@
 %\usepackage{algorithmic}
 \usepackage{algorithm}
 \usepackage{bm}
+
+\usepackage{amsthm}
+\newtheorem{definition}{Definition}
+\newtheorem{mytheorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+
 
 \usepackage{tikz}
 \usetikzlibrary{matrix}
@@ -61,95 +85,105 @@
 \usepackage{algpseudocode}
 \newtheorem{remark}{Remark}[section]
 
-\ifpdf
-  \DeclareGraphicsExtensions{.eps,.pdf,.png,.jpg}
-\else
-  \DeclareGraphicsExtensions{.eps}
-\fi
-
-% Add a serial/Oxford comma by default.
-\newcommand{\creflastconjunction}{, and~}
-
-% Used for creating new theorem and remark environments
-\newsiamremark{hypothesis}{Hypothesis}
-\crefname{hypothesis}{Hypothesis}{Hypotheses}
-\newsiamthm{claim}{Claim}
-
-% Sets running headers as well as PDF title and authors
-\headers{QR for Banded-Plus-Semiseparable Matrices}{T. Chen and S. Olver}
-
-% Title. If the supplement option is on, then "Supplementary Material"
-% is automatically inserted before the title.
-\title{The  QR Factorization for Banded-Plus-Semiseparable Matrices is computable in linear complexity}
-
-% Authors: full names plus addresses.
-\author{Tao Chen\thanks{Department of Mathematics, Imperial College London, London, UK
-  (\email{t.chen24@imperial.ac.uk}, \email{s.olver@imperial.ac.uk}).}
-\and Sheehan Olver\footnotemark[1]}
-
 \usepackage{amsopn}
 \DeclareMathOperator{\diag}{diag}
 \DeclareMathOperator{\triu}{triu}
 \DeclareMathOperator{\tril}{tril}
 
 
-%% Added on Overleaf: enabling xr
-\makeatletter
-\newcommand*{\addFileDependency}[1]{% argument=file name and extension
-  \typeout{(#1)}% latexmk will find this if $recorder=0 (however, in that case, it will ignore #1 if it is a .aux or .pdf file etc and it exists! if it doesn't exist, it will appear in the list of dependents regardless)
-  \@addtofilelist{#1}% if you want it to appear in \listfiles, not really necessary and latexmk doesn't use this
-  \IfFileExists{#1}{}{\typeout{No file #1.}}% latexmk will find this message if #1 doesn't exist (yet)
-}
-\makeatother
-
-\newcommand*{\myexternaldocument}[1]{%
-    \externaldocument{#1}%
-    \addFileDependency{#1.tex}%
-    \addFileDependency{#1.aux}%
-}
-
-% Optional PDF information
 \ifpdf
-\hypersetup{
-  pdftitle={The  QR factorization of a Banded-Plus-Semiseparable Matrix is Computable with Linear Complexity},
-  pdfauthor={D. Doe, P. T. Frank, and J. E. Smith}
-}
+  \DeclareGraphicsExtensions{.eps,.pdf,.png,.jpg}
+\else
+  \DeclareGraphicsExtensions{.eps}
 \fi
 
-% The next statement enables references to information in the
-% supplement. See the xr-hyperref package for details.
+%%%Author definitions
+\def\tsc#1{\csdef{#1}{\textsc{\lowercase{#1}}\xspace}}
+\tsc{WGM}
+\tsc{QE}
+\tsc{EP}
+\tsc{PMS}
+\tsc{BEC}
+\tsc{DE}
+%%%
 
-%% Use \myexternaldocument on Overleaf
-%\myexternaldocument{ex_supplement}
-
-% FundRef data to be entered by SIAM
-%<funding-group>
-%<award-group>
-%<funding-source>
-%<named-content content-type="funder-name">
-%</named-content>
-%<named-content content-type="funder-identifier">
-%</named-content>
-%</funding-source>
-%<award-id> </award-id>
-%</award-group>
-%</funding-group>
+% Uncomment and use as if needed
+%\newtheorem{theorem}{Theorem}
+%\newtheorem{lemma}[theorem]{Lemma}
+%\newdefinition{rmk}{Remark}
+%\newproof{pf}{Proof}
+%\newproof{pot}{Proof of Theorem \ref{thm}}
 
 \begin{document}
+\let\WriteBookmarks\relax
+\def\floatpagepagefraction{1}
+\def\textpagefraction{.001}
 
-\maketitle
+% Short title
+\shorttitle{QR for Banded-Plus-Semiseparable Matrices}
 
+% Short author
+\shortauthors{T. Chen and S. Olver}
+
+% Main title of the paper
+\title [mode = title]{A Householder-Based QR Factorization for Banded-Plus-Semiseparable Matrices in Linear Complexity}                      
+% Title footnote mark
+% eg: \tnotemark[1]
+\tnotemark[1,2]
+
+% Title footnote 1.
+% eg: \tnotetext[1]{Title footnote text}
+% \tnotetext[<tnote number>]{<tnote text>} 
+
+
+
+% ================= First & Corresponding Author (Tao Chen) =================
+\author[1]{Tao Chen}
+\cormark[1] % Marks you as the corresponding author
+\ead{t.chen24@imperial.ac.uk} 
+
+
+% ================= Second Author (Your Supervisor) =================
+\author[1]{ Sheehan Olver} 
+\ead{s.olver@imperial.ac.uk} 
+
+
+% ================= Joint Affiliation (Imperial College London) =================
+\affiliation[1]{organization={Department of Mathematics, Imperial College London},
+    addressline={South Kensington Campus}, 
+    city={London},
+    postcode={SW7 2AZ}, 
+    country={United Kingdom}}
+
+% ================= Corresponding Author Footnote Text =================
+\cortext[cor1]{Corresponding author}
+
+% Here goes the abstract
 \begin{abstract}
-We show that the QR factorization of a banded-plus-semiseparable (BPS) matrix is computable in optimal linear complexity with respect to the discretization size by showing that the intermediate stages of a QR factorization as computed using Householder reflection maintain a specific structure which has optimal storage. This theoretical result enables the design of stable, linear-complexity algorithms for solving the associated linear systems. For symmetric BPS matrices, we further show that the $RQ$ product---central to eigenvalue computations via the QR algorithm---also preserves the BPS structure, leading to a linear-complexity algorithm for each iteration. Numerical experiments validate the optimal linear complexity, confirm high numerical accuracy,  and demonstrate substantial speedups compared with existing hierarchical approaches. The algorithms have been implemented in an open-source Julia package, providing an efficient and accessible platform for practical use.
+We show that the QR factorization of a banded-plus-semiseparable (BPS) matrix is computable in optimal linear complexity with respect to the discretization size by showing that the intermediate stages of a QR factorization as computed using Householder reflection maintain a specific structure which has optimal storage. This theoretical result enables the design of stable, linear-complexity algorithms for solving the associated linear systems. Importantly, our algorithm outputs data in a standard LAPACK-compatible format. This allows users to switch to highly optimized dense matrix operations for the final solve, creating a fast hybrid approach. For symmetric BPS matrices, we further show that the reverse $RQ$ product preserves the BPS structure, establishing the algebraic closure of this matrix class under orthogonal similarity transformations and facilitating efficient chain-structured matrix decompositions. Numerical experiments validate the optimal linear complexity, confirm high numerical accuracy, demonstrate excellent computational efficiency via LAPACK integration, and show substantial speedups compared with existing hierarchical approaches. The algorithms have been implemented in an open-source Julia package, providing an efficient and accessible platform for practical use.
 \end{abstract}
 
+% Use if graphical abstract is present
+% \begin{graphicalabstract}
+% \includegraphics{figs/grabs.pdf}
+% \end{graphicalabstract}
+
+% Research highlights
+\begin{highlights}
+\item We propose a fast QR factorization algorithm for banded-plus-semiseparable matrices using Householder transformations.
+\item The proposed algorithm achieves a strict linear computational complexity and effectively preserves the underlying matrix structures.
+\item A high-performance, open-source Julia package is developed and validated through extensive numerical benchmarks.
+
+\end{highlights}
+
+% Keywords
+% Each keyword is seperated by \sep
 \begin{keywords}
-banded-plus-semiseparable matrices, QR factorization, linear complexity, structured matrices, direct solvers
+banded-plus-semiseparable matrices \sep QR factorization \sep linear complexity \sep structured matrices \sep direct solvers
 \end{keywords}
 
-\begin{AMS}
-65F05, 65F50, 15A23, 65Y20
-\end{AMS}
+
+\maketitle
 
 \section{Introduction}
 
@@ -162,20 +196,23 @@ where $U ,V \in \bbR^{n \times r}$ and $W,S \in \bbR^{n,p}$
   However, generalizing these results to the case where the matrix is nonsymmetric, or the banded part $B$ is a genuine banded matrix, rather than merely a diagonal one, and representing the QR factorization in its entirety  presents significant algorithmic challenges.
 
 
-Pioneering work has established \( O(n) \) solvers for BPS matrices via ULV factorization~\cite{chandrasekaran2003fast}. BPS matrices can also be viewed as  hierarchically semiseparable (HSS) matrices, and solvers using HSS structure are a well-developed area~\cite{chandrasekaran2007fast, chandrasekaran2006fast, massei2020hm, xia2010fast}. A parallel line of research extensively developed the theory and algorithms for semiseparable matrices, including approaches leveraging rational Krylov techniques~\cite{fasino2005rational, vandebril2008rational}, structure-preserving analyses~\cite{delvaux2006rank, delvaux2006structures, eidelman2005qr}, and alternative representations~\cite{delvaux2008givens, vandebril2005note}. Despite these advances, a clear theoretical guarantee that the standard QR factorization preserves the BPS structure has been missing, with most existing solvers relying on more complex ULV~\cite{chandrasekaran2003fast} or intricate Givens-based schemes~\cite{delvaux2008qr, mastronardi2001fast, van2004two}. A special case of BPS matrices with no lower semiseparable part ($r = 0$) is almost banded matrices which were used in~\cite{olver2013fast} to represent discretisations of differential equations using the ultraspherical spectral method. An optimal complexity adaptive QR factorization was introduced, which also gives an optimal complexity QR factorization for this special case. This work also introduced an optimal complexity back-substitution for upper-triangular BPS matrices, an algorithm we also use.
+Pioneering work has established stable $O(n)$ direct solvers for various classes of BPS and related rank-structured matrices. In particular, a mature and extensive literature has long leveraged sequences of Givens rotations to exploit these compact representations. The foundational theory and rotational ordering patterns for generic rank-structured systems are comprehensively detailed in the seminal books of ~\cite{vandebril2008matrix} and ~\cite{eidelman2014separable}, both of which provide exhaustive analyses of fast solvers, including QR and LU-type factorizations that adapt to BPS forms. Software implementations have historical precedents as well; most notably, the \texttt{SSPACK} library by Vandebril and Van Barel~\cite{vandebrilmanual} delivers a robust Fortran framework for managing semiseparable operations via Givens transformations. 
 
-In this paper, we close this theoretical gap and prove that the QR factorization of a BPS matrix yields a factor matrix \( F \), which is the matrix whose upper triangular part contains $R$ and lower triangular part contains the Householder reflectors encoding $Q$,  that is itself BPS. This discovery enables the design of a suite of $ O(n) $ algorithms, including a robust QR factorization and a complete direct solver that performs $ Q^\top $ application and backward substitution in linear time. Furthermore, we extend this structural analysis to symmetric BPS matrices, proving that the $RQ$ product also retains the BPS structure, which is central to efficient eigenvalue computations.
+Beyond these, alternative algorithmic frameworks include ULV factorizations~\cite{chandrasekaran2003fast}, hierarchically semiseparable (HSS) matrix techniques~\cite{chandrasekaran2007fast, chandrasekaran2006fast, massei2020hm, xia2010fast}, and rational Krylov approaches~\cite{fasino2005rational, vandebril2008rational}. Structure-preserving properties under rotational QR steps have also been extensively explored~\cite{delvaux2006rank, delvaux2006structures, eidelman2005qr, delvaux2008givens, vandebril2005note}. A special case of BPS matrices with no lower semiseparable part ($r = 0$) is almost banded matrices, which were used in~\cite{olver2013fast} to represent discretisations of differential equations using the ultraspherical spectral method, accompanied by an optimal complexity adaptive QR factorization and back-substitution solver.
 
+Crucially, however, almost all existing $O(n)$ QR factorization schemes for BPS matrices in the rank-structured literature are fundamentally anchored in Givens rotations~\cite{delvaux2008qr, mastronardi2001fast, van2004two}. While rotational approaches are well-developed, they rely on localized transformations that do not yield the standard Householder factor matrix layout native to LAPACK storage formats and modern dense computing pipelines. A clear theoretical guarantee and an explicit proof showing that the standard QR factorization via Householder transformations preserves the compact BPS format has been missing from the literature.
 
-The core of our idea lies in characterizing the precise structural evolution during the QR factorization process. Although the BPS structure is not strictly invariant under individual Householder transformations, we demonstrate that the intermediate matrices remain within a well-defined space of structured perturbations, denoted as $\mathcal{P}(A)$ (Definition \ref{def:P}). The fundamental insight is that each Householder reflection preserves this extended structure (Lemma \ref{Lemma:Structure_preserve}), ensuring that the final factor matrix $F$ maintains a compact representation (Theorem \ref{thm:structure_preserve}). By leveraging this structural inheritance, we transition from theoretical preservation to the development of $O(n)$ algorithms, bridging the gap between algebraic properties and efficient numerical implementation.
+In this paper, we close this theoretical and algorithmic gap. We prove that the QR factorization of a BPS matrix via Householder reflections yields a full factor matrix $F$ (encoding both $R$ and the reflectors) that is itself BPS. The core of our idea lies in characterizing the precise structural evolution during the reflection process. Although the BPS structure is not strictly invariant under individual Householder transformations, we demonstrate that the intermediate matrices remain within a well-defined space of structured perturbations, denoted as $\mathcal{P}(A)$ (Definition~\ref{def:P}). The fundamental insight is that each Householder reflection preserves this extended structure (Lemma~\ref{Lemma:Structure_preserve}), ensuring that the final factor matrix $F$ maintains a compact representation (Theorem~\ref{thm:structure_preserve}). By leveraging this structural inheritance, we design a complete $O(n)$ direct solver—including $Q^\top$ application and backward substitution—implemented in a high-performance, open-source Julia package. Furthermore, we extend this framework to symmetric BPS matrices, proving that the $RQ$ product also retains the BPS structure.
+
 
 The rest of this paper is organized as follows.
 Section~\ref{sec:factors} discusses the factor matrix representation for the QR factorization as computed with Householder reflections, which proves a convenient language to discuss the perturbations of the intermediate stages of the factorization.
-Section~\ref{sec:main} presents our main theoretical contributions on the preservation of a specific perturbation structure and the resulting BPS structure of the final QR factorization. Section~\ref{sec:algorithms} details the practical implementation of $O(n)$ algorithms for QR factorization, application of $Q^\top$, and backward substitution. Building on these foundations, Section~\ref{sec:fastrq} addresses symmetric BPS matrices, proving that the $RQ$ product preserves the BPS structure and presenting a linear-complexity algorithm for its computation. Section~\ref{sec:experiments} presents numerical experiments that confirm the linear complexity, verify the numerical stability, and demonstrate performance advantages of our algorithms. We conclude in Section~\ref{sec:conclusions} with a discussion of future work.
+Section~\ref{sec:main} presents our main theoretical contributions on the preservation of a specific perturbation structure and the resulting BPS structure of the final QR factorization. Section~\ref{sec:algorithms} details the practical implementation of $O(n)$ algorithms for QR factorization, application of $Q^\top$, and backward substitution. Section~\ref{sec:experiments} presents numerical experiments that confirm the linear complexity, verify the numerical stability, and demonstrate performance advantages of our algorithms, including their compatibility with LAPACK. We conclude in Section~\ref{sec:conclusions} with a discussion of future work. Finally, Appendix~\ref{sec:fastrq} extends this framework to symmetric BPS matrices, proving that the reverse $RQ$ product also preserves the BPS format.
 
 \begin{remark}
 While this paper focuses on real square matrices, the techniques and results naturally extend to complex matrices by replacing transposes with conjugate transposes. The extension to rectangular matrices is also straightforward, as Householder QR factorization applies similarly to rectangular matrices, and the structural arguments carry over with minor adjustments. These extensions are omitted but represent immediate generalizations of the ideas presented here.
 \end{remark}
+
 
 \section{The Representation of the QR Factor Matrix}
 \label{sec:factors}
@@ -255,7 +292,6 @@ Specifically, we define $F_0 := A$ as the initial state. Although the upper tria
 % \]
 
 The intermediate factor matrices {\it do not} have BPS structure, however, we shall show that it is a structured perturbation of BPS.
-
 
 \section{Structure of the factor matrix for BPS matrices}
 \label{sec:main}
@@ -627,13 +663,13 @@ where
 
 We now arrive at the main result: the final factor matrix is BPS:
 
-\begin{theorem}\label{thm:structure_preserve}
+\begin{mytheorem}\label{thm:structure_preserve}
     The QR factorization of a BPS matrix yields a BPS factor matrix:
 $
 F_n \in {\mathrm{BPS}}_{(r,r+p),(\ell,\ell+m)}^{n \times n}.
 $
 
-\end{theorem}
+\end{mytheorem}
 
 \begin{proof}
     It is easy to see that $F_0:=A\in {\rm BPSF}_{0}(A)$ (with the parameter matrices $J, K, E, X, Y$ and $Z$ all $\mathbf{0}$). From Lemma \ref{lemma:lower}, \ref{lemma:upper}, and \ref{Lemma:Structure_preserve}, an induction argument shows that $F_{n-1}$ can be written as 
@@ -649,9 +685,6 @@ F_{n} = B_{n} + \tril(U V_{n}^\top,-1) + \triu(W_{n} \tilde S^\top,1).
 \]
 
 \end{proof}
-
-
-
 
 \section{Fast Algorithms for QR Factorization and Direct Solvers}
 \label{sec:algorithms}
@@ -879,9 +912,9 @@ Let \( \mathbf{g}_i \) denote the \( i \)-th column of \( G \)
 \end{algorithmic}
 \end{algorithm}
 
-\begin{theorem}
+\begin{mytheorem}
 Algorithm~\ref{algo_applyQ}  computes \( \mathbf{c} = Q^\top\mathbf{b} \) in \( O(n) \) operations.
-\end{theorem}
+\end{mytheorem}
 
 \begin{proof}
 The proof proceeds by induction on the transformation steps. Let \( \mathbf{b}^{(0)} = \mathbf{b} \) and assume that after \( k-1 \) steps, the algorithm maintains the representation:
@@ -958,9 +991,9 @@ Algorithm~\ref{algo_backsub}, which is equivalent to the one introduced in~\cite
 \end{algorithmic}
 \end{algorithm}
 
-\begin{theorem}
+\begin{mytheorem}
 Algorithm~\ref{algo_backsub}  solves \( R\mathbf{x} = \mathbf{c} \) in \( O(n) \) operations.
-\end{theorem}
+\end{mytheorem}
 
 \begin{proof}
 For completeness we include the proof from~\cite{olver2013fast}. The algorithm implements standard backward substitution while exploiting the structure of \( R \). For each index \( j \) from \( n \) down to \( 1 \), the equation:
@@ -993,10 +1026,139 @@ For a BPS matrix \( A \in \mathbb{R}^{n \times n} \) with constant-bounded ranks
 \end{corollary}
 
 
+\section{Numerical results}
+\label{sec:experiments}
+
+To validate the theoretical complexity and demonstrate the practical efficiency of our proposed algorithms, we implemented the fast QR factorization, the complete linear solver, and the fast RQ product computation for symmetric BPS matrices in Julia. The implementation is publicly available in the {SemiseparableMatrices.jl} package~\cite{SemiseparableMatrices2024}, providing an open-source resource for the scientific computing community. Computations were carried out on a MacBook Air equipped with an Apple M2 chip (8-core CPU, 8 GB RAM), without GPU acceleration or access to external computing resources.
+
+\subsection{Linear Complexity Verification}
+
+To verify that the theoretical $O(n)$ complexity holds for matrices with different structural characteristics, we test four parameter sets $(\ell,m,r,p)$ representing different balances between the banded and semiseparable components. Minimal case: $(1,1,1,1)$; balanced case: $(4,5,5,4)$; band-dominated case: $(8,8,1,1)$; semiseparable-dominated case: $ (1,1,8,8)$.
+
+
+
+\begin{figure}[htbp]
+  \centering
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{qr_linear.pdf}
+    \vspace{0.1cm}
+    \\ \textbf{(a)} QR factorization phase.
+    \label{fig:qr_fact_only}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{qr_solver_linear.pdf}
+    \vspace{0.1cm}
+    \\ \textbf{(b)} solution phase.
+    \label{fig:qr_solve_only}
+  \end{minipage}
+  \vspace{0.3cm}
+  \caption{Log-log plots of execution times versus matrix size $n$ for four parameter sets $(\ell, m, r, p)$, demonstrating optimal linear complexity. (a) Execution time for the structured QR factorization; (b) Execution time for the solve phase (applying $Q^\top$ and backward substitution). The dashed lines have a slope of 1, indicating perfect linear scaling $O(n)$.}
+  \label{fig:qr_scaling}
+\end{figure}
+
+Figure~\ref{fig:qr_scaling} demonstrates the linear time complexity of our complete QR solver for BPS linear systems. The execution time scales as $O(n)$ across five orders of magnitude, from $n=100$ to $n=10^6$, for four different parameter configurations. All curves align with the reference line of slope 1, confirming the analysis in Section~\ref{sec:algorithms}.
+
+While the computational time scales as $O(n)$, the underlying constant factor depends polynomially on the structural parameters $r, p, \ell,$ and $m$. Specifically, the cost per step is dominated by updating the perturbation space $\mathcal{P}(A)$, leading to an overall complexity of $O(n \cdot (r^2 + rp + r(\ell+m) + \ell p + \ell(\ell+m)))$ for the complete solver. This strict parameter dependence accounts for the vertical offsets among the curves in Figure~\ref{fig:qr_scaling} and Figure~\ref{fig:rq_scaling}: configurations with larger semiseparable ranks or wider bandwidths exhibit an elevated constant overhead, while maintaining the identical linear scaling slope of 1.
+
+\subsection{Numerical Stability of the QR Solver}
+\label{subsec:stability}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{qr_stability.pdf}
+\caption{Log-log plot  of the maximum residual $\max|A\mathbf{x} - \mathbf{b}|$ versus matrix size $n$ for four parameter sets $(\ell, m, r, p)$. Here $\mathbf{x}$ is computed by our complete QR solver (QR factorization followed by application of $Q^\top$ and backward substitution). The dashed gray line indicates the machine precision $\epsilon_{\mathrm{machine}} \approx 2.22 \times 10^{-16}$.}
+\label{fig:stability}
+\end{figure}
+
+The numerical stability of a QR-based linear solver is crucial for its practical utility. Figure~\ref{fig:stability} demonstrates the excellent stability properties of our structured QR solver across a wide range of matrix sizes and structural parameters. We measure the accuracy through the maximum norm of the residual vector:
+\[
+\max|A\mathbf{x} - \mathbf{b}|,
+\]
+where $\mathbf{x}$ is the solution computed by our solver for a randomly generated right-hand side $\mathbf{b}$.
+
+To isolate the numerical behavior of the QR factorization itself, all test matrices are constructed to be well-conditioned; more precisely, they are diagonally dominant. This ensures that the observed residuals are not influenced by ill-conditioning of the linear system, but instead reflect only the numerical errors introduced by the factorization and solution process.
+
+For all parameter configurations and across six orders of magnitude in $n$ (from $n=10$ to $n=10^6$), the computed residuals remain very small. The growth of the error is gradual: for smaller matrices, it is near machine precision ($\sim 10^{-16}$), while for the largest matrices, the maximum error corresponds to approximately 14 digits of accuracy. Even for the most challenging case (semiseparable-dominated with $r=p=8$) and the largest $n=10^6$, the algorithm preserves a maximum residual error of less than $5 \times 10^{-15}$, demonstrating its robustness and reliable numerical stability across a wide range of matrix structures and sizes.
+
+
+\begin{remark}
+Measuring the accuracy of large-scale QR factorization presents a methodological challenge. Traditional approaches like comparing the factor matrix $\tilde{F}$ generated by our structured QR algorithm against the factor matrix $F_{\text{dense}}$ produced by a standard dense QR routine, or evaluating the reconstruction error $\|\tilde{Q}\tilde{R} - A\|$ where $\tilde{Q},\tilde{R}$ are extracted from $\tilde{F}$ would require $O(n^3)$ operations to compute the dense equivalent matrices and therefore becomes infeasible for $n > 10^4$.
+
+We overcome this limitation by leveraging the structure of BPS matrices: after obtaining the solution $\mathbf{x}$ via our $O(n)$ solver, we compute the residual $A\mathbf{x} - \mathbf{b}$ using the $O(n)$ matrix-vector multiplication algorithm for BPS matrices~\cite{chandrasekaran2002fast}. This approach allows us to verify accuracy for matrices as large as $n=10^6$ while maintaining overall $O(n)$ computational cost.
+\end{remark}
+
+\subsection{Comparison with HODLR QR}
+
+\begin{figure}[htbp]
+  \centering
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{qr_comparison.pdf}
+    \vspace{0.1cm}
+    \\ \textbf{(a)} QR factorization phase.
+    \label{fig:qr_fact_comp}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{qr_solver_comparison.pdf}
+    \vspace{0.1cm}
+    \\ \textbf{(b)} solution phase.
+    \label{fig:qr_solve_comp}
+  \end{minipage}
+  \vspace{0.3cm}
+  \caption{Log-log performance comparisons between our proposed fast BPS QR algorithm and the HODLR QR implementation from~\cite{massei2020hm} (with parameters $\ell=4$, $m=5$, $r=2$, $p=3$). Panel (a) illustrates the execution times for the structured QR factorization phase; Panel (b) presents the execution times for the solve phase (applying $Q^\top$ and backward substitution).}
+  \label{fig:comparison}
+\end{figure}
+
+We compare our fast QR factorization against the state-of-the-art HODLR (Hierarchically Off-Diagonal Low-Rank) QR implementation from the hm-toolbox~\cite{massei2020hm}. Hm-toolbox provides efficient MATLAB routines for various structured matrices, including HODLR and HSS matrices, and represents one of the most mature implementations for hierarchical matrix computations. 
+
+Crucially, while general HODLR-based QR factorization algorithms typically incur an asymptotic computational complexity of $O(n \log n)$ due to their hierarchical partitioning schemes, our proposed specialized algorithm achieves an optimal linear complexity of $O(n)$ by directly preserving and tracking the BPS structure throughout the reflections.
+
+Figure~\ref{fig:comparison} compares the execution times of QR factorization for BPS matrices obtained using the two approaches. Our algorithm consistently exhibits superior performance as the matrix size increases. This deterministic scaling advantage arises from its explicit exploitation of the underlying BPS structure, which altogether avoids the $O(n \log n)$ hierarchical overhead associated with general low-rank approximations.
+
+Moreover, the performance gap widens with increasing $n$, confirming that our method is particularly well suited for large-scale problems. For $n = 1{,}000{,}000$, our implementation achieves an approximate $9\times$ speedup over the HODLR approach, highlighting the practical benefits of the proposed specialized algorithm.
+
+\subsection{LAPACK Compatibility and Hybrid Solver Performance} \label{sec:lapack_comp_exps}
+A key practical benefit of our Householder-based formulation is its native compatibility with standard LAPACK storage formats. Because our factored matrix $F$ and the scaling vector $\boldsymbol{\tau}$ conform strictly to standard LAPACK layouts, we can implement a highly efficient hybrid solver strategy. We benchmark three distinct strategies for solving $Ax = b$ with $n$ ranging from $500$ to $10,000$ under fixed parameters $\ell=4, m=5, r=2,$ and $p=3$. The first strategy is the BPS-only solver, which is our structured $O(n)$ solver using specialized in-place routines. The second is the LAPACK-only solver, which is a fully dense standard $O(n^3)$ solver. The third is the BPS-LAPACK hybrid solver, which first computes the fast $O(n)$ BPS factorization, converts the resulting factored BPS matrix into a standard dense format, and then applies LAPACK's highly optimized, BLAS-3 level $O(n^2)$ dense back-solvers. The performance scaling curves are presented in Figure~\ref{fig:lapack_compare}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{lapack_compare.pdf}
+    \caption{Performance scaling comparison for solving $Ax = b$ using the pure BPS $O(n)$ solver, the standard dense LAPACK $O(n^3)$ solver, and the hybrid BPS-LAPACK $O(n^2)$ solver.}
+    \label{fig:lapack_compare}
+\end{figure}
+
+The benchmarks show clear trade-offs. While the dense solver scales poorly and takes $16.93$ seconds at $n = 10,000$, our BPS-only solver scales linearly and finishes in just $1.01$ seconds. For smaller systems ($n \le 1,000$), the BPS-only solver is slightly slower because applying the structured $Q^\top$ and $R^{-1}$ in Julia requires looping over many small, individual Householder vectors. The hybrid solver resolves this overhead. By combining our fast $O(n)$ factorization with a conversion to a dense matrix, it hands the back-solve to LAPACK's highly optimized $O(n^2)$ solver, which runs on contiguous memory without loop overhead. Consequently, the hybrid solver runs in just $3.47$ seconds at $n = 10,000$---a fivefold speedup over the pure dense solver ($16.93$ seconds)---while matching the top speed of the dense solver at smaller scales.
+
+\section{Conclusions}
+\label{sec:conclusions}
+
+In this paper, we have established a fundamental theoretical result for BPS matrices and developed efficient algorithms based on this foundation. Our main contribution is the explicit proof that the standard QR factorization of a BPS matrix via Householder reflections preserves the BPS structure, with precisely characterized ranks and bandwidths in the resulting factor matrix. This theoretical insight enabled the design of a complete, Householder-based $O(n)$ direct solver for BPS linear systems that is natively compatible with LAPACK storage layouts, comprising: (1) a structure-preserving QR factorization algorithm (Algorithm~\ref{algo:fastqr}); (2) an efficient $O(n)$ application of $Q^\top$ (Algorithm~\ref{algo_applyQ}); and (3) a fast backward substitution routine (Algorithm~\ref{algo_backsub}).
+
+
+Furthermore, for symmetric BPS matrices, we have shown that the reverse $RQ$ product also maintains the BPS structure. This establishes the algebraic closure of the BPS matrix class under symmetric orthogonal similarity transformations and provides a crucial computational building block for more complex matrix algebra. This theoretical guarantee led to the development of another $O(n)$ algorithm (Algorithm~\ref{algo:fastrq}) for computing the $RQ$ product without explicitly forming the dense orthogonal matrix $Q$.
+
+The numerical experiments confirm the linear scaling and accuracy of our approach, while demonstrating significant performance advantages over existing HODLR-based methods. Additionally, our solver's native LAPACK compatibility allows for a highly efficient hybrid approach that bridges the gap between structured and dense solvers. Our implementation in the SemiseparableMatrices.jl package provides the scientific computing community with efficient, open-source tools for working with this important class of structured matrices.
+
+\subsection*{Future Work}
+
+
+A compelling extension involves applying our methodology to specific blocked banded matrices arising in $hp$-FEM~\cite{knook2024quasi}. These have optimal complexity so-called reverse Cholesky factorizations (Cholesky from the bottom right instead of the top left) for positive definite problems. One of our motivations for the present work is developing an optimal complexity QL factorization for these special block banded matrices.  The key challenge is generalizing our framework to block BPS matrices while maintaining $O(N)$ complexity. The primary difficulty lies in applying Householder transformations from one block to subsequent blocks in $O(n)$ time (where $n$ is block size and $N$ the total size), rather than $O(n^3)$. While our current framework doesn't directly apply, the core insight of structure preservation provides a promising foundation for this challenging extension.
+
+
+
+
+
+
+
+\appendix
 \section{Fast RQ Computation for Symmetric BPS Matrices}
 \label{sec:fastrq}
-
-The fast QR factorization developed in the previous section not only provides a direct linear system solver but also forms the foundation for iterative algorithms such as the QR algorithm for computing eigenvalues. A core step in the QR iteration is the formation of the $RQ$ product. For symmetric BPS matrices, we show that the $RQ$ product also preserves the BPS structure, leading to the design of a linear-complexity algorithm for its fast computation.
+The fast QR factorization developed in the previous section provides an efficient direct solver for BPS linear systems. Beyond system inversion, studying the reverse $RQ$ product yields fundamental insights into the algebraic closure of the BPS matrix class under orthogonal similarity transformations, as $RQ = Q^\top A Q$ when $A$ is symmetric. Analyzing this product also establishes a key computational building block for more complex chain-structured orthogonal matrix decompositions. For symmetric BPS matrices, we show that the $RQ$ product strictly preserves the BPS structure, leading to the design of a linear-complexity algorithm for its fast computation.
 
 
 
@@ -1231,13 +1393,13 @@ The following lemma completes the inductive step by demonstrating that the trail
 
 Combining these inductive results, we arrive at the central theorem of this section: the $RQ$ product preserves the SBPS structure of $A$, including both the semiseparable rank $r$ and the bandwidth $\ell$:
 
-\begin{theorem}\label{thm:structure_rq}
+\begin{mytheorem}\label{thm:structure_rq}
     After the QR factorization of a SBPS matrix $A\in {\mathrm{SBPS}}_{r,\ell}^{n \times n}$,
 $
 RQ \text{ also }\in {\mathrm{SBPS}}_{r,\ell}^{n \times n}.
 $
 
-\end{theorem}
+\end{mytheorem}
 
 \begin{proof}
     It is easy to see that $R_0:=R\in {\rm SBPSR}_{0}(A)$ (with the parameter matrices $\Omega, \Phi, \Psi,$ and $\Lambda$ all $\mathbf{0}$). Applying Lemma \ref{lemma: RQ_lower} and \ref{lemma: RQ_sub_matrix}, it follows by induction that
@@ -1304,42 +1466,11 @@ This allows the algorithm to safely disregard the explicit updating of these row
 \end{remark}
 
 
-\begin{remark}[Shifted QR Algorithm]
-The results extend directly to the shifted QR algorithm for eigenvalue computations. Given a shift $\mu \in \mathbb{R}$, the shifted matrix $A - \mu I = (B_s - \mu I) + \tril(UV^\top, -1) + \triu(VU^\top, 1)$ remains a symmetric BPS matrix, requiring only a diagonal adjustment to $B$. The resulting $RQ$ product can then be shifted back to obtain $RQ + \mu I$, which maintains the same BPS structure. Hence, each iteration of the shifted QR algorithm---factorization of $A^{(k)} - \mu I = QR$ followed by formation of $A^{(k+1)} = RQ + \mu I$---can both be performed in $O(n)$ time while preserving the BPS structure throughout.
+\begin{remark}[Perturbation and Shift Invariance]
+The structural preservation results extend directly to algebraic shifts applied to the matrix. Given a scalar shift $\mu \in \mathbb{R}$, the shifted matrix $A - \mu I = (B_s - \mu I) + \tril(UV^\top, -1) + \triu(VU^\top, 1)$ remains a symmetric BPS matrix, requiring only a standard diagonal correction to the banded part $B$. The resulting factored product can then be adjusted back to obtain $RQ + \mu I$, which naturally inherits the identical BPS formatting boundaries. Hence, the algebraic closure of the BPS class under these linear translations remains intact and can be computed entirely within $O(n)$ time.
 \end{remark}
 
-\section{Numerical results}
-\label{sec:experiments}
-
-To validate the theoretical complexity and demonstrate the practical efficiency of our proposed algorithms, we implemented the fast QR factorization, the complete linear solver, and the fast RQ product computation for symmetric BPS matrices in Julia. The implementation is publicly available in the {SemiseparableMatrices.jl} package~\cite{SemiseparableMatrices2024}, providing an open-source resource for the scientific computing community. Computations were carried out on a MacBook Air equipped with an Apple M2 chip (8-core CPU, 8 GB RAM), without GPU acceleration or access to external computing resources.
-
-\subsection{Linear Complexity Verification}
-
-To verify that the theoretical $O(n)$ complexity holds for matrices with different structural characteristics, we test four parameter sets $(\ell,m,r,p)$ representing different balances between the banded and semiseparable components. Minimal case: $(1,1,1,1)$; balanced case: $(4,5,5,4)$; band-dominated case: $(8,8,1,1)$; semiseparable-dominated case: $ (1,1,8,8)$.
-
-
-
-\begin{figure}[htbp]
-  \centering
-  \begin{minipage}{0.48\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{qr_linear.pdf}
-    \vspace{0.1cm}
-    \\ \textbf{(a)} QR factorization phase.
-    \label{fig:qr_fact_only}
-  \end{minipage}
-  \hfill
-  \begin{minipage}{0.48\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{qr_solver_linear.pdf}
-    \vspace{0.1cm}
-    \\ \textbf{(b)} solution phase.
-    \label{fig:qr_solve_only}
-  \end{minipage}
-  \vspace{0.3cm}
-  \caption{Log-log plots of execution times versus matrix size $n$ for four parameter sets $(\ell, m, r, p)$, demonstrating optimal linear complexity. (a) Execution time for the structured QR factorization; (b) Execution time for the solve phase (applying $Q^\top$ and backward substitution). The dashed lines have a slope of 1, indicating perfect linear scaling $O(n)$.}
-  \label{fig:qr_scaling}
-\end{figure}
+Figure~\ref{fig:rq_scaling} confirms the $O(n)$ complexity of computing the $RQ$ product for symmetric BPS matrices. The four parameter sets exhibit linear scaling, with all curves scaling parallel to the $O(n)$ reference line, thereby validating the algebraic and complexity analysis presented in this Appendix.
 
 \begin{figure}[htbp]
   \centering
@@ -1363,87 +1494,19 @@ To verify that the theoretical $O(n)$ complexity holds for matrices with differe
   \label{fig:rq_scaling}
 \end{figure}
 
-Figure~\ref{fig:qr_scaling} demonstrates the linear time complexity of our complete QR solver for BPS linear systems. The execution time scales as $O(n)$ across five orders of magnitude, from $n=100$ to $n=10^6$, for four different parameter configurations. All curves align with the reference line of slope 1, confirming the analysis in Section~\ref{sec:algorithms}.
+\printcredits
 
-Figure~\ref{fig:rq_scaling} confirms the $O(n)$ complexity of computing the $RQ$ product for symmetric BPS matrices, a key operation in the QR eigenvalue algorithm. Four parameter sets exhibit linear scaling, with all curves parallel to the $O(n)$ reference line, confirming the analysis in Section~\ref{sec:fastrq}. 
+%% Loading bibliography style file
+% \bibliographystyle{model1-num-names}
+\bibliographystyle{cas-model2-names}
 
-While the computational time scales as $O(n)$, the underlying constant factor depends polynomially on the structural parameters $r, p, \ell,$ and $m$. Specifically, the cost per step is dominated by updating the perturbation space $\mathcal{P}(A)$, leading to an overall complexity of $O(n \cdot (r^2 + rp + r(\ell+m) + \ell p + \ell(\ell+m)))$ for the complete solver. This strict parameter dependence accounts for the vertical offsets among the curves in Figure~\ref{fig:qr_scaling} and Figure~\ref{fig:rq_scaling}: configurations with larger semiseparable ranks or wider bandwidths exhibit an elevated constant overhead, while maintaining the identical linear scaling slope of 1.
-
-\subsection{Numerical Stability of the QR Solver}
-\label{subsec:stability}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.8\textwidth]{qr_stability.pdf}
-\caption{Log-log plot  of the maximum residual $\max|A\mathbf{x} - \mathbf{b}|$ versus matrix size $n$ for four parameter sets $(\ell, m, r, p)$. Here $\mathbf{x}$ is computed by our complete QR solver (QR factorization followed by application of $Q^\top$ and backward substitution). The dashed gray line indicates the machine precision $\epsilon_{\mathrm{machine}} \approx 2.22 \times 10^{-16}$.}
-\label{fig:stability}
-\end{figure}
-
-The numerical stability of a QR-based linear solver is crucial for its practical utility. Figure~\ref{fig:stability} demonstrates the excellent stability properties of our structured QR solver across a wide range of matrix sizes and structural parameters. We measure the accuracy through the maximum norm of the residual vector:
-\[
-\max|A\mathbf{x} - \mathbf{b}|,
-\]
-where $\mathbf{x}$ is the solution computed by our solver for a randomly generated right-hand side $\mathbf{b}$.
-
-To isolate the numerical behavior of the QR factorization itself, all test matrices are constructed to be well-conditioned; more precisely, they are diagonally dominant. This ensures that the observed residuals are not influenced by ill-conditioning of the linear system, but instead reflect only the numerical errors introduced by the factorization and solution process.
-
-For all parameter configurations and across six orders of magnitude in $n$ (from $n=10$ to $n=10^6$), the computed residuals remain very small. The growth of the error is gradual: for smaller matrices, it is near machine precision ($\sim 10^{-16}$), while for the largest matrices, the maximum error corresponds to approximately 14 digits of accuracy. Even for the most challenging case (semiseparable-dominated with $r=p=8$) and the largest $n=10^6$, the algorithm preserves a maximum residual error of less than $5 \times 10^{-15}$, demonstrating its robustness and reliable numerical stability across a wide range of matrix structures and sizes.
+% Loading bibliography database
+\bibliography{cas-refs}
 
 
-\begin{remark}
-Measuring the accuracy of large-scale QR factorization presents a methodological challenge. Traditional approaches like comparing the factor matrix $\tilde{F}$ generated by our structured QR algorithm against the factor matrix $F_{\text{dense}}$ produced by a standard dense QR routine, or evaluating the reconstruction error $\|\tilde{Q}\tilde{R} - A\|$ where $\tilde{Q},\tilde{R}$ are extracted from $\tilde{F}$ would require $O(n^3)$ operations to compute the dense equivalent matrices and therefore becomes infeasible for $n > 10^4$.
 
-We overcome this limitation by leveraging the structure of BPS matrices: after obtaining the solution $\mathbf{x}$ via our $O(n)$ solver, we compute the residual $A\mathbf{x} - \mathbf{b}$ using the $O(n)$ matrix-vector multiplication algorithm for BPS matrices~\cite{chandrasekaran2002fast}. This approach allows us to verify accuracy for matrices as large as $n=10^6$ while maintaining overall $O(n)$ computational cost.
-\end{remark}
-
-\subsection{Comparison with HODLR QR}
-
-\begin{figure}[htbp]
-  \centering
-  \begin{minipage}{0.48\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{qr_comparison.pdf}
-    \vspace{0.1cm}
-    \\ \textbf{(a)} QR factorization phase.
-    \label{fig:qr_fact_comp}
-  \end{minipage}
-  \hfill
-  \begin{minipage}{0.48\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{qr_solver_comparison.pdf}
-    \vspace{0.1cm}
-    \\ \textbf{(b)} solution phase.
-    \label{fig:qr_solve_comp}
-  \end{minipage}
-  \vspace{0.3cm}
-  \caption{Log-log performance comparisons between our proposed fast BPS QR algorithm and the HODLR QR implementation from~\cite{massei2020hm} (with parameters $\ell=4$, $m=5$, $r=2$, $p=3$). Panel (a) illustrates the execution times for the structured QR factorization phase; Panel (b) presents the execution times for the solve phase (applying $Q^\top$ and backward substitution).}
-  \label{fig:comparison}
-\end{figure}
-
-We compare our fast QR factorization against the state-of-the-art HODLR (Hierarchically Off-Diagonal Low-Rank) QR implementation from the hm-toolbox~\cite{massei2020hm}. Hm-toolbox provides efficient MATLAB routines for various structured matrices, including HODLR and HSS matrices, and represents one of the most mature implementations for hierarchical matrix computations. 
-
-Crucially, while general HODLR-based QR factorization algorithms typically incur an asymptotic computational complexity of $O(n \log n)$ due to their hierarchical partitioning schemes, our proposed specialized algorithm achieves an optimal linear complexity of $O(n)$ by directly preserving and tracking the BPS structure throughout the reflections.
-
-Figure~\ref{fig:comparison} compares the execution times of QR factorization for BPS matrices obtained using the two approaches. Our algorithm consistently exhibits superior performance as the matrix size increases. This deterministic scaling advantage arises from its explicit exploitation of the underlying BPS structure, which altogether avoids the $O(n \log n)$ hierarchical overhead associated with general low-rank approximations.
-
-Moreover, the performance gap widens with increasing $n$, confirming that our method is particularly well suited for large-scale problems. For $n = 1{,}000{,}000$, our implementation achieves an approximate $9\times$ speedup over the HODLR approach, highlighting the practical benefits of the proposed specialized algorithm.
-
-
-\section{Conclusions}
-\label{sec:conclusions}
-
-In this paper, we have established a fundamental theoretical result for BPS matrices and developed efficient algorithms based on this foundation. Our main contribution is the proof that the QR factorization of a BPS matrix preserves the BPS structure, with precisely characterized ranks and bandwidths in the resulting factor matrix. This theoretical insight enabled the design of a complete $O(n)$ direct solver for BPS linear systems, comprising: (1) a structure-preserving QR factorization algorithm (Algorithm~\ref{algo:fastqr}); (2)an efficient $O(n)$ application of $Q^\top$ (Algorithm~\ref{algo_applyQ}); and (3) a fast backward substitution routine (Algorithm~\ref{algo_backsub}).
-
-
-Furthermore, for symmetric BPS matrices, we have shown that the $RQ$ product---a key operation in the QR algorithm for eigenvalues---also maintains the BPS structure. This led to the development of another $O(n)$ algorithm (Algorithm~\ref{algo:fastrq}) for computing $RQ$ without explicitly forming the dense orthogonal matrix $Q$, opening the door to efficient eigenvalue computations for symmetric BPS matrices.
-
-The numerical experiments confirm the linear scaling and accuracy of our approach, while demonstrating significant performance advantages over existing HOD-LR-based methods. Our implementation in the SemiseparableMatrices.jl package provides the scientific computing community with efficient, open-source tools for working with this important class of structured matrices.
-
-\subsection*{Future Work}
-
-
-A compelling extension involves applying our methodology to specific blocked banded matrices arising in $hp$-FEM~\cite{knook2024quasi}. These have optimal complexity so-called reverse Cholesky factorizations (Cholesky from the bottom right instead of the top left) for positive definite problems. One of our motivations for the present work is developing an optimal complexity QL factorization for these special block banded matrices.  The key challenge is generalizing our framework to block BPS matrices while maintaining $O(N)$ complexity. The primary difficulty lies in applying Householder transformations from one block to subsequent blocks in $O(n)$ time (where $n$ is block size and $N$ the total size), rather than $O(n^3)$. While our current framework doesn't directly apply, the core insight of structure preservation provides a promising foundation for this challenging extension.
-
-\bibliographystyle{siamplain}
-\bibliography{references}
 \end{document}
+
+
+
+
