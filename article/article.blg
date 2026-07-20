@@ -1,49 +1,51 @@
 This is BibTeX, Version 0.99d (TeX Live 2023)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: article.aux
-The style file: siamplain.bst
-Database file #1: references.bib
+The style file: cas-model2-names.bst
+Database file #1: cas-refs.bib
 Warning--entry type for "SemiseparableMatrices2024" isn't style-file defined
---line 244 of file references.bib
-You've used 24 entries,
-            2244 wiz_defined-function locations,
-            687 strings with 7998 characters,
-and the built_in function-call counts, 10503 in all, are:
-= -- 991
-> -- 445
-< -- 0
-+ -- 182
-- -- 150
-* -- 782
-:= -- 1467
-add.period$ -- 24
-call.type$ -- 24
-change.case$ -- 146
-chr.to.int$ -- 0
-cite$ -- 24
-duplicate$ -- 535
-empty$ -- 866
-format.name$ -- 150
-if$ -- 2327
-int.to.chr$ -- 0
-int.to.str$ -- 24
-missing$ -- 24
-newline$ -- 75
-num.names$ -- 48
-pop$ -- 207
+--line 244 of file cas-refs.bib
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Warning--empty journal in vandebrilmanual
+You've used 27 entries,
+            2990 wiz_defined-function locations,
+            887 strings with 10593 characters,
+and the built_in function-call counts, 18312 in all, are:
+= -- 1395
+> -- 718
+< -- 13
++ -- 296
+- -- 249
+* -- 2029
+:= -- 2641
+add.period$ -- 79
+call.type$ -- 27
+change.case$ -- 215
+chr.to.int$ -- 23
+cite$ -- 28
+duplicate$ -- 1361
+empty$ -- 1345
+format.name$ -- 342
+if$ -- 3378
+int.to.chr$ -- 5
+int.to.str$ -- 1
+missing$ -- 268
+newline$ -- 148
+num.names$ -- 108
+pop$ -- 514
 preamble$ -- 1
-purify$ -- 122
+purify$ -- 190
 quote$ -- 0
-skip$ -- 432
+skip$ -- 360
 stack$ -- 0
-substring$ -- 785
-swap$ -- 222
-text.length$ -- 0
+substring$ -- 845
+swap$ -- 983
+text.length$ -- 3
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 94
-warning$ -- 0
-while$ -- 112
-width$ -- 26
-write$ -- 218
-(There was 1 warning)
+type$ -- 234
+warning$ -- 1
+while$ -- 125
+width$ -- 0
+write$ -- 387
+(There were 2 warnings)
