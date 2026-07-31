@@ -160,7 +160,7 @@
 
 % Here goes the abstract
 \begin{abstract}
-We show that the QR factorization of a banded-plus-semiseparable (BPS) matrix is computable in optimal linear complexity with respect to the discretization size by showing that the intermediate stages of a QR factorization as computed using Householder reflection maintain a specific structure which has optimal storage. This theoretical result enables the design of stable, linear-complexity algorithms for solving the associated linear systems. Importantly, our algorithm outputs data in a standard LAPACK-compatible format. This allows users to switch to highly optimized dense matrix operations for the final solve, creating a fast hybrid approach. For symmetric BPS matrices, we further show that the reverse $RQ$ product preserves the BPS structure, establishing the algebraic closure of this matrix class under orthogonal similarity transformations and facilitating efficient chain-structured matrix decompositions. Numerical experiments validate the optimal linear complexity, confirm high numerical accuracy, demonstrate excellent computational efficiency via LAPACK integration, and show substantial speedups compared with existing hierarchical approaches. The algorithms have been implemented in an open-source Julia package, providing an efficient and accessible platform for practical use. \sotodoinline{Mention adaptivity, partial QR}
+We show that the QR factorization of a banded-plus-semiseparable (BPS) matrix is computable in optimal linear complexity with respect to the discretization size by showing that the intermediate stages of a QR factorization as computed using Householder reflection maintain a specific structure which has optimal storage. Crucially, this Householder-based framework enables adaptive, partial QR factorizations whose computational cost depends solely on the number of upper-triangularized columns rather than the global matrix size. This theoretical result also supports the design of stable, linear-complexity algorithms for solving the associated linear systems. Importantly, our algorithm outputs data in a standard LAPACK-compatible format. This allows users to switch to highly optimized dense matrix operations for the final solve, creating a fast hybrid approach. For symmetric BPS matrices, we further show that the reverse $RQ$ product preserves the BPS structure, establishing the algebraic closure of this matrix class under orthogonal similarity transformations and facilitating efficient chain-structured matrix decompositions. Numerical experiments validate the optimal linear complexity, confirm high numerical accuracy, demonstrate excellent computational efficiency via LAPACK integration, and show substantial speedups compared with existing hierarchical approaches. The algorithms have been implemented in an open-source Julia package, providing an efficient and accessible platform for practical use. 
 \end{abstract}
 
 % Use if graphical abstract is present
@@ -191,7 +191,7 @@ Banded-plus-semiseparable (BPS) matrices, expressible as
 \begin{equation*}
 A = \underbrace{B}_{\text{banded}} + \underbrace{\tril(UV^\top, -1)}_{\text{lower semiseparable rank } r} + \underbrace{\triu(WS^\top, 1)}_{\text{upper semiseparable rank } p} \in \bbR^{n \times n},
 \end{equation*}
-where $U ,V \in \bbR^{n \times r}$ and $W,S \in \bbR^{n,p}$
+where $U ,V \in \bbR^{n \times r}$ and $W,S \in \bbR^{n\times p}$
  arise in numerous applications from spectral methods for differential equations~\cite{iserles2025stable} to signal processing, control theory, and eigenvalue problems~\cite{vandebril2005note}. Importantly, the inverse of a banded matrix is itself a BPS matrix, making this structure fundamental for representing inverses of banded matrices~\cite{rozsa1991band}. Their structure requires only $O(n)$ storage as $n \rightarrow \infty$, which invites the development of \( O(n) \) algorithms, a goal successfully achieved for iterations of the QR algorithm for symmetric semiseparable systems~\cite{vandebril2005implicit}, and for solving linear systems with diagonal-plus-semiseparable matrices~\cite{eidelman1997inversion}.
   However, generalizing these results to the case where the matrix is nonsymmetric, or the banded part $B$ is a genuine banded matrix, rather than merely a diagonal one, and representing the QR factorization in its entirety  presents significant algorithmic challenges.
 
@@ -200,20 +200,13 @@ Pioneering work has established stable $O(n)$ direct solvers for various classes
 
 Beyond these, alternative algorithmic frameworks include ULV factorizations~\cite{chandrasekaran2003fast}, hierarchically semiseparable (HSS) matrix techniques~\cite{chandrasekaran2007fast, chandrasekaran2006fast, massei2020hm, xia2010fast}, and rational Krylov approaches~\cite{fasino2005rational, vandebril2008rational}. Structure-preserving properties under rotational QR steps have also been extensively explored~\cite{delvaux2006rank, delvaux2006structures, eidelman2005qr, delvaux2008givens, vandebril2005note}.
 
-\sotodoinline{Explain existing Given's approaches start at bottom left and so aren't compatible with adaptivity.
-Mention that if look-up table is known ahead of time, and give example like $u = [1,1/2,1/3,…]$, then the complexity of partial QR does not depend on $n$ but rather the number of columns upper-triangularised.
-Maybe reference Matt Colbrook/Townsends resolvant based eigenvalue stuff.
-}
-
-
-
-
  A special case of BPS matrices with no lower semiseparable part ($r = 0$) is almost banded matrices, which were used in~\cite{olver2013fast} to represent discretisations of differential equations using the ultraspherical spectral method, accompanied by an optimal complexity adaptive QR factorization and back-substitution solver.
 
-Crucially, however, almost all existing $O(n)$ QR factorization schemes for BPS matrices in the rank-structured literature are fundamentally anchored in Givens rotations~\cite{delvaux2008qr, mastronardi2001fast, van2004two}. While rotational approaches are well-developed, they rely on localized transformations that do not yield the standard Householder factor matrix layout native to LAPACK storage formats and modern dense computing pipelines. A clear theoretical guarantee and an explicit proof showing that the standard QR factorization via Householder transformations preserves the compact BPS format has been missing from the literature.
+Crucially, however, almost all existing $O(n)$ QR factorization schemes for BPS matrices in the rank-structured literature are fundamentally anchored in Givens rotations~\cite{delvaux2008qr, mastronardi2001fast, van2004two}. While rotational approaches are well-developed, they rely on localized transformations that do not yield the standard Householder factor matrix layout native to LAPACK storage formats and modern dense computing pipelines. Also, traditional Givens-based approaches typically eliminate subdiagonal elements starting from the bottom-left corner of the matrix, rendering them ill-suited for adaptive precision or dynamically truncated computations. 
 
+In contrast, Householder-based formulations naturally allow for adaptive, partial QR factorizations. When structural generators are known in advance---such as $U = [1, 1/2, 1/3, \dots]^\top$---the computational complexity of a partial QR factorization depends solely on the number of columns upper-triangularized, remaining entirely independent of the global system size $n$. This parameter-independent complexity property is particularly vital in modern infinite-dimensional spectral theory and resolvent-based eigenvalue analysis, as pioneered by~\cite{colbrook2021computing}. 
 
-\sotodo{Mention Compact WY, mention dense DLARFT is $O(n)$ for fixed block size $k$. Mention $T$ is BPS.... try to figure out why.}
+Beyond adaptivity, our Householder-based framework seamlessly interfaces with modern blocked LAPACK routines via the Compact WY representation~\cite{schreiber1987storage}, $Q = I - V T V^\top$. When block-accumulating $k$ successive Householder reflections, the upper-triangular matrix $T$ inherently inherits the BPS structure due to the underlying rank structure of the Householder vectors in $V$. Crucially, for a fixed block size $k$, evaluating the inner products in LAPACK's standard \texttt{DLARFT} routine requires only $O(k^2 n)$ operations. This guarantees that forming the Compact WY representation retains strict $O(n)$ linear complexity with respect to the matrix dimension $n$. Consequently, this algebraic compatibility bridges our structured factorization with high-performance dense BLAS-3 operations without compromising asymptotic efficiency. However, a clear theoretical guarantee and an explicit proof showing that the standard QR factorization via Householder transformations preserves the compact BPS format has been missing from the literature.
 
 In this paper, we close this theoretical and algorithmic gap. We prove that the QR factorization of a BPS matrix via Householder reflections yields a full factor matrix $F$ (encoding both $R$ and the reflectors) that is itself BPS. The core of our idea lies in characterizing the precise structural evolution during the reflection process. Although the BPS structure is not strictly invariant under individual Householder transformations, we demonstrate that the intermediate matrices remain within a well-defined space of structured perturbations, denoted as $\mathcal{P}(A)$ (Definition~\ref{def:P}). The fundamental insight is that each Householder reflection preserves this extended structure (Lemma~\ref{Lemma:Structure_preserve}), ensuring that the final factor matrix $F$ maintains a compact representation (Theorem~\ref{thm:structure_preserve}). By leveraging this structural inheritance, we design a complete $O(n)$ direct solver—including $Q^\top$ application and backward substitution—implemented in a high-performance, open-source Julia package. Furthermore, we extend this framework to symmetric BPS matrices, proving that the $RQ$ product also retains the BPS structure.
 
@@ -223,11 +216,8 @@ Section~\ref{sec:factors} discusses the factor matrix representation for the QR 
 Section~\ref{sec:main} presents our main theoretical contributions on the preservation of a specific perturbation structure and the resulting BPS structure of the final QR factorization. Section~\ref{sec:algorithms} details the practical implementation of $O(n)$ algorithms for QR factorization, application of $Q^\top$, and backward substitution. Section~\ref{sec:experiments} presents numerical experiments that confirm the linear complexity, verify the numerical stability, and demonstrate performance advantages of our algorithms, including their compatibility with LAPACK. We conclude in Section~\ref{sec:conclusions} with a discussion of future work. Finally, Appendix~\ref{sec:fastrq} extends this framework to symmetric BPS matrices, proving that the reverse $RQ$ product also preserves the BPS format.
 
 \begin{remark}
-While this paper focuses on real square matrices, the techniques and results naturally extend to complex matrices by replacing transposes with conjugate transposes. The extension to rectangular matrices is also straightforward, as Householder QR factorization applies similarly to rectangular matrices, and the structural arguments carry over with minor adjustments. These extensions are omitted but represent immediate generalizations of the ideas presented here.
-\end{remark}
-
-
-\sotodoinline{Say that $Q$ itself is BPS, and say how we can compute it. This is probably easy if we compute Compact WY since $Q = I + V T V^\top$. Thus $Q^{-1} = Q^T = I + V T^\top V^\top$}
+While this paper focuses on real square matrices, the techniques and results naturally extend to complex matrices by replacing transposes with conjugate transposes. The extension to rectangular matrices is also straightforward, as Householder QR factorization applies similarly to rectangular matrices, and the structural arguments carry over with minor adjustments. Furthermore, the orthogonal matrix $Q$ naturally inherits the underlying BPS structural representation and can be efficiently applied/computed in block form. Specifically, using the compact WY representation, $Q$ is expressed as $Q = I + V T V^\top$, where the matrix $V$ containing the accumulated Householder vectors preserves the BPS sparsity/rank structure and $T$ is upper triangular. Consequently, applying $Q$ or its inverse $Q^{-1} = Q^\top = I + V T^\top V^\top$ reduces to block computations that maintain linear complexity while leveraging high-performance BLAS-3 routines.
+\end{remark}  
 
 \section{The Representation of the QR Factor Matrix}
 \label{sec:factors}
@@ -1138,16 +1128,43 @@ Figure~\ref{fig:comparison} compares the execution times of QR factorization for
 Moreover, the performance gap widens with increasing $n$, confirming that our method is particularly well suited for large-scale problems. For $n = 1{,}000{,}000$, our implementation achieves an approximate $9\times$ speedup over the HODLR approach, highlighting the practical benefits of the proposed specialized algorithm.
 
 \subsection{LAPACK Compatibility and Hybrid Solver Performance} \label{sec:lapack_comp_exps}
-A key practical benefit of our Householder-based formulation is its native compatibility with standard LAPACK storage formats. Because our factored matrix $F$ and the scaling vector $\boldsymbol{\tau}$ conform strictly to standard LAPACK layouts, we can implement a highly efficient hybrid solver strategy. We benchmark three distinct strategies for solving $Ax = b$ with $n$ ranging from $500$ to $10,000$ under fixed parameters $\ell=4, m=5, r=2,$ and $p=3$. The first strategy is the BPS-only solver, which is our structured $O(n)$ solver using specialized in-place routines. The second is the LAPACK-only solver, which is a fully dense standard $O(n^3)$ solver. The third is the BPS-LAPACK hybrid solver, which first computes the fast $O(n)$ BPS factorization, converts the resulting factored BPS matrix into a standard dense format, and then applies LAPACK's highly optimized, BLAS-3 level $O(n^2)$ dense back-solvers. The performance scaling curves are presented in Figure~\ref{fig:lapack_compare}.
+A key practical advantage of our Householder-based formulation is its native compatibility with standard LAPACK computational routines. To evaluate performance across different hardware utilization regimes, we benchmark three distinct algorithms for solving $Ax = b$ with dimension $n$ ranging from $500$ to $10,000$ under fixed parameters $\ell=4, m=5, r=2,$ and $p=3$. 
+Specifically, we compare our structured $O(n)$ BPS algorithm against two canonical dense LAPACK implementations: 
+\begin{enumerate}[(i)]
+    \item the Dense Unblocked solver (level-2 BLAS), which processes Householder reflections sequentially; and 
+    \item the Dense Compact WY solver (level-3 BLAS), which accumulates reflections into block representations ($Q = I + V T V^\top$) to maximize cache reuse and parallel processing.
+\end{enumerate}
+The execution times are separately measured for the QR factorization phase and the solve phase (applying $Q^\top$ and backward substitution), as presented in Figure~\ref{fig:lapack_compare}.
 
 \begin{figure}[htbp]
+  \centering
+  \begin{minipage}{0.48\textwidth}
     \centering
-    \includegraphics[width=0.85\textwidth]{lapack_compare.pdf}
-    \caption{Performance scaling comparison for solving $Ax = b$ using the pure BPS $O(n)$ solver, the standard dense LAPACK $O(n^3)$ solver, and the hybrid BPS-LAPACK $O(n^2)$ solver. \sotodoinline{Move this info to the previous factorisation/solve plot. Add both Unblocked and CompactWY}}
-    \label{fig:lapack_compare}
+    \includegraphics[width=\textwidth]{lapack_qr_compare.pdf}
+    \vspace{0.1cm}
+    \\ \textbf{(a)} QR factorization phase.
+    \label{fig:lapack_qr_comp}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{lapack_solver_compare.pdf}
+    \vspace{0.1cm}
+    \\ \textbf{(b)} Solve phase ($Q^\top b$ and backward substitution).
+    \label{fig:lapack_solve_comp}
+  \end{minipage}
+  \vspace{0.3cm}
+  \caption{Performance scaling comparison between our proposed structured $O(n)$ BPS solver and LAPACK dense solvers (both Unblocked and Compact WY BLAS-3 implementations). Panel (a) shows the execution times for the QR factorization phase; Panel (b) illustrates the execution times for the solve phase.}
+  \label{fig:lapack_compare}
 \end{figure}
 
-The benchmarks show clear trade-offs. While the dense solver scales poorly and takes $16.93$ seconds at $n = 10,000$, our BPS-only solver scales linearly and finishes in just $1.01$ seconds. For smaller systems ($n \le 1,000$), the BPS-only solver is slightly slower because applying the structured $Q^\top$ and $R^{-1}$ in Julia requires looping over many small, individual Householder vectors. The hybrid solver resolves this overhead. By combining our fast $O(n)$ factorization with a conversion to a dense matrix, it hands the back-solve to LAPACK's highly optimized $O(n^2)$ solver, which runs on contiguous memory without loop overhead. Consequently, the hybrid solver runs in just $3.47$ seconds at $n = 10,000$---a fivefold speedup over the pure dense solver ($16.93$ seconds)---while matching the top speed of the dense solver at smaller scales.
+The benchmarks highlight distinct asymptotic scaling behavior and computational efficiency between the factorization and solve phases. 
+
+During the QR factorization phase, both dense LAPACK solvers suffer from $O(n^3)$ computational complexity. Although the Compact WY (BLAS-3) variant significantly outperforms the Unblocked (BLAS-2) variant by leveraging cache-friendly matrix-matrix multiplication, both dense approaches scale poorly as $n$ increases, requiring $23.50$ seconds and $68.00$ seconds at $n = 10,000$, respectively. In contrast, our proposed BPS factorization scales linearly as $O(n)$, executing in just $0.85$ seconds at $n = 10,000$---achieving a speedup of over $27\times$ against Compact WY and $80\times$ against the Unblocked solver.
+
+A similar advantage appears in the solve phase. For smaller matrix sizes ($n \le 500$), the Compact WY solver achieves slightly lower latency due to highly optimized level-3 BLAS primitives operating on contiguous memory. However, as $n$ grows past $1,000$, the $O(n)$ complexity of our BPS solve phase demonstrates its asymptotic superiority over the dense $O(n^2)$ back-solvers. At $n = 10,000$, our BPS solver completes the solve phase in only $0.036$ seconds, outperforming the Dense Compact WY solver ($0.376$ seconds) and the Dense Unblocked solver ($1.800$ seconds) by a wide margin. 
+
+Overall, these results confirm that our structured $O(n)$ factorization delivers theoretical linear scaling while achieving superior practical speed, outperforming highly optimized, level-3 BLAS dense routines.
 
 \section{Conclusions}
 \label{sec:conclusions}
