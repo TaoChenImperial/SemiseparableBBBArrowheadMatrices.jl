@@ -4,48 +4,48 @@ The top-level auxiliary file: article.aux
 The style file: cas-model2-names.bst
 Database file #1: cas-refs.bib
 Warning--entry type for "SemiseparableMatrices2024" isn't style-file defined
---line 244 of file cas-refs.bib
+--line 255 of file cas-refs.bib
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Warning--empty journal in vandebrilmanual
-You've used 27 entries,
+You've used 30 entries,
             2990 wiz_defined-function locations,
-            887 strings with 10593 characters,
-and the built_in function-call counts, 18312 in all, are:
-= -- 1395
-> -- 718
-< -- 13
-+ -- 296
-- -- 249
-* -- 2029
-:= -- 2641
-add.period$ -- 79
-call.type$ -- 27
-change.case$ -- 215
-chr.to.int$ -- 23
-cite$ -- 28
-duplicate$ -- 1361
-empty$ -- 1345
-format.name$ -- 342
-if$ -- 3378
+            905 strings with 11240 characters,
+and the built_in function-call counts, 20504 in all, are:
+= -- 1546
+> -- 844
+< -- 14
++ -- 346
+- -- 294
+* -- 2287
+:= -- 2967
+add.period$ -- 89
+call.type$ -- 30
+change.case$ -- 245
+chr.to.int$ -- 26
+cite$ -- 31
+duplicate$ -- 1515
+empty$ -- 1478
+format.name$ -- 398
+if$ -- 3766
 int.to.chr$ -- 5
 int.to.str$ -- 1
-missing$ -- 268
-newline$ -- 148
-num.names$ -- 108
-pop$ -- 514
+missing$ -- 301
+newline$ -- 164
+num.names$ -- 120
+pop$ -- 580
 preamble$ -- 1
-purify$ -- 190
+purify$ -- 217
 quote$ -- 0
-skip$ -- 360
+skip$ -- 398
 stack$ -- 0
-substring$ -- 845
-swap$ -- 983
+substring$ -- 905
+swap$ -- 1105
 text.length$ -- 3
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 234
+type$ -- 261
 warning$ -- 1
-while$ -- 125
+while$ -- 136
 width$ -- 0
-write$ -- 387
+write$ -- 430
 (There were 2 warnings)

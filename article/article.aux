@@ -22,34 +22,68 @@
 \citation{iserles2025stable}
 \citation{vandebril2005note}
 \citation{rozsa1991band}
-\citation{vandebril2005implicit}
-\citation{eidelman1997inversion}
 \citation{vandebril2008matrix}
 \citation{eidelman2014separable}
+\citation{vandebril2008matrix}
 \citation{vandebrilmanual}
+\citation{eidelman1997inversion}
 \citation{chandrasekaran2003fast}
 \citation{chandrasekaran2007fast,chandrasekaran2006fast,massei2020hm,xia2010fast}
 \citation{fasino2005rational,vandebril2008rational}
-\citation{delvaux2006rank,delvaux2006structures,eidelman2005qr,delvaux2008givens,vandebril2005note}
-\@writefile{tdo}{\contentsline {todo}{Mention adaptivity, partial QR}{1}{section*.1}\protected@file@percent }
-\pgfsyspdfmark {pgfid1}{28627149}{28239396}
+\citation{vandebril2005implicit,delvaux2006rank,delvaux2006structures,eidelman2005qr,delvaux2008givens,vandebril2005note}
 \@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
-\citation{olver2013fast}
 \citation{delvaux2008qr,mastronardi2001fast,van2004two}
-\@writefile{tdo}{\contentsline {todo}{Explain existing Given's approaches start at bottom left and so aren't compatible with adaptivity. Mention that if look-up table is known ahead of time, and give example like $u = [1,1/2,1/3,…]$, then the complexity of partial QR does not depend on $n$ but rather the number of columns upper-triangularised. Maybe reference Matt Colbrook/Townsends resolvant based eigenvalue stuff. }{2}{section*.2}\protected@file@percent }
-\pgfsyspdfmark {pgfid2}{17884541}{38791217}
-\@writefile{tdo}{\contentsline {todo}{Mention Compact WY, mention dense DLARFT is $O(n)$ for fixed block size $k$. Mention $T$ is BPS.... try to figure out why.}{2}{section*.3}\protected@file@percent }
-\pgfsyspdfmark {pgfid3}{2554610}{29423501}
-\pgfsyspdfmark {pgfid6}{35819529}{29423502}
-\pgfsyspdfmark {pgfid7}{37670920}{29202318}
-\@writefile{tdo}{\contentsline {todo}{Say that $Q$ itself is BPS, and say how we can compute it. This is probably easy if we compute Compact WY since $Q = I + V T V^\top $. Thus $Q^{-1} = Q^T = I + V T^\top V^\top $}{2}{section*.4}\protected@file@percent }
-\pgfsyspdfmark {pgfid8}{17884541}{8164444}
+\citation{olver2013fast}
+\citation{schreiber1987storage}
+\citation{colbrook2021computing}
 \citation{doi:10.1137/1.9780898719604}
 \ExplSyntaxOn \cs_if_free:NT \pgfsyspdfmark {\cs_set_eq:NN \pgfsyspdfmark \@gobblethree }\ExplSyntaxOff 
 \ExplSyntaxOn 
 \char_set_catcode_space:n {32}
 \tl_gset:cn {c__nicematrix_1_tl}{\seq_gset_from_clist:Nn \g__nicematrix_size_seq {1,4,4,1,4,4}}
 \ExplSyntaxOff 
+\@writefile{tdo}{\contentsline {todo}{Say we can build $T$ in $O(k)$}{3}{section*.1}\protected@file@percent }
+\pgfsyspdfmark {pgfid1}{15853853}{42507434}
+\pgfsyspdfmark {pgfid4}{35819529}{42518248}
+\pgfsyspdfmark {pgfid5}{37670920}{42297064}
+\@writefile{tdo}{\contentsline {todo}{We need to prove $T$ is BPS}{3}{section*.2}\protected@file@percent }
+\pgfsyspdfmark {pgfid6}{17884541}{40318005}
+\@writefile{toc}{\contentsline {section}{\numberline {2}The Representation of the QR Factor Matrix}{3}{section.2}\protected@file@percent }
+\newlabel{sec:factors}{{2}{3}{The Representation of the QR Factor Matrix}{section.2}{}}
+\newlabel{y_k}{{1}{3}{The Representation of the QR Factor Matrix}{equation.2.1}{}}
+\pgfsyspdfmark {pgfid7}{5473283}{11931866}
+\pgfsyspdfmark {pgfid8}{6060486}{10986182}
+\pgfsyspdfmark {pgfid9}{6456323}{10986182}
+\pgfsyspdfmark {pgfid10}{8422403}{10986182}
+\pgfsyspdfmark {pgfid11}{10531104}{10986182}
+\pgfsyspdfmark {pgfid12}{12639805}{10986182}
+\pgfsyspdfmark {pgfid13}{5473283}{10161822}
+\pgfsyspdfmark {pgfid14}{6031650}{9216138}
+\pgfsyspdfmark {pgfid15}{6456323}{9216138}
+\pgfsyspdfmark {pgfid16}{8422403}{9216138}
+\pgfsyspdfmark {pgfid17}{10531104}{9216138}
+\pgfsyspdfmark {pgfid18}{12639805}{9216138}
+\pgfsyspdfmark {pgfid19}{5473283}{8391778}
+\pgfsyspdfmark {pgfid20}{6288879}{7332389}
+\pgfsyspdfmark {pgfid21}{6456323}{7332389}
+\pgfsyspdfmark {pgfid22}{8422403}{7332389}
+\pgfsyspdfmark {pgfid23}{10531104}{7332389}
+\pgfsyspdfmark {pgfid24}{12639805}{7332389}
+\pgfsyspdfmark {pgfid25}{5473283}{6611166}
+\pgfsyspdfmark {pgfid26}{6021329}{5665482}
+\pgfsyspdfmark {pgfid27}{6456323}{5665482}
+\pgfsyspdfmark {pgfid28}{8422403}{5665482}
+\pgfsyspdfmark {pgfid29}{10531104}{5665482}
+\pgfsyspdfmark {pgfid30}{12639805}{5665482}
+\pgfsyspdfmark {pgfid31}{5473283}{4774276}
+\pgfsyspdfmark {pgfid32}{5473283}{4774276}
+\pgfsyspdfmark {pgfid33}{7439363}{4774276}
+\pgfsyspdfmark {pgfid34}{9405443}{4774276}
+\pgfsyspdfmark {pgfid35}{11371523}{4774276}
+\pgfsyspdfmark {pgfid36}{13622845}{4774276}
+\pgfsyspdfmark {pgfid37}{13590076}{8163017}
+\pgfsyspdfmark {pgfid39}{13590076}{8163017}
+\pgfsyspdfmark {pgfid40}{13590076}{8163017}
 \ExplSyntaxOn 
 \char_set_catcode_space:n {32}
 \tl_gset:cn {c__nicematrix_2_tl}{\seq_gset_from_clist:Nn \g__nicematrix_size_seq {1,7,7,1,7,7}}
@@ -58,182 +92,146 @@
 \char_set_catcode_space:n {32}
 \tl_gset:cn {c__nicematrix_3_tl}{\seq_gset_from_clist:Nn \g__nicematrix_size_seq {1,7,7,1,7,7}}
 \ExplSyntaxOff 
-\@writefile{toc}{\contentsline {section}{\numberline {2}The Representation of the QR Factor Matrix}{3}{section.2}\protected@file@percent }
-\newlabel{sec:factors}{{2}{3}{The Representation of the QR Factor Matrix}{section.2}{}}
-\newlabel{y_k}{{1}{3}{The Representation of the QR Factor Matrix}{equation.2.1}{}}
-\pgfsyspdfmark {pgfid9}{5473283}{25303891}
-\pgfsyspdfmark {pgfid10}{6060486}{24358207}
-\pgfsyspdfmark {pgfid11}{6456323}{24358207}
-\pgfsyspdfmark {pgfid12}{8422403}{24358207}
-\pgfsyspdfmark {pgfid13}{10531104}{24358207}
-\pgfsyspdfmark {pgfid14}{12639805}{24358207}
-\pgfsyspdfmark {pgfid15}{5473283}{23533847}
-\pgfsyspdfmark {pgfid16}{6031650}{22588163}
-\pgfsyspdfmark {pgfid17}{6456323}{22588163}
-\pgfsyspdfmark {pgfid18}{8422403}{22588163}
-\pgfsyspdfmark {pgfid19}{10531104}{22588163}
-\pgfsyspdfmark {pgfid20}{12639805}{22588163}
-\pgfsyspdfmark {pgfid21}{5473283}{21763803}
-\pgfsyspdfmark {pgfid22}{6288879}{20704414}
-\pgfsyspdfmark {pgfid23}{6456323}{20704414}
-\pgfsyspdfmark {pgfid24}{8422403}{20704414}
-\pgfsyspdfmark {pgfid25}{10531104}{20704414}
-\pgfsyspdfmark {pgfid26}{12639805}{20704414}
-\pgfsyspdfmark {pgfid27}{5473283}{19983191}
-\pgfsyspdfmark {pgfid28}{6021329}{19037507}
-\pgfsyspdfmark {pgfid29}{6456323}{19037507}
-\pgfsyspdfmark {pgfid30}{8422403}{19037507}
-\pgfsyspdfmark {pgfid31}{10531104}{19037507}
-\pgfsyspdfmark {pgfid32}{12639805}{19037507}
-\pgfsyspdfmark {pgfid33}{5473283}{18146301}
-\pgfsyspdfmark {pgfid34}{5473283}{18146301}
-\pgfsyspdfmark {pgfid35}{7439363}{18146301}
-\pgfsyspdfmark {pgfid36}{9405443}{18146301}
-\pgfsyspdfmark {pgfid37}{11371523}{18146301}
-\pgfsyspdfmark {pgfid38}{13622845}{18146301}
-\pgfsyspdfmark {pgfid39}{13590076}{21535042}
-\pgfsyspdfmark {pgfid41}{13590076}{21535042}
-\pgfsyspdfmark {pgfid42}{13590076}{21535042}
-\pgfsyspdfmark {pgfid43}{13179454}{12206610}
-\pgfsyspdfmark {pgfid44}{13507134}{11588606}
-\pgfsyspdfmark {pgfid45}{13902971}{11588606}
-\pgfsyspdfmark {pgfid46}{15350005}{11588606}
-\pgfsyspdfmark {pgfid47}{16704633}{11588606}
-\pgfsyspdfmark {pgfid48}{18079904}{11588606}
-\pgfsyspdfmark {pgfid49}{20242917}{11588606}
-\pgfsyspdfmark {pgfid50}{22292881}{11588606}
-\pgfsyspdfmark {pgfid51}{24040560}{11588606}
-\pgfsyspdfmark {pgfid52}{13179454}{11025080}
-\pgfsyspdfmark {pgfid53}{13902971}{10407076}
-\pgfsyspdfmark {pgfid54}{15350005}{10407076}
-\pgfsyspdfmark {pgfid55}{16704633}{10407076}
-\pgfsyspdfmark {pgfid56}{18079904}{10407076}
-\pgfsyspdfmark {pgfid57}{20242917}{10407076}
-\pgfsyspdfmark {pgfid58}{22292881}{10407076}
-\pgfsyspdfmark {pgfid59}{24040560}{10407076}
-\pgfsyspdfmark {pgfid60}{13179454}{9843550}
-\pgfsyspdfmark {pgfid61}{13902971}{9111841}
-\pgfsyspdfmark {pgfid62}{16704633}{9111841}
-\pgfsyspdfmark {pgfid63}{18079904}{9111841}
-\pgfsyspdfmark {pgfid64}{20242917}{9111841}
-\pgfsyspdfmark {pgfid65}{22292881}{9111841}
-\pgfsyspdfmark {pgfid66}{24040560}{9111841}
-\pgfsyspdfmark {pgfid67}{13179454}{8718298}
-\pgfsyspdfmark {pgfid68}{13902971}{8100294}
-\pgfsyspdfmark {pgfid69}{18079904}{8100294}
-\pgfsyspdfmark {pgfid70}{20242917}{8100294}
-\pgfsyspdfmark {pgfid71}{22292881}{8100294}
-\pgfsyspdfmark {pgfid72}{24040560}{8100294}
-\pgfsyspdfmark {pgfid73}{13179454}{7536768}
-\pgfsyspdfmark {pgfid74}{13902971}{6639666}
-\pgfsyspdfmark {pgfid75}{20242917}{6639666}
-\pgfsyspdfmark {pgfid76}{22292881}{6639666}
-\pgfsyspdfmark {pgfid77}{24040560}{6639666}
-\pgfsyspdfmark {pgfid78}{13179454}{5962272}
-\pgfsyspdfmark {pgfid79}{13902971}{5230563}
-\pgfsyspdfmark {pgfid80}{20242917}{5230563}
-\pgfsyspdfmark {pgfid81}{22292881}{5230563}
-\pgfsyspdfmark {pgfid82}{24040560}{5230563}
-\pgfsyspdfmark {pgfid83}{13179454}{4837020}
-\pgfsyspdfmark {pgfid84}{13902971}{3939918}
-\pgfsyspdfmark {pgfid85}{20242917}{3939918}
-\pgfsyspdfmark {pgfid86}{22292881}{3939918}
-\pgfsyspdfmark {pgfid87}{24040560}{3939918}
-\pgfsyspdfmark {pgfid88}{13179454}{3262524}
-\pgfsyspdfmark {pgfid89}{13179454}{3262524}
-\pgfsyspdfmark {pgfid90}{14626488}{3262524}
-\pgfsyspdfmark {pgfid91}{16073522}{3262524}
-\pgfsyspdfmark {pgfid92}{17335744}{3262524}
-\pgfsyspdfmark {pgfid93}{18824064}{3262524}
-\pgfsyspdfmark {pgfid94}{21661770}{3262524}
-\pgfsyspdfmark {pgfid95}{22923992}{3262524}
-\pgfsyspdfmark {pgfid96}{25157128}{3262524}
-\pgfsyspdfmark {pgfid97}{25124359}{7544513}
-\pgfsyspdfmark {pgfid99}{25124359}{7544513}
-\pgfsyspdfmark {pgfid100}{25124359}{7544513}
-\pgfsyspdfmark {pgfid101}{25124359}{7544513}
-\pgfsyspdfmark {pgfid102}{25124359}{7544513}
-\pgfsyspdfmark {pgfid103}{5677427}{43779327}
-\pgfsyspdfmark {pgfid104}{6396930}{42833643}
-\pgfsyspdfmark {pgfid105}{6792767}{42833643}
-\pgfsyspdfmark {pgfid106}{8891147}{42833643}
-\pgfsyspdfmark {pgfid107}{11291074}{42833643}
-\pgfsyspdfmark {pgfid108}{13833622}{42833643}
-\pgfsyspdfmark {pgfid109}{16378136}{42833643}
-\pgfsyspdfmark {pgfid110}{18780029}{42833643}
-\pgfsyspdfmark {pgfid111}{20879637}{42833643}
-\pgfsyspdfmark {pgfid112}{5677427}{41942437}
-\pgfsyspdfmark {pgfid113}{6368094}{40996753}
-\pgfsyspdfmark {pgfid114}{6792767}{40996753}
-\pgfsyspdfmark {pgfid115}{8891147}{40996753}
-\pgfsyspdfmark {pgfid116}{11291074}{40996753}
-\pgfsyspdfmark {pgfid117}{13833622}{40996753}
-\pgfsyspdfmark {pgfid118}{16378136}{40996753}
-\pgfsyspdfmark {pgfid119}{18780029}{40996753}
-\pgfsyspdfmark {pgfid120}{20879637}{40996753}
-\pgfsyspdfmark {pgfid121}{5677427}{40105547}
-\pgfsyspdfmark {pgfid122}{6625323}{39046158}
-\pgfsyspdfmark {pgfid123}{6792767}{39046158}
-\pgfsyspdfmark {pgfid124}{8891147}{39046158}
-\pgfsyspdfmark {pgfid125}{11291074}{39046158}
-\pgfsyspdfmark {pgfid126}{13833622}{39046158}
-\pgfsyspdfmark {pgfid127}{16378136}{39046158}
-\pgfsyspdfmark {pgfid128}{18780029}{39046158}
-\pgfsyspdfmark {pgfid129}{20879637}{39046158}
-\pgfsyspdfmark {pgfid130}{5677427}{38324935}
-\pgfsyspdfmark {pgfid131}{6357773}{37379251}
-\pgfsyspdfmark {pgfid132}{6792767}{37379251}
-\pgfsyspdfmark {pgfid133}{8891147}{37379251}
-\pgfsyspdfmark {pgfid134}{11291074}{37379251}
-\pgfsyspdfmark {pgfid135}{13833622}{37379251}
-\pgfsyspdfmark {pgfid136}{16378136}{37379251}
-\pgfsyspdfmark {pgfid137}{18780029}{37379251}
-\pgfsyspdfmark {pgfid138}{20879637}{37379251}
-\pgfsyspdfmark {pgfid139}{5677427}{36488045}
-\pgfsyspdfmark {pgfid140}{6005107}{35263263}
-\pgfsyspdfmark {pgfid141}{6792767}{35263263}
-\pgfsyspdfmark {pgfid142}{8891147}{35263263}
-\pgfsyspdfmark {pgfid143}{11291074}{35263263}
-\pgfsyspdfmark {pgfid144}{13833622}{35263263}
-\pgfsyspdfmark {pgfid145}{16378136}{35263263}
-\pgfsyspdfmark {pgfid146}{18780029}{35263263}
-\pgfsyspdfmark {pgfid147}{20879637}{35263263}
-\pgfsyspdfmark {pgfid148}{5677427}{34258189}
-\pgfsyspdfmark {pgfid149}{6625323}{33198800}
-\pgfsyspdfmark {pgfid150}{6792767}{33198800}
-\pgfsyspdfmark {pgfid151}{8891147}{33198800}
-\pgfsyspdfmark {pgfid152}{11291074}{33198800}
-\pgfsyspdfmark {pgfid153}{13833622}{33198800}
-\pgfsyspdfmark {pgfid154}{16378136}{33198800}
-\pgfsyspdfmark {pgfid155}{18780029}{33198800}
-\pgfsyspdfmark {pgfid156}{20879637}{33198800}
-\pgfsyspdfmark {pgfid157}{5677427}{32477577}
-\pgfsyspdfmark {pgfid158}{6368832}{31252795}
-\pgfsyspdfmark {pgfid159}{6792767}{31252795}
-\pgfsyspdfmark {pgfid160}{8891147}{31252795}
-\pgfsyspdfmark {pgfid161}{11291074}{31252795}
-\pgfsyspdfmark {pgfid162}{13833622}{31252795}
-\pgfsyspdfmark {pgfid163}{16378136}{31252795}
-\pgfsyspdfmark {pgfid164}{18780029}{31252795}
-\pgfsyspdfmark {pgfid165}{20879637}{31252795}
-\pgfsyspdfmark {pgfid166}{5677427}{30247721}
-\pgfsyspdfmark {pgfid167}{5677427}{30247721}
-\pgfsyspdfmark {pgfid168}{7643507}{30247721}
-\pgfsyspdfmark {pgfid169}{9874187}{30247721}
-\pgfsyspdfmark {pgfid170}{11840267}{30247721}
-\pgfsyspdfmark {pgfid171}{14674041}{30247721}
-\pgfsyspdfmark {pgfid172}{16925363}{30247721}
-\pgfsyspdfmark {pgfid173}{19763069}{30247721}
-\pgfsyspdfmark {pgfid174}{21729149}{30247721}
-\pgfsyspdfmark {pgfid175}{21963436}{36823470}
-\pgfsyspdfmark {pgfid177}{21963436}{36823470}
-\pgfsyspdfmark {pgfid178}{21963436}{36823470}
-\pgfsyspdfmark {pgfid179}{21963436}{36823470}
-\pgfsyspdfmark {pgfid180}{21963436}{36823470}
+\pgfsyspdfmark {pgfid41}{13179454}{40651983}
+\pgfsyspdfmark {pgfid42}{13507134}{40033979}
+\pgfsyspdfmark {pgfid43}{13902971}{40033979}
+\pgfsyspdfmark {pgfid44}{15350005}{40033979}
+\pgfsyspdfmark {pgfid45}{16704633}{40033979}
+\pgfsyspdfmark {pgfid46}{18079904}{40033979}
+\pgfsyspdfmark {pgfid47}{20242917}{40033979}
+\pgfsyspdfmark {pgfid48}{22292881}{40033979}
+\pgfsyspdfmark {pgfid49}{24040560}{40033979}
+\pgfsyspdfmark {pgfid50}{13179454}{39470453}
+\pgfsyspdfmark {pgfid51}{13902971}{38852449}
+\pgfsyspdfmark {pgfid52}{15350005}{38852449}
+\pgfsyspdfmark {pgfid53}{16704633}{38852449}
+\pgfsyspdfmark {pgfid54}{18079904}{38852449}
+\pgfsyspdfmark {pgfid55}{20242917}{38852449}
+\pgfsyspdfmark {pgfid56}{22292881}{38852449}
+\pgfsyspdfmark {pgfid57}{24040560}{38852449}
+\pgfsyspdfmark {pgfid58}{13179454}{38288923}
+\pgfsyspdfmark {pgfid59}{13902971}{37557214}
+\pgfsyspdfmark {pgfid60}{16704633}{37557214}
+\pgfsyspdfmark {pgfid61}{18079904}{37557214}
+\pgfsyspdfmark {pgfid62}{20242917}{37557214}
+\pgfsyspdfmark {pgfid63}{22292881}{37557214}
+\pgfsyspdfmark {pgfid64}{24040560}{37557214}
+\pgfsyspdfmark {pgfid65}{13179454}{37163671}
+\pgfsyspdfmark {pgfid66}{13902971}{36545667}
+\pgfsyspdfmark {pgfid67}{18079904}{36545667}
+\pgfsyspdfmark {pgfid68}{20242917}{36545667}
+\pgfsyspdfmark {pgfid69}{22292881}{36545667}
+\pgfsyspdfmark {pgfid70}{24040560}{36545667}
+\pgfsyspdfmark {pgfid71}{13179454}{35982141}
+\pgfsyspdfmark {pgfid72}{13902971}{35085039}
+\pgfsyspdfmark {pgfid73}{20242917}{35085039}
+\pgfsyspdfmark {pgfid74}{22292881}{35085039}
+\pgfsyspdfmark {pgfid75}{24040560}{35085039}
+\pgfsyspdfmark {pgfid76}{13179454}{34407645}
+\pgfsyspdfmark {pgfid77}{13902971}{33675936}
+\pgfsyspdfmark {pgfid78}{20242917}{33675936}
+\pgfsyspdfmark {pgfid79}{22292881}{33675936}
+\pgfsyspdfmark {pgfid80}{24040560}{33675936}
+\pgfsyspdfmark {pgfid81}{13179454}{33282393}
+\pgfsyspdfmark {pgfid82}{13902971}{32385291}
+\pgfsyspdfmark {pgfid83}{20242917}{32385291}
+\pgfsyspdfmark {pgfid84}{22292881}{32385291}
+\pgfsyspdfmark {pgfid85}{24040560}{32385291}
+\pgfsyspdfmark {pgfid86}{13179454}{31707897}
+\pgfsyspdfmark {pgfid87}{13179454}{31707897}
+\pgfsyspdfmark {pgfid88}{14626488}{31707897}
+\pgfsyspdfmark {pgfid89}{16073522}{31707897}
+\pgfsyspdfmark {pgfid90}{17335744}{31707897}
+\pgfsyspdfmark {pgfid91}{18824064}{31707897}
+\pgfsyspdfmark {pgfid92}{21661770}{31707897}
+\pgfsyspdfmark {pgfid93}{22923992}{31707897}
+\pgfsyspdfmark {pgfid94}{25157128}{31707897}
+\pgfsyspdfmark {pgfid95}{25124359}{35989886}
+\pgfsyspdfmark {pgfid97}{25124359}{35989886}
+\pgfsyspdfmark {pgfid98}{25124359}{35989886}
+\pgfsyspdfmark {pgfid99}{25124359}{35989886}
+\pgfsyspdfmark {pgfid100}{25124359}{35989886}
+\pgfsyspdfmark {pgfid101}{5677427}{29553478}
+\pgfsyspdfmark {pgfid102}{6396930}{28607794}
+\pgfsyspdfmark {pgfid103}{6792767}{28607794}
+\pgfsyspdfmark {pgfid104}{8891147}{28607794}
+\pgfsyspdfmark {pgfid105}{11291074}{28607794}
+\pgfsyspdfmark {pgfid106}{13833622}{28607794}
+\pgfsyspdfmark {pgfid107}{16378136}{28607794}
+\pgfsyspdfmark {pgfid108}{18780029}{28607794}
+\pgfsyspdfmark {pgfid109}{20879637}{28607794}
+\pgfsyspdfmark {pgfid110}{5677427}{27716588}
+\pgfsyspdfmark {pgfid111}{6368094}{26770904}
+\pgfsyspdfmark {pgfid112}{6792767}{26770904}
+\pgfsyspdfmark {pgfid113}{8891147}{26770904}
+\pgfsyspdfmark {pgfid114}{11291074}{26770904}
+\pgfsyspdfmark {pgfid115}{13833622}{26770904}
+\pgfsyspdfmark {pgfid116}{16378136}{26770904}
+\pgfsyspdfmark {pgfid117}{18780029}{26770904}
+\pgfsyspdfmark {pgfid118}{20879637}{26770904}
+\pgfsyspdfmark {pgfid119}{5677427}{25879698}
+\pgfsyspdfmark {pgfid120}{6625323}{24820309}
+\pgfsyspdfmark {pgfid121}{6792767}{24820309}
+\pgfsyspdfmark {pgfid122}{8891147}{24820309}
+\pgfsyspdfmark {pgfid123}{11291074}{24820309}
+\pgfsyspdfmark {pgfid124}{13833622}{24820309}
+\pgfsyspdfmark {pgfid125}{16378136}{24820309}
+\pgfsyspdfmark {pgfid126}{18780029}{24820309}
+\pgfsyspdfmark {pgfid127}{20879637}{24820309}
+\pgfsyspdfmark {pgfid128}{5677427}{24099086}
+\pgfsyspdfmark {pgfid129}{6357773}{23153402}
+\pgfsyspdfmark {pgfid130}{6792767}{23153402}
+\pgfsyspdfmark {pgfid131}{8891147}{23153402}
+\pgfsyspdfmark {pgfid132}{11291074}{23153402}
+\pgfsyspdfmark {pgfid133}{13833622}{23153402}
+\pgfsyspdfmark {pgfid134}{16378136}{23153402}
+\pgfsyspdfmark {pgfid135}{18780029}{23153402}
+\pgfsyspdfmark {pgfid136}{20879637}{23153402}
+\pgfsyspdfmark {pgfid137}{5677427}{22262196}
+\pgfsyspdfmark {pgfid138}{6005107}{21037414}
+\pgfsyspdfmark {pgfid139}{6792767}{21037414}
+\pgfsyspdfmark {pgfid140}{8891147}{21037414}
+\pgfsyspdfmark {pgfid141}{11291074}{21037414}
+\pgfsyspdfmark {pgfid142}{13833622}{21037414}
+\pgfsyspdfmark {pgfid143}{16378136}{21037414}
+\pgfsyspdfmark {pgfid144}{18780029}{21037414}
+\pgfsyspdfmark {pgfid145}{20879637}{21037414}
+\pgfsyspdfmark {pgfid146}{5677427}{20032340}
+\pgfsyspdfmark {pgfid147}{6625323}{18972951}
+\pgfsyspdfmark {pgfid148}{6792767}{18972951}
+\pgfsyspdfmark {pgfid149}{8891147}{18972951}
+\pgfsyspdfmark {pgfid150}{11291074}{18972951}
+\pgfsyspdfmark {pgfid151}{13833622}{18972951}
+\pgfsyspdfmark {pgfid152}{16378136}{18972951}
+\pgfsyspdfmark {pgfid153}{18780029}{18972951}
+\pgfsyspdfmark {pgfid154}{20879637}{18972951}
+\pgfsyspdfmark {pgfid155}{5677427}{18251728}
+\pgfsyspdfmark {pgfid156}{6368832}{17026946}
+\pgfsyspdfmark {pgfid157}{6792767}{17026946}
+\pgfsyspdfmark {pgfid158}{8891147}{17026946}
+\pgfsyspdfmark {pgfid159}{11291074}{17026946}
+\pgfsyspdfmark {pgfid160}{13833622}{17026946}
+\pgfsyspdfmark {pgfid161}{16378136}{17026946}
+\pgfsyspdfmark {pgfid162}{18780029}{17026946}
+\pgfsyspdfmark {pgfid163}{20879637}{17026946}
+\pgfsyspdfmark {pgfid164}{5677427}{16021872}
+\pgfsyspdfmark {pgfid165}{5677427}{16021872}
+\pgfsyspdfmark {pgfid166}{7643507}{16021872}
+\pgfsyspdfmark {pgfid167}{9874187}{16021872}
+\pgfsyspdfmark {pgfid168}{11840267}{16021872}
+\pgfsyspdfmark {pgfid169}{14674041}{16021872}
+\pgfsyspdfmark {pgfid170}{16925363}{16021872}
+\pgfsyspdfmark {pgfid171}{19763069}{16021872}
+\pgfsyspdfmark {pgfid172}{21729149}{16021872}
+\pgfsyspdfmark {pgfid173}{21963436}{22597621}
+\pgfsyspdfmark {pgfid175}{21963436}{22597621}
+\pgfsyspdfmark {pgfid176}{21963436}{22597621}
+\pgfsyspdfmark {pgfid177}{21963436}{22597621}
+\pgfsyspdfmark {pgfid178}{21963436}{22597621}
 \@writefile{toc}{\contentsline {section}{\numberline {3}Structure of the factor matrix for BPS matrices}{4}{section.3}\protected@file@percent }
 \newlabel{sec:main}{{3}{4}{Structure of the factor matrix for BPS matrices}{section.3}{}}
 \newlabel{def:P}{{4}{5}{}{definition.4}{}}
-\newlabel{Lemma:Ppertub}{{1}{5}{}{lemma.1}{}}
+\newlabel{Lemma:Ppertub}{{1}{6}{}{lemma.1}{}}
 \newlabel{lemma:lower}{{2}{6}{}{lemma.2}{}}
 \newlabel{eq:tilde_b_k}{{2}{7}{Structure of the factor matrix for BPS matrices}{equation.3.2}{}}
 \newlabel{eq:alpha_k}{{3}{7}{Structure of the factor matrix for BPS matrices}{equation.3.3}{}}
@@ -242,15 +240,15 @@
 \newlabel{lemma:upper}{{3}{7}{}{lemma.3}{}}
 \newlabel{eq:UtA_relation}{{6}{8}{Structure of the factor matrix for BPS matrices}{equation.3.6}{}}
 \newlabel{eq:y_k}{{7}{8}{Structure of the factor matrix for BPS matrices}{equation.3.7}{}}
-\newlabel{eq:yA}{{8}{8}{Structure of the factor matrix for BPS matrices}{equation.3.8}{}}
+\newlabel{eq:yA}{{8}{9}{Structure of the factor matrix for BPS matrices}{equation.3.8}{}}
 \newlabel{eq:row_updtae_1}{{9}{9}{Structure of the factor matrix for BPS matrices}{equation.3.9}{}}
 \newlabel{eq:row_updtae_2}{{10}{9}{Structure of the factor matrix for BPS matrices}{equation.3.10}{}}
 \newlabel{Lemma:Structure_preserve}{{4}{9}{}{lemma.4}{}}
-\newlabel{eq:submatrix_update_J}{{11}{10}{Structure of the factor matrix for BPS matrices}{equation.3.11}{}}
-\newlabel{eq:submatrix_update_K}{{12}{10}{Structure of the factor matrix for BPS matrices}{equation.3.12}{}}
-\newlabel{eq:submatrix_update_E}{{13}{10}{Structure of the factor matrix for BPS matrices}{equation.3.13}{}}
-\newlabel{eq:submatrix_update_X}{{14}{10}{Structure of the factor matrix for BPS matrices}{equation.3.14}{}}
 \citation{chandrasekaran2002fast}
+\newlabel{eq:submatrix_update_J}{{11}{11}{Structure of the factor matrix for BPS matrices}{equation.3.11}{}}
+\newlabel{eq:submatrix_update_K}{{12}{11}{Structure of the factor matrix for BPS matrices}{equation.3.12}{}}
+\newlabel{eq:submatrix_update_E}{{13}{11}{Structure of the factor matrix for BPS matrices}{equation.3.13}{}}
+\newlabel{eq:submatrix_update_X}{{14}{11}{Structure of the factor matrix for BPS matrices}{equation.3.14}{}}
 \newlabel{eq:submatrix_update_Y}{{15}{11}{Structure of the factor matrix for BPS matrices}{equation.3.15}{}}
 \newlabel{eq:submatrix_update_Z}{{16}{11}{Structure of the factor matrix for BPS matrices}{equation.3.16}{}}
 \newlabel{thm:structure_preserve}{{1}{11}{}{mytheorem.1}{}}
@@ -260,26 +258,29 @@
 \newlabel{algo:fastqr}{{4.0.1}{12}{Fast Algorithms for QR Factorization and Direct Solvers}{algorithm.4.0.1}{}}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {4.0.2}{\ignorespaces FormHouseholderVector}}{12}{algorithm.4.0.2}\protected@file@percent }
 \newlabel{algo:form_householder}{{4.0.2}{12}{Fast Algorithms for QR Factorization and Direct Solvers}{algorithm.4.0.2}{}}
+\citation{OlverNIST}
+\citation{OlverNIST}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {4.0.3}{\ignorespaces ComputeRowUpdate}}{13}{algorithm.4.0.3}\protected@file@percent }
 \newlabel{algo:compute_row}{{4.0.3}{13}{Fast Algorithms for QR Factorization and Direct Solvers}{algorithm.4.0.3}{}}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {4.0.4}{\ignorespaces UpdateMatrices}}{13}{algorithm.4.0.4}\protected@file@percent }
 \newlabel{algo:update_hmbpsm}{{4.0.4}{13}{Fast Algorithms for QR Factorization and Direct Solvers}{algorithm.4.0.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Fast Solver for BPS Matrices}{13}{subsection.4.1}\protected@file@percent }
-\newlabel{sec:solver}{{4.1}{13}{Fast Solver for BPS Matrices}{subsection.4.1}{}}
+\newlabel{Remark:lookup}{{4.1}{13}{}{remark.4.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Fast Solver for BPS Matrices}{14}{subsection.4.1}\protected@file@percent }
+\newlabel{sec:solver}{{4.1}{14}{Fast Solver for BPS Matrices}{subsection.4.1}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.1}Fast Application of \( Q^\top \)}{14}{subsubsection.4.1.1}\protected@file@percent }
 \newlabel{eq:y_structure}{{17}{14}{Fast Application of \( Q^\top \)}{equation.4.17}{}}
-\citation{olver2013fast}
-\citation{olver2013fast}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {4.1.1}{\ignorespaces Fast Application of \( Q^\top \) to a Vector}}{15}{algorithm.4.1.1}\protected@file@percent }
 \newlabel{algo_applyQ}{{4.1.1}{15}{Fast Application of \( Q^\top \)}{algorithm.4.1.1}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.2}Fast Backward Substitution}{15}{subsubsection.4.1.2}\protected@file@percent }
+\citation{olver2013fast}
+\citation{olver2013fast}
 \citation{SemiseparableMatrices2024}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {4.1.2}{\ignorespaces Fast Backward Substitution for Structured \( R \)}}{16}{algorithm.4.1.2}\protected@file@percent }
 \newlabel{algo_backsub}{{4.1.2}{16}{Fast Backward Substitution}{algorithm.4.1.2}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.3}Overall Solver Complexity}{16}{subsubsection.4.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Numerical results}{16}{section.5}\protected@file@percent }
-\newlabel{sec:experiments}{{5}{16}{Numerical results}{section.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Linear Complexity Verification}{16}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Numerical results}{17}{section.5}\protected@file@percent }
+\newlabel{sec:experiments}{{5}{17}{Numerical results}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Linear Complexity Verification}{17}{subsection.5.1}\protected@file@percent }
 \newlabel{fig:qr_fact_only}{{5.1}{17}{Linear Complexity Verification}{subsection.5.1}{}}
 \newlabel{fig:qr_solve_only}{{5.1}{17}{Linear Complexity Verification}{subsection.5.1}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Log-log plots of execution times versus matrix size $n$ for four parameter sets $(\ell , m, r, p)$, demonstrating optimal linear complexity. (a) Execution time for the structured QR factorization; (b) Execution time for the solve phase (applying $Q^\top $ and backward substitution). The dashed lines have a slope of 1, indicating perfect linear scaling $O(n)$.}}{17}{figure.1}\protected@file@percent }
@@ -293,36 +294,35 @@
 \@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Log-log plot of the maximum residual $\max |A\mathbf  {x} - \mathbf  {b}|$ versus matrix size $n$ for four parameter sets $(\ell , m, r, p)$. Here $\mathbf  {x}$ is computed by our complete QR solver (QR factorization followed by application of $Q^\top $ and backward substitution). The dashed gray line indicates the machine precision $\epsilon _{\mathrm  {machine}} \approx 2.22 \times 10^{-16}$.}}{18}{figure.2}\protected@file@percent }
 \newlabel{fig:stability}{{2}{18}{Log-log plot of the maximum residual $\max |A\mathbf {x} - \mathbf {b}|$ versus matrix size $n$ for four parameter sets $(\ell , m, r, p)$. Here $\mathbf {x}$ is computed by our complete QR solver (QR factorization followed by application of $Q^\top $ and backward substitution). The dashed gray line indicates the machine precision $\epsilon _{\mathrm {machine}} \approx 2.22 \times 10^{-16}$}{figure.2}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Comparison with HODLR QR}{18}{subsection.5.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}LAPACK Compatibility and Hybrid Solver Performance}{18}{subsection.5.4}\protected@file@percent }
-\newlabel{sec:lapack_comp_exps}{{5.4}{18}{LAPACK Compatibility and Hybrid Solver Performance}{subsection.5.4}{}}
 \newlabel{fig:qr_fact_comp}{{5.3}{19}{Comparison with HODLR QR}{subsection.5.3}{}}
 \newlabel{fig:qr_solve_comp}{{5.3}{19}{Comparison with HODLR QR}{subsection.5.3}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Log-log performance comparisons between our proposed fast BPS QR algorithm and the HODLR QR implementation from\nobreakspace  {}\cite  {massei2020hm} (with parameters $\ell =4$, $m=5$, $r=2$, $p=3$). Panel (a) illustrates the execution times for the structured QR factorization phase; Panel (b) presents the execution times for the solve phase (applying $Q^\top $ and backward substitution).}}{19}{figure.3}\protected@file@percent }
-\newlabel{fig:comparison}{{3}{19}{Log-log performance comparisons between our proposed fast BPS QR algorithm and the HODLR QR implementation from~\cite {massei2020hm} (with parameters $\ell =4$, $m=5$, $r=2$, $p=3$). Panel (a) illustrates the execution times for the structured QR factorization phase; Panel (b) presents the execution times for the solve phase (applying $Q^\top $ and backward substitution)}{figure.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusions}{19}{section.6}\protected@file@percent }
-\newlabel{sec:conclusions}{{6}{19}{Conclusions}{section.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Log-log performance comparisons between our proposed fast BPS QR algorithm and the HODLR QR implementation from\nobreakspace  {}\citep  {massei2020hm} (with parameters $\ell =4$, $m=5$, $r=2$, $p=3$). Panel (a) illustrates the execution times for the structured QR factorization phase; Panel (b) presents the execution times for the solve phase (applying $Q^\top $ and backward substitution).}}{19}{figure.3}\protected@file@percent }
+\newlabel{fig:comparison}{{3}{19}{Log-log performance comparisons between our proposed fast BPS QR algorithm and the HODLR QR implementation from~\citep {massei2020hm} (with parameters $\ell =4$, $m=5$, $r=2$, $p=3$). Panel (a) illustrates the execution times for the structured QR factorization phase; Panel (b) presents the execution times for the solve phase (applying $Q^\top $ and backward substitution)}{figure.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}LAPACK Compatibility and Hybrid Solver Performance}{19}{subsection.5.4}\protected@file@percent }
+\newlabel{sec:lapack_comp_exps}{{5.4}{19}{LAPACK Compatibility and Hybrid Solver Performance}{subsection.5.4}{}}
 \citation{knook2024quasi}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Performance scaling comparison for solving $Ax = b$ using the pure BPS $O(n)$ solver, the standard dense LAPACK $O(n^3)$ solver, and the hybrid BPS-LAPACK $O(n^2)$ solver. \todo [color=green,inline=true]{Move this info to the previous factorisation/solve plot. Add both Unblocked and CompactWY}}}{20}{figure.4}\protected@file@percent }
-\@writefile{tdo}{\contentsline {todo}{Move this info to the previous factorisation/solve plot. Add both Unblocked and CompactWY}{20}{section*.7}\protected@file@percent }
-\pgfsyspdfmark {pgfid182}{17884541}{25578127}
-\newlabel{fig:lapack_compare}{{4}{20}{Performance scaling comparison for solving $Ax = b$ using the pure BPS $O(n)$ solver, the standard dense LAPACK $O(n^3)$ solver, and the hybrid BPS-LAPACK $O(n^2)$ solver. \sotodoinline {Move this info to the previous factorisation/solve plot. Add both Unblocked and CompactWY}}{section*.7}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {A}Fast RQ Computation for Symmetric BPS Matrices}{20}{appendix.A}\protected@file@percent }
-\newlabel{sec:fastrq}{{A}{20}{Fast RQ Computation for Symmetric BPS Matrices}{appendix.A}{}}
+\newlabel{fig:lapack_qr_comp}{{5.4}{20}{LAPACK Compatibility and Hybrid Solver Performance}{Item.2}{}}
+\newlabel{fig:lapack_solve_comp}{{5.4}{20}{LAPACK Compatibility and Hybrid Solver Performance}{Item.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Performance scaling comparison between our proposed structured $O(n)$ BPS solver and LAPACK dense solvers (both Unblocked and Compact WY BLAS-3 implementations). Panel (a) shows the execution times for the QR factorization phase; Panel (b) illustrates the execution times for the solve phase.}}{20}{figure.4}\protected@file@percent }
+\newlabel{fig:lapack_compare}{{4}{20}{Performance scaling comparison between our proposed structured $O(n)$ BPS solver and LAPACK dense solvers (both Unblocked and Compact WY BLAS-3 implementations). Panel (a) shows the execution times for the QR factorization phase; Panel (b) illustrates the execution times for the solve phase}{figure.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusions}{20}{section.6}\protected@file@percent }
+\newlabel{sec:conclusions}{{6}{20}{Conclusions}{section.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {A}Fast RQ Computation for Symmetric BPS Matrices}{21}{appendix.A}\protected@file@percent }
+\newlabel{sec:fastrq}{{A}{21}{Fast RQ Computation for Symmetric BPS Matrices}{appendix.A}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {A.1}Structure of RQ}{21}{subsection.A.1}\protected@file@percent }
 \newlabel{express_A_symm}{{18}{21}{Structure of RQ}{equation.A.18}{}}
 \newlabel{Lemma:PpertubR}{{5}{22}{}{lemma.5}{}}
 \newlabel{lemma: RQ_lower}{{6}{22}{}{lemma.6}{}}
-\newlabel{eq:rq_col_1}{{19}{23}{Structure of RQ}{equation.A.19}{}}
-\newlabel{eq:rq_col_2}{{20}{23}{Structure of RQ}{equation.A.20}{}}
-\newlabel{lemma: RQ_sub_matrix}{{7}{23}{}{lemma.7}{}}
-\newlabel{eq:rq_submatrix_1}{{21}{24}{Structure of RQ}{equation.A.21}{}}
-\newlabel{eq:rq_submatrix_2}{{22}{24}{Structure of RQ}{equation.A.22}{}}
-\newlabel{eq:rq_submatrix_3}{{23}{24}{Structure of RQ}{equation.A.23}{}}
-\newlabel{eq:rq_submatrix_4}{{24}{24}{Structure of RQ}{equation.A.24}{}}
+\newlabel{eq:rq_col_1}{{19}{24}{Structure of RQ}{equation.A.19}{}}
+\newlabel{eq:rq_col_2}{{20}{24}{Structure of RQ}{equation.A.20}{}}
+\newlabel{lemma: RQ_sub_matrix}{{7}{24}{}{lemma.7}{}}
+\newlabel{eq:rq_submatrix_1}{{21}{25}{Structure of RQ}{equation.A.21}{}}
+\newlabel{eq:rq_submatrix_2}{{22}{25}{Structure of RQ}{equation.A.22}{}}
+\newlabel{eq:rq_submatrix_3}{{23}{25}{Structure of RQ}{equation.A.23}{}}
+\newlabel{eq:rq_submatrix_4}{{24}{25}{Structure of RQ}{equation.A.24}{}}
 \newlabel{thm:structure_rq}{{4}{25}{}{mytheorem.4}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {A.2}Fast RQ Multiplication}{25}{subsection.A.2}\protected@file@percent }
-\@writefile{loa}{\contentsline {algorithm}{\numberline {A.2.1}{\ignorespaces Fast RQ computation for Symmetric BPS Matrices}}{25}{algorithm.A.2.1}\protected@file@percent }
-\newlabel{algo:fastrq}{{A.2.1}{25}{Fast RQ Multiplication}{algorithm.A.2.1}{}}
+\newlabel{rem:symmetric_tracking}{{A.1}{25}{}{remark.A.1}{}}
 \bibstyle{cas-model2-names}
 \bibdata{cas-refs}
 \bibcite{doi:10.1137/1.9780898719604}{{1}{1999}{{Anderson et~al.}}{{Anderson, Bai, Bischof, Blackford, Demmel, Dongarra, Du~Croz, Greenbaum, Hammarling, McKenney and Sorensen}}}
@@ -330,32 +330,36 @@
 \bibcite{chandrasekaran2002fast}{{3}{2002}{{Chandrasekaran et~al.}}{{Chandrasekaran, Dewilde, Gu, Pals and van~der Veen}}}
 \bibcite{chandrasekaran2003fast}{{4}{2003}{{Chandrasekaran and Gu}}{{}}}
 \bibcite{chandrasekaran2006fast}{{5}{2006}{{Chandrasekaran et~al.}}{{Chandrasekaran, Gu and Pals}}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {A.2.1}{\ignorespaces Fast RQ computation for Symmetric BPS Matrices}}{26}{algorithm.A.2.1}\protected@file@percent }
+\newlabel{algo:fastrq}{{A.2.1}{26}{Fast RQ Multiplication}{algorithm.A.2.1}{}}
 \bibcite{SemiseparableMatrices2024}{{6}{2026}{{Chen et~al.}}{{Chen, Olver et~al.}}}
-\bibcite{delvaux2006rank}{{7}{2006a}{{Delvaux and Van~Barel}}{{}}}
-\newlabel{rem:symmetric_tracking}{{A.1}{26}{}{remark.A.1}{}}
-\newlabel{fig:only_rq}{{A.2}{26}{Fast RQ Multiplication}{remark.A.2}{}}
-\newlabel{fig:qr_plus_rq}{{A.2}{26}{Fast RQ Multiplication}{remark.A.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Log-log plots of computation times for symmetric BPS matrices versus $n$ across four distinct parameter sets $(\ell , r)$. The left panel (a) illustrates the isolated $RQ$ computation cost, while the right panel (b) presents the cumulative execution time encompassing both the complete structured $QR$ factorization and the subsequent $RQ$ product. The dashed reference lines possess a slope of 1, indicating strict $O(n)$ linear scaling for both components.}}{26}{figure.5}\protected@file@percent }
-\newlabel{fig:rq_scaling}{{5}{26}{Log-log plots of computation times for symmetric BPS matrices versus $n$ across four distinct parameter sets $(\ell , r)$. The left panel (a) illustrates the isolated $RQ$ computation cost, while the right panel (b) presents the cumulative execution time encompassing both the complete structured $QR$ factorization and the subsequent $RQ$ product. The dashed reference lines possess a slope of 1, indicating strict $O(n)$ linear scaling for both components}{figure.5}{}}
-\bibcite{delvaux2006structures}{{8}{2006b}{{Delvaux and Van~Barel}}{{}}}
-\bibcite{delvaux2008givens}{{9}{2008a}{{Delvaux and Van~Barel}}{{}}}
-\bibcite{delvaux2008qr}{{10}{2008b}{{Delvaux and Van~Barel}}{{}}}
-\bibcite{eidelman1997inversion}{{11}{1997}{{Eidelman and Gohberg}}{{}}}
-\bibcite{eidelman2014separable}{{12}{2014}{{Eidelman et~al.}}{{Eidelman, Gohberg and Haimovici}}}
-\bibcite{eidelman2005qr}{{13}{2005}{{Eidelman et~al.}}{{Eidelman, Gohberg and Olshevsky}}}
-\bibcite{fasino2005rational}{{14}{2005}{{Fasino}}{{}}}
-\bibcite{iserles2025stable}{{15}{2025}{{Iserles}}{{}}}
-\bibcite{knook2024quasi}{{16}{2025}{{Knook et~al.}}{{Knook, Olver and Papadopoulos}}}
-\bibcite{massei2020hm}{{17}{2020}{{Massei et~al.}}{{Massei, Robol and Kressner}}}
-\bibcite{mastronardi2001fast}{{18}{2001}{{Mastronardi et~al.}}{{Mastronardi, Chandrasekaran and Van~Huffel}}}
-\bibcite{olver2013fast}{{19}{2013}{{Olver and Townsend}}{{}}}
-\bibcite{rozsa1991band}{{20}{1991}{{R{\'o}zsa et~al.}}{{R{\'o}zsa, Bevilacqua, Romani and Favati}}}
-\bibcite{van2004two}{{21}{2004}{{Van~Camp et~al.}}{{Van~Camp, Mastronardi and Van~Barel}}}
-\bibcite{vandebrilmanual}{{22}{}{{Vandebril and Van~Barel}}{{}}}
-\bibcite{vandebril2005implicit}{{23}{2005a}{{Vandebril et~al.}}{{Vandebril, Van~Barel and Mastronardi}}}
-\bibcite{vandebril2005note}{{24}{2005b}{{Vandebril et~al.}}{{Vandebril, Van~Barel and Mastronardi}}}
-\bibcite{vandebril2008matrix}{{25}{2008a}{{Vandebril et~al.}}{{Vandebril, Van~Barel and Mastronardi}}}
-\bibcite{vandebril2008rational}{{26}{2008b}{{Vandebril et~al.}}{{Vandebril, Van~Barel and Mastronardi}}}
-\bibcite{xia2010fast}{{27}{2010}{{Xia et~al.}}{{Xia, Chandrasekaran, Gu and Li}}}
-\csxdef{lastpage}{27}
-\gdef \@abspage@last{28}
+\bibcite{colbrook2021computing}{{7}{2021}{{Colbrook et~al.}}{{Colbrook, Horning and Townsend}}}
+\bibcite{delvaux2006rank}{{8}{2006a}{{Delvaux and Van~Barel}}{{}}}
+\bibcite{delvaux2006structures}{{9}{2006b}{{Delvaux and Van~Barel}}{{}}}
+\bibcite{delvaux2008givens}{{10}{2008a}{{Delvaux and Van~Barel}}{{}}}
+\bibcite{delvaux2008qr}{{11}{2008b}{{Delvaux and Van~Barel}}{{}}}
+\bibcite{eidelman1997inversion}{{12}{1997}{{Eidelman and Gohberg}}{{}}}
+\bibcite{eidelman2014separable}{{13}{2014}{{Eidelman et~al.}}{{Eidelman, Gohberg and Haimovici}}}
+\bibcite{eidelman2005qr}{{14}{2005}{{Eidelman et~al.}}{{Eidelman, Gohberg and Olshevsky}}}
+\bibcite{fasino2005rational}{{15}{2005}{{Fasino}}{{}}}
+\bibcite{iserles2025stable}{{16}{2025}{{Iserles}}{{}}}
+\bibcite{knook2024quasi}{{17}{2025}{{Knook et~al.}}{{Knook, Olver and Papadopoulos}}}
+\bibcite{massei2020hm}{{18}{2020}{{Massei et~al.}}{{Massei, Robol and Kressner}}}
+\bibcite{mastronardi2001fast}{{19}{2001}{{Mastronardi et~al.}}{{Mastronardi, Chandrasekaran and Van~Huffel}}}
+\bibcite{OlverNIST}{{20}{}{{Olver et~al.}}{{Olver, {Olde Daalhuis}, Lozier, Schneider, Boisvert, Clark, Miller, Saunders, Cohl and McClain}}}
+\bibcite{olver2013fast}{{21}{2013}{{Olver and Townsend}}{{}}}
+\bibcite{rozsa1991band}{{22}{1991}{{R{\'o}zsa et~al.}}{{R{\'o}zsa, Bevilacqua, Romani and Favati}}}
+\bibcite{schreiber1987storage}{{23}{1987}{{Schreiber and Van~Loan}}{{}}}
+\bibcite{van2004two}{{24}{2004}{{Van~Camp et~al.}}{{Van~Camp, Mastronardi and Van~Barel}}}
+\bibcite{vandebrilmanual}{{25}{2010}{{Vandebril and Van~Barel}}{{}}}
+\bibcite{vandebril2005implicit}{{26}{2005a}{{Vandebril et~al.}}{{Vandebril, Van~Barel and Mastronardi}}}
+\newlabel{fig:only_rq}{{A.2}{27}{Fast RQ Multiplication}{remark.A.2}{}}
+\newlabel{fig:qr_plus_rq}{{A.2}{27}{Fast RQ Multiplication}{remark.A.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Log-log plots of computation times for symmetric BPS matrices versus $n$ across four distinct parameter sets $(\ell , r)$. The left panel (a) illustrates the isolated $RQ$ computation cost, while the right panel (b) presents the cumulative execution time encompassing both the complete structured $QR$ factorization and the subsequent $RQ$ product. The dashed reference lines possess a slope of 1, indicating strict $O(n)$ linear scaling for both components.}}{27}{figure.5}\protected@file@percent }
+\newlabel{fig:rq_scaling}{{5}{27}{Log-log plots of computation times for symmetric BPS matrices versus $n$ across four distinct parameter sets $(\ell , r)$. The left panel (a) illustrates the isolated $RQ$ computation cost, while the right panel (b) presents the cumulative execution time encompassing both the complete structured $QR$ factorization and the subsequent $RQ$ product. The dashed reference lines possess a slope of 1, indicating strict $O(n)$ linear scaling for both components}{figure.5}{}}
+\bibcite{vandebril2005note}{{27}{2005b}{{Vandebril et~al.}}{{Vandebril, Van~Barel and Mastronardi}}}
+\bibcite{vandebril2008matrix}{{28}{2008a}{{Vandebril et~al.}}{{Vandebril, Van~Barel and Mastronardi}}}
+\bibcite{vandebril2008rational}{{29}{2008b}{{Vandebril et~al.}}{{Vandebril, Van~Barel and Mastronardi}}}
+\bibcite{xia2010fast}{{30}{2010}{{Xia et~al.}}{{Xia, Chandrasekaran, Gu and Li}}}
+\csxdef{lastpage}{28}
+\gdef \@abspage@last{29}
