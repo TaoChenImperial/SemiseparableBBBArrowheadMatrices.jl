@@ -126,7 +126,7 @@
 \shortauthors{T. Chen and S. Olver}
 
 % Main title of the paper
-\title [mode = title]{The QR factorization of a banded-plus-semiseparable matrix is adaptively computable in linear complexity with Householder reflections}                      
+\title [mode = title]{The QR factorization of a banded-plus-semiseparable matrix is computable in linear complexity with Householder reflections}                      
 % Title footnote mark
 % eg: \tnotemark[1]
 \tnotemark[1,2]
@@ -160,7 +160,7 @@
 
 % Here goes the abstract
 \begin{abstract}
-We show that the QR factorization of a banded-plus-semiseparable (BPS) matrix is computable in optimal linear complexity with respect to the discretization size by showing that the intermediate stages of a QR factorization as computed using Householder reflection maintain a specific structure which has optimal storage. Crucially, this Householder-based framework enables adaptive, partial QR factorizations whose computational cost depends solely on the number of upper-triangularized columns rather than the global matrix size. This theoretical result also supports the design of stable, linear-complexity algorithms for solving the associated linear systems. Importantly, our algorithm represents the factors in an LAPACK-compatible format. This allows users to switch to highly optimized dense matrix operations for the final solve, creating a fast hybrid approach. For symmetric BPS matrices, we further show that the reverse $RQ$ product preserves the BPS structure, establishing the algebraic closure of this matrix class under orthogonal similarity transformations and facilitating efficient chain-structured matrix decompositions. Numerical experiments validate the optimal linear complexity, confirm high numerical accuracy, demonstrate excellent computational efficiency via LAPACK integration, and show substantial speedups compared with existing hierarchical approaches. The algorithms have been implemented in an open-source Julia package, providing an efficient and accessible platform for practical use. 
+We show that the QR factorization of a banded-plus-semiseparable (BPS) matrix is computable in optimal linear complexity with respect to the discretization size by showing that the intermediate stages of a QR factorization as computed using Householder reflection maintain a specific structure which has optimal storage.  While optimal complexity QR factorizations of BPS matrices are known via Given's rotations, our Householder-based framework enables adaptive, partial QR factorizations whose computational cost depends solely on the number of upper-triangularized columns rather than the global matrix size and represents the factors in a format consistent with LAPACK. This allows users to switch to highly optimized dense matrix operations for the final solve, creating a fast hybrid approach. We further deduce that the Compact WY format also has BPS structure and can be computed in optimal complexity.  Finally, for symmetric BPS matrices, we show that the reverse $RQ$ product preserves the BPS structure, establishing the algebraic closure of this matrix class under orthogonal similarity transformations and facilitating efficient chain-structured matrix decompositions. Numerical experiments validate the optimal linear complexity, confirm high numerical accuracy, demonstrate excellent computational efficiency via LAPACK integration, and show substantial speedups compared with existing hierarchical approaches. The algorithms have been implemented in an open-source Julia package, providing an efficient and accessible platform for practical use. 
 \end{abstract}
 
 % Use if graphical abstract is present
@@ -173,6 +173,7 @@ We show that the QR factorization of a banded-plus-semiseparable (BPS) matrix is
 \item We propose a fast QR factorization algorithm for banded-plus-semiseparable matrices using Householder transformations.
 \item The proposed algorithm achieves a strict linear computational complexity and effectively preserves the underlying matrix structures throughout the process.
 \item At each stage the partial QR factorization has a precise structured representation to represent the Householder factors in a way that is compatible with LAPack's unblocked QR routine.
+\item The Compact WY format also bases banded-plus-semiseparable structure that can be computed in optimal complexity.
 \item A high-performance, open-source Julia package is developed and validated through extensive numerical benchmarks.
 
 \end{highlights}
@@ -216,7 +217,7 @@ In detail: we prove that the QR factorization of a BPS matrix via Householder re
 
 The rest of this paper is organized as follows.
 Section~\ref{sec:factors} discusses the factor matrix representation for the QR factorization as computed with Householder reflections, which proves a convenient language to discuss the perturbations of the intermediate stages of the factorization.
-Section~\ref{sec:main} presents our main theoretical contributions on the preservation of a specific perturbation structure and the resulting BPS structure of the final QR factorization. Section~\ref{sec:algorithms} details the practical implementation of $O(n)$ algorithms for QR factorization, application of $Q^\top$, and backward substitution. Section~\ref{sec:experiments} presents numerical experiments that confirm the linear complexity, verify the numerical stability, and demonstrate performance advantages of our algorithms, including their compatibility with LAPACK. We conclude in Section~\ref{sec:conclusions} with a discussion of future work. Finally, Appendix~\ref{sec:fastrq} extends this framework to symmetric BPS matrices, proving that the reverse $RQ$ product also preserves the BPS format.
+Section~\ref{sec:main} presents our main theoretical contributions on the preservation of a specific perturbation structure and the resulting BPS structure of the final QR factorization. Section~\ref{sec:algorithms} details the practical implementation of $O(n)$ algorithms for QR factorization, application of $Q^\top$, and backward substitution. Section~\ref{sec:experiments} presents numerical experiments that confirm the linear complexity, verify the numerical stability, and demonstrate performance advantages of our algorithms, including their compatibility with LAPACK. We conclude in Section~\ref{sec:conclusions} with a discussion of future work. In Appendix~\ref{sec:bps_T} we show that the  WY representation~\citep{schreiber1987storage}, $Q = I - V T V^\top$, also has BPS structure that can be computed in optimal complexity. Finally, Appendix~\ref{sec:fastrq} extends this framework to symmetric BPS matrices, proving that the reverse $RQ$ product also preserves the BPS format.
 
 \begin{remark}
 While this paper focuses on real square matrices, the techniques and results naturally extend to complex matrices by replacing transposes with conjugate transposes. The extension to rectangular matrices is also straightforward, as Householder QR factorization applies similarly to rectangular matrices, and the structural arguments carry over with minor adjustments. 
@@ -1247,7 +1248,7 @@ where $\mathbf{e}_j \in \mathbb{R}^n$ is the $j$-th standard basis vector, $\bar
 \]
 The term $\mathbf{b}_j \in \mathbb{R}^n$ is a sparse banded vector supported strictly on indices $j+1$ through $\min(j+\ell, n)$, having at most $\ell$ non-zero entries.
 
-In LAPACK's \texttt{dlarft} bordering algorithm \citep{doi:10.1137/1.9780898719604}, the factor matrix $T$ is built column by column. Let $T_j := T[1:j, \, 1:j] \in \mathbb{R}^{j \times j}$ denote the $j \times j$ leading principal submatrix of $T$ for $1 \le j \le n-1$. For step $j$ ($2 \le j \le n-1$), $T_j$ satisfies the bordered update:
+In LAPACK's \texttt{dlarft} bordering algorithm \citep{doi:10.1137/1.9780898719604}, the factor matrix $T$ is built column by column. Let $T_j := T[1\!:\!j, \, 1\!:\!j] \in \mathbb{R}^{j \times j}$ denote the $j \times j$ leading principal submatrix of $T$ for $1 \le j \le n-1$. For step $j$ ($2 \le j \le n-1$), $T_j$ satisfies the bordered update:
 \[
 T_j = \begin{bmatrix} T_{j-1} & \mathbf{z}_{j-1} \\ \mathbf{0} & \tau_j \end{bmatrix},
 \]
