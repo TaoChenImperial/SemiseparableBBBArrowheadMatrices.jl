@@ -1,12 +1,12 @@
 \documentclass[11pt]{article}
-\usepackage[a4paper, margin=25mm]{geometry}
+\usepackage[a4paper, margin=20mm]{geometry}
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{hyperref}
 \usepackage{microtype}
 
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{0.8em} 
+\setlength{\parskip}{0.5em} 
 \renewcommand{\baselinestretch}{1.0} 
 
 \begin{document}
@@ -20,36 +20,33 @@ London, SW7 2AZ, United Kingdom
 \vspace{-0.6em}
 \rule{\textwidth}{0.8pt}
 
-\vspace{0.5em}
+\vspace{0.4em}
 \today
 
-\vspace{0.5em}
+\vspace{0.4em}
 Editorial Board \\
-SIAM Journal on Matrix Analysis and Applications \\
-Society for Industrial and Applied Mathematics
+Linear Algebra and its Applications (LAA) \\
+Elsevier
 
-%\vspace{0.5em}
-%Subject: Submission of Manuscript Regarding Linear Complexity QR Factorization for BPS Matrices
-
-\vspace{0.5em}
+\vspace{0.4em}
 Dear Editor-in-Chief and Members of the Editorial Board,
 
-On behalf of my co-author, Dr. Sheehan Olver, and myself, I am writing to submit our manuscript titled \textit{the QR factorization for banded-plus-semiseparable matrices is computable in linear complexity} for exclusive consideration for publication in the SIAM Journal on Matrix Analysis and Applications.
+On behalf of my co-author, Dr. Sheehan Olver, and myself, I am writing to submit our manuscript titled \textit{``The QR factorization of a banded-plus-semiseparable matrix is computable in linear complexity with Householder reflections''} for consideration for publication in \textit{Linear Algebra and its Applications}.
 
-Banded-plus-semiseparable (BPS) matrices arise naturally in spectral methods when discretizing differential equations, in certain classes of integral equations, and elsewhere. While BPS matrices can also be viewed as Hierarchical Semiseparable (HSS) matrices,  general hierarchical methods approximate low-rank off-diagonal blocks in superlinear complexity, they introduce significant hierarchical overhead and lose structure when applied to precise BPS forms. In particular, there does not currently exist an optimal complexity algorithm for computing the QR factorization of a BPS or HSS matrix.
+Banded-plus-semiseparable (BPS) matrices arise naturally in spectral methods for discretizing differential equations, integral equations, and structured matrix inverses. While classical literature, such as foundational works by Vandebril, Van Barel, Eidelman, and others, has extensively studied rank-structured matrices using sequences of Givens rotations, the use of Householder reflections for BPS matrices remains significantly less explored.
 
-In this paper, we resolve this challenge by proving that the QR factorization of a BPS matrix can be computed in optimal linear complexity. By tracking the algebraic structure throughout successive Householder transformations, we demonstrate that the intermediate trailing submatrices maintain a structured, memory-efficient parameterization requiring minimal storage. 
-Building upon this structured framework, we develop stable direct solvers by exploiting fast techniques for applying the orthogonal transformations and performing backward substitution. For symmetric BPS matrices, we establish that the core RQ product strictly preserves the structural form, enabling fast eigenvalue computations. Finally, comprehensive numerical experiments confirm perfect linear scaling and substantial speedups over state-of-the-art software within the Julia ecosystem.
+In this work, we present a Householder-based $O(n)$ QR factorization framework that offers distinct practical and theoretical advantages over traditional Givens-rotation approaches. Unlike bottom-left Givens rotation schemes, our Householder formulation computes standard factor matrices natively compatible with LAPACK unblocked QR layouts. Building upon this structured representation, we develop a complete $O(n)$ direct solver incorporating fast applications of $Q^\top$ and backward substitution. This allows for adaptive, partial QR factorizations whose computational cost depends solely on the number of upper-triangularized columns rather than the global matrix size, enabling seamless integration with dense BLAS-3 routines. Furthermore, we rigorously establish that the upper triangular factor $T \in \mathbb{R}^{n \times n}$ arising from LAPACK's Compact WY representation ($Q = I - V T V^\top$) inherently inherits a rigid BPS structure. Finally, for symmetric BPS matrices, we prove that the reverse $RQ$ product strictly preserves the BPS format, establishing structural closure under orthogonal similarity transformations.
 
-For the handling editor we would suggest either Daniel Kressner, who is involved in the hm-toolbox for solving systems involving hierarchical matrices, or Alex Townsend, who
-has work on learning Green functions represented in a hierarchical structure. 
+Given the manuscript's strong focus on matrix analysis, structural preservation properties, and fast numerical linear algebra, we believe our theoretical results and algorithms align closely with the scope and readership of LAA.
 
-Given your journal's outstanding reputation in structured numerical linear algebra, we believe our work offers an optimal paradigm that aligns closely with your readership. We confirm this manuscript is original, unpublished, and not under consideration elsewhere. Thank you very much for your time and consideration.
+For the handling editor or potential reviewers, we would like to suggest Alex Townsend, who has extensive expertise in spectral methods and hierarchical linear algebra, as well as ...
 
-\vspace{1.5em}
+We confirm that this manuscript is original, unpublished, and not under consideration for publication elsewhere. All authors have approved the submission of this manuscript. Thank you very much for your time and consideration.
+
+\vspace{1.0em}
 Sincerely yours,
 
-\vspace{2.5em} 
+\vspace{2.0em} 
 Tao Chen \\
 Department of Mathematics, Imperial College London \\
 Email: \href{mailto:t.chen24@imperial.ac.uk}{t.chen24@imperial.ac.uk}
