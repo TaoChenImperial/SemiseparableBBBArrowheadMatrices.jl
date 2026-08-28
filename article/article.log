@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.11.3)  21 AUG 2026 11:25
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.12.12)  28 AUG 2026 11:15
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1453,8 +1453,8 @@ Package rerunfilecheck Info: File `article.out' has not changed.
  ) 
 Here is how much of TeX's memory you used:
  32685 strings out of 476025
- 624614 string characters out of 5790017
- 1916388 words of memory out of 5000000
+ 624614 string characters out of 5790016
+ 1917388 words of memory out of 5000000
  52417 multiletter control sequences out of 15000+600000
  653340 words of font info for 225 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -1477,7 +1477,7 @@ b></usr/local/texlive/2023/texmf-dist/fonts/type1/public/stix/stix-mathrm-bold.
 pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/stix/stix-mathrm.pfb
 ></usr/local/texlive/2023/texmf-dist/fonts/type1/public/stix/stix-mathscr.pfb><
 /usr/local/texlive/2023/texmf-dist/fonts/type1/public/stix/stix-mathsf.pfb>
-Output written on article.pdf (31 pages, 1342068 bytes).
+Output written on article.pdf (31 pages, 1342079 bytes).
 PDF statistics:
  6892 PDF objects out of 7423 (max. 8388607)
  4679 compressed objects within 47 object streams
